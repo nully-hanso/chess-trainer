@@ -85,6 +85,10 @@
   .step .go{font-size:12px;margin-top:6px}
   .step .go a{color:var(--accent);font-weight:700;cursor:pointer;text-decoration:underline}
   .step.done{opacity:.6}
+  .star{position:absolute;z-index:2;font-size:calc(var(--bs) / 8 * .5);color:#f2b400;text-shadow:0 1px 2px rgba(0,0,0,.35);pointer-events:none}
+  .sq.target::before{content:"";position:absolute;inset:6%;border-radius:50%;border:4px dashed #f2b400}
+  .lgroup h3{font-size:15px;margin:18px 0 8px}
+  .quiz button{flex:1;min-width:110px}
   .note{background:#fff8e6;border:1px solid #f0dfae;border-radius:12px;padding:12px 14px;font-size:14px;margin-bottom:14px}
   .legend{font-size:12.5px;color:var(--muted);margin-top:8px}
   .bar{height:8px;background:#e9e5dd;border-radius:9px;overflow:hidden;margin:6px 0 14px}
@@ -94,9 +98,10 @@
 <body>
 <header>
   <h1>♞ 체스 첫걸음</h1>
-  <p class="sub">로드맵 → 메이트·전술 퍼즐(2~3수 읽기) → 오프닝 연습. 진도는 이 브라우저에 자동 저장돼요.</p>
+  <p class="sub">로드맵 → 기초 레슨 → 메이트·전술 퍼즐(2~3수 읽기) → 오프닝 연습. 진도는 이 브라우저에 자동 저장돼요.</p>
   <nav>
     <button data-tab="road" class="on">🗺️ 학습 로드맵</button>
+    <button data-tab="lesson">🎓 기초 레슨</button>
     <button data-tab="puzzle">🧩 퍼즐</button>
     <button data-tab="opening">📖 오프닝 연습</button>
   </nav>
@@ -113,6 +118,34 @@
     <div class="muted">진행률</div>
     <div class="bar"><i id="roadBar"></i></div>
     <div class="road" id="road"></div>
+  </section>
+
+  <!-- LESSON -->
+  <section class="view" id="v-lesson">
+    <div id="lPick">
+      <div class="note">체스 규칙을 직접 두면서 익히는 미니 레슨이에요. 위에서부터 차례로 해 보세요. 완료한 레슨에는 ✔가 붙어요.</div>
+      <div id="lList"></div>
+    </div>
+    <div id="lPlay" style="display:none">
+      <div class="layout">
+        <div class="boardwrap"><div class="board" id="lBoard"></div>
+          <div class="legend">기물을 클릭 → 점 찍힌 칸을 클릭해서 이동.</div></div>
+        <div class="panel">
+          <button class="btn" id="lBack">← 목록</button>
+          <h2 id="lTitle" style="margin-top:10px"></h2>
+          <div class="muted" id="lIntro"></div>
+          <div class="dots" id="lDots"></div>
+          <div id="lText" style="font-weight:600;margin-top:4px"></div>
+          <div class="msg" id="lMsg"></div>
+          <div class="btns quiz" id="lQuiz"></div>
+          <div class="btns">
+            <button class="btn" id="lHint">💡 힌트</button>
+            <button class="btn" id="lReset">↺ 다시</button>
+            <button class="btn primary" id="lNext">다음 ▶</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- PUZZLE -->
@@ -207,7 +240,7 @@ function attacked(s,sq,by){
   return false;
 }
 const kingSq=(s,c)=>s.b.indexOf(c==='w'?'K':'k');
-const inCheck=(s,c)=>attacked(s,kingSq(s,c),other(c));
+const inCheck=(s,c)=>{const k=kingSq(s,c); return k>=0&&attacked(s,k,other(c));};
 
 function pseudo(s){
   const ms=[],b=s.b,c=s.turn,inb=(r,f)=>r>=0&&r<8&&f>=0&&f<8;
@@ -356,7 +389,7 @@ const OPENINGS=[
 ];
 
 const ROADMAP=[
-  {k:'rules',t:'규칙과 기물 이동',d:'각 기물의 움직임, 체크·체크메이트·스테일메이트, 특수 규칙(캐슬링, 앙파상, 폰 승진).',go:null},
+  {k:'rules',t:'규칙과 기물 이동',d:'각 기물의 움직임, 체크·체크메이트·스테일메이트, 특수 규칙(캐슬링, 앙파상, 폰 승진).',go:['lesson']},
   {k:'value',t:'기물 가치와 교환',d:'폰 1 · 나이트 3 · 비숍 3 · 룩 5 · 퀸 9. 두기 전에 “내 기물이 공짜로 잡히지 않나?” 확인하는 습관.',go:null},
   {k:'mate1',t:'기본 메이트 패턴',d:'백랭크, 퀸 키스, 질식 메이트 등 1수 메이트 그림을 눈에 익히기. K+Q 대 K, K+R 대 K 메이트 방법.',go:['puzzle','m1']},
   {k:'tactics',t:'전술 = 수 읽기',d:'포크·핀·스큐어·디플렉션, 2수 메이트. 초보 실력 향상의 대부분이 여기서 나옵니다. 매일 10~20문제 추천.',go:['puzzle','m2']},
@@ -364,6 +397,80 @@ const ROADMAP=[
   {k:'end',t:'기초 엔드게임',d:'킹+폰 대 킹, 오포지션, 폰 승진 경주, 기초 룩 엔드게임. 이기던 판을 끝까지 이기는 힘.',go:null},
   {k:'plan',t:'중반 전략 & 실전 복기',d:'좋은/나쁜 기물, 약한 칸, 폰 구조, 계획 세우기. 15분 이상 대국을 두고 지면 꼭 복기하기.',go:null},
 ];
+
+const LESSON_GROUPS=[['move','① 기물 이동 — 별 모으기'],['rule','② 특수 규칙'],['check','③ 체크·체크메이트·스테일메이트'],['game','④ 실전 미니게임']];
+const LESSONS=[
+  {id:'rook',g:'move',title:'룩 ♜',intro:'룩은 가로·세로로 원하는 만큼 직진해요. 다른 기물을 뛰어넘을 수는 없어요. 가치 5점.',steps:[
+    {k:'stars',fen:'8/8/8/8/8/8/8/R7 w - - 0 1',stars:['a5','e5','e8']},
+    {k:'stars',fen:'8/8/8/8/3R4/8/8/8 w - - 0 1',stars:['b7','g7','g2','b2']}]},
+  {id:'bishop',g:'move',title:'비숍 ♝',intro:'비숍은 대각선으로 원하는 만큼 움직여요. 처음 칸과 같은 색 칸에만 갈 수 있어요. 가치 3점.',steps:[
+    {k:'stars',fen:'8/8/8/8/8/8/8/2B5 w - - 0 1',stars:['e3','g5','d8']},
+    {k:'stars',fen:'8/8/8/8/8/8/8/5B2 w - - 0 1',stars:['b5','e8','h5','d1']}]},
+  {id:'queen',g:'move',title:'퀸 ♛',intro:'퀸은 룩과 비숍을 합친 기물이에요. 가로·세로·대각선 어디로든 직진. 가장 강한 기물로 가치 9점.',steps:[
+    {k:'stars',fen:'8/8/8/8/8/8/8/3Q4 w - - 0 1',stars:['d6','h2','a5','f8','b1']}]},
+  {id:'knight',g:'move',title:'나이트 ♞',intro:'나이트는 “ㄱ자”(한 방향 2칸 + 옆으로 1칸)로 움직이고, 유일하게 다른 기물을 뛰어넘어요. 가치 3점.',steps:[
+    {k:'stars',fen:'8/8/8/8/8/8/8/1N6 w - - 0 1',stars:['c3','d5','f6']},
+    {k:'stars',fen:'8/8/8/8/8/8/8/1N6 w - - 0 1',stars:['e4','e5'],note:'바로 옆 칸이 오히려 멀어요! 나이트에게 바로 옆 칸은 3수 거리랍니다.'}]},
+  {id:'king',g:'move',title:'킹 ♚',intro:'킹은 모든 방향으로 한 칸씩만. 잡히면 지는 기물이라 공격받는 칸으로는 갈 수 없어요.',steps:[
+    {k:'stars',fen:'8/8/8/8/8/8/8/4K3 w - - 0 1',stars:['e3','g4','e6','c5']}]},
+  {id:'pawn',g:'move',title:'폰 ♟',intro:'폰은 앞으로 한 칸(처음 자리에서는 두 칸도 가능). 뒤로는 못 가고, 잡을 때만 대각선 앞으로 움직여요. 가치 1점.',steps:[
+    {k:'stars',fen:'8/8/8/8/8/8/4P3/8 w - - 0 1',stars:['e4','e5','e6'],note:'첫 수는 두 칸 전진할 수 있어요.'},
+    {k:'stars',fen:'8/8/8/8/4p3/3p4/4P3/8 w - - 0 1',stars:['d3','e4'],note:'노란 점선 동그라미는 잡아야 할 기물. 폰은 대각선으로 잡아요.'}]},
+
+  {id:'castle',g:'rule',title:'캐슬링',intro:'킹과 룩이 한 번에 움직이는 특수한 수. 킹을 룩 쪽으로 두 칸 옮기면 룩이 킹을 넘어 옆에 붙어요. 조건: ① 킹과 그 룩이 한 번도 움직이지 않았고 ② 사이에 기물이 없고 ③ 지금 체크가 아니며 ④ 킹이 지나가거나 도착하는 칸이 공격받지 않을 것.',steps:[
+    {k:'move',fen:'4k3/8/8/8/8/8/8/R3K2R w KQ - 0 1',accept:['e1g1'],text:'킹 쪽 캐슬링(O-O)을 하세요. 킹을 g1로 두 칸 옮기면 돼요.',ok:'O-O! 킹은 g1, 룩은 f1. 킹이 구석으로 숨고 룩은 중앙으로 나와요.'},
+    {k:'move',fen:'4k3/8/8/8/8/8/8/R3K2R w KQ - 0 1',accept:['e1c1'],text:'이번엔 퀸 쪽 캐슬링(O-O-O). 킹을 c1로 두 칸.',ok:'O-O-O! 킹은 c1, 룩은 d1로 갔어요.'},
+    {k:'move',fen:'4k3/8/8/8/2b5/8/8/R3K2R w KQ - 0 1',accept:['e1c1'],text:'캐슬링을 하세요. 그런데 한쪽은 막혀 있어요. 왜일까요?',ok:'정답! 흑 비숍이 f1을 노려서, 킹이 f1을 지나가야 하는 킹 쪽 캐슬링은 금지. 퀸 쪽은 괜찮아요.',hint:'킹을 클릭해 보면 갈 수 있는 칸이 보여요.'}]},
+  {id:'ep',g:'rule',title:'앙파상',intro:'상대 폰이 처음 자리에서 두 칸 전진해 내 폰 바로 옆에 서면, 한 칸만 온 것처럼 대각선으로 잡을 수 있어요. 단, 바로 다음 수에만!',steps:[
+    {k:'move',fen:'4k3/3p4/8/4P3/8/8/8/4K3 b - - 0 1',pre:'d7d5',accept:['e5d6'],text:'흑이 d7→d5로 두 칸 전진해서 백 폰 옆에 섰어요. 앙파상으로 잡으세요!',ok:'exd6 e.p.! 내 폰은 d6로 가고, 옆의 d5 흑 폰이 사라졌어요.',wrong:'e5 폰을 대각선 d6로 옮겨 보세요. 비어 있는 칸이지만 앙파상이라 갈 수 있어요.'},
+    {k:'move',fen:'4k3/8/8/8/3p4/8/4P3/4K3 w - - 0 1',pre:'e2e4',accept:['d4e3'],text:'이번엔 흑 차례. 백이 e2→e4로 두 칸 왔어요. 앙파상!',ok:'dxe3 e.p.! 흑도 똑같이 할 수 있어요(흑 폰은 4번째 줄에 있어야 해요).',wrong:'d4 폰을 대각선 e3로 옮겨 보세요.'}]},
+  {id:'promo',g:'rule',title:'폰 승진',intro:'폰이 맨 끝 줄에 도착하면 퀸·룩·비숍·나이트 중 하나로 바뀌어요. 거의 항상 퀸을 고르죠. (이 앱에선 자동으로 퀸)',steps:[
+    {k:'move',fen:'8/4P3/8/8/8/8/k7/7K w - - 0 1',accept:['e7e8q'],text:'폰을 끝까지 전진시켜 퀸으로 승진시키세요.',ok:'승진! 폰 하나가 9점짜리 퀸이 됐어요. 그래서 엔드게임에선 폰 하나도 소중해요.'},
+    {k:'move',fen:'3r3k/4P3/8/8/8/8/8/K7 w - - 0 1',accept:['e7d8q'],text:'승진하면서 룩까지 잡을 수 있어요!',ok:'exd8=Q+! 대각선으로 잡으면서 승진하고 체크까지.',wrong:'폰은 대각선 앞의 기물을 잡을 수 있어요. 그게 마지막 줄이라면?'}]},
+
+  {id:'escape',g:'check',title:'체크 피하기',intro:'체크(킹이 공격받음)를 당하면 반드시 풀어야 해요. 방법은 딱 세 가지: ① 킹이 피하기 ② 사이를 막기 ③ 공격한 기물 잡기.',steps:[
+    {k:'escape',fen:'4k3/8/8/8/8/8/8/r3K3 w - - 0 1',text:'흑 룩이 체크! 체크를 피하세요.'},
+    {k:'escape',fen:'4k3/8/8/8/8/4N3/3PPP2/r3K3 w - - 0 1',text:'킹이 피할 곳이 없어요. 다른 방법으로!'},
+    {k:'escape',fen:'4k3/R7/8/8/8/8/3PPP2/r3K3 w - - 0 1',text:'피할 곳도 막을 방법도 없어요. 남은 방법은?'}]},
+  {id:'mates',g:'check',title:'체크메이트? 스테일메이트?',intro:'체크메이트 = 체크를 받고 있는데 둘 수가 없음(패배). 스테일메이트 = 체크가 아닌데 둘 수가 없음(무승부). 아무 기물이라도 움직일 수 있으면 둘 다 아니에요.',steps:[
+    {k:'quiz',fen:'k7/1Q6/1K6/8/8/8/8/8 b - - 0 1'},
+    {k:'quiz',fen:'k7/8/1Q6/2K5/8/8/8/8 b - - 0 1'},
+    {k:'quiz',fen:'7k/8/5K2/8/8/8/8/6R1 b - - 0 1'},
+    {k:'quiz',fen:'7k/7P/7K/8/8/8/8/8 b - - 0 1'},
+    {k:'quiz',fen:'R5k1/5ppp/8/8/8/8/8/6K1 b - - 0 1'},
+    {k:'quiz',fen:'k7/2Q5/8/8/8/8/p7/7K b - - 0 1'},
+    {k:'move',fen:'k7/8/1K6/8/8/8/8/2Q5 w - - 0 1',accept:'mate',text:'실전! 스테일메이트를 피해서 1수 만에 메이트하세요.',ok:'체크메이트! 상대 킹을 가두되 체크로 끝내야 해요.'}]},
+
+  {id:'free',g:'game',title:'공짜 기물 잡기',intro:'기물 가치: 폰 1 · 나이트 3 · 비숍 3 · 룩 5 · 퀸 9. 잡기 전에 “잡으면 되잡히나?”를 꼭 확인하세요.',steps:[
+    {k:'move',fen:'3rk3/8/8/1p6/b5n1/8/8/3QK3 w - - 0 1',accept:['d1g4'],text:'퀸으로 잡을 수 있는 기물이 3개. 손해 없이 잡을 수 있는 건?',ok:'Qxg4! 아무도 지키지 않는 공짜 나이트예요.',wrong:'그 기물은 지켜지고 있어서 퀸(9점)을 잃어요. 아무도 지키지 않는 기물을 찾아보세요.'},
+    {k:'move',fen:'4k3/8/4p3/3n4/8/8/8/K2R3b w - - 0 1',accept:['d1h1'],text:'룩으로 잡을 수 있는 기물이 둘. 어느 쪽?',ok:'Rxh1! 공짜 비숍(3점). Rxd5는 exd5로 되잡혀 룩(5)과 나이트(3)를 바꾸는 손해예요.',wrong:'d5 나이트는 e6 폰이 지켜요. 룩(5점)으로 나이트(3점)를 잡고 되잡히면 손해!'},
+    {k:'move',fen:'4k3/8/2p5/3n1p2/4P3/8/8/4K3 w - - 0 1',accept:['e4d5'],text:'폰으로 잡을 수 있는 게 둘. 더 이득인 쪽은?',ok:'exd5! 지켜지고 있어도 괜찮아요. 폰(1)을 주고 나이트(3)를 얻으니 +2 이득.',wrong:'공짜 폰(+1)도 나쁘진 않지만, 더 큰 이득이 있어요. 싼 기물로 비싼 기물을 잡으면 되잡혀도 이득!'}]},
+  {id:'kq',g:'game',title:'퀸으로 메이트하기',intro:'킹+퀸 대 킹. 컴퓨터 킹이 도망다녀요. 요령: 퀸을 상대 킹과 나이트 점프 거리에 두며 상자를 좁히고 → 킹이 끝 줄에 갇히면 내 킹을 데려와 마무리. 스테일메이트 조심!',steps:[
+    {k:'vsking',fen:'8/8/8/4k3/8/8/8/3QK3 w - - 0 1',text:'흑 킹을 체크메이트하세요.'}]},
+  {id:'kr',g:'game',title:'룩으로 메이트하기',intro:'킹+룩 대 킹. 룩 하나로는 부족해서 킹의 도움이 꼭 필요해요. 요령: 룩으로 줄을 막아 상자를 만들고, 내 킹을 다가가게 해서 킹끼리 마주 볼 때 룩으로 체크.',steps:[
+    {k:'vsking',fen:'8/8/8/4k3/8/8/8/R3K3 w - - 0 1',text:'흑 킹을 체크메이트하세요. (조금 어려워요!)'}]},
+];
+
+// minimal moves to collect all stars (BFS)
+function starPar(fen,stars){
+  const s0=parseFEN(fen),pi=s0.b.findIndex(p=>p&&isW(p)),piece=s0.b[pi],st=stars.map(sqIdx),full=(1<<st.length)-1;
+  let q=[[pi,0]],d=0; const seen=new Set([pi*64]);
+  while(q.length){ const nq=[];
+    for(const[sq,m] of q){ if(m===full) return d;
+      const b=Array(64).fill(null); st.forEach((x,i)=>{ if(!(m>>i&1)&&s0.b[x]) b[x]=s0.b[x]; }); b[sq]=piece;
+      for(const mv of legal({b,turn:'w',castle:'',ep:-1})){ const j=st.indexOf(mv.to),nm=j>=0?m|(1<<j):m,k=mv.to*64+nm;
+        if(!seen.has(k)){ seen.add(k); nq.push([mv.to,nm]); } } }
+    q=nq; d++; }
+  return -1;
+}
+function quizAnswer(s){ return isMate(s)?'mate':isStalemate(s)?'stale':'play'; }
+function kingAI(s){
+  let best=null,bs=-1e9;
+  for(const m of legal(s)){ const n=make(s,m); let sc=s.b[m.to]?1000:0;
+    sc+=legal({...n,turn:s.turn}).length*3-(Math.abs(3.5-(m.to>>3))+Math.abs(3.5-(m.to&7)))*2+Math.random();
+    if(sc>bs){ bs=sc; best=m; } }
+  return best;
+}
 /*END-DATA*/
 
 // ================= UI =================
@@ -374,7 +481,7 @@ const $=id=>document.getElementById(id);
 function drawBoard(el,ctx){
   el.innerHTML='';
   const tg=ctx.sel>=0?legal(ctx.s).filter(m=>m.from===ctx.sel).map(m=>m.to):[];
-  const chk=inCheck(ctx.s,ctx.s.turn)?kingSq(ctx.s,ctx.s.turn):-1;
+  const chk=(!ctx.noCheck&&inCheck(ctx.s,ctx.s.turn))?kingSq(ctx.s,ctx.s.turn):-1;
   for(let vi=0;vi<64;vi++){
     const sq=ctx.flip?63-vi:vi,r=sq>>3,f=sq&7,d=document.createElement('div');
     d.className='sq '+((r+f)%2?'dark':'light');
@@ -382,6 +489,7 @@ function drawBoard(el,ctx){
     if(sq===ctx.sel) d.classList.add('sel');
     if(sq===chk) d.classList.add('check');
     if(ctx.hint&&ctx.hint.includes(sq)) d.classList.add('hint');
+    if(ctx.stars&&ctx.stars.has(sq)){ if(ctx.s.b[sq]) d.classList.add('target'); else { const st=document.createElement('span'); st.className='star'; st.textContent='★'; d.appendChild(st); } }
     if(tg.includes(sq)) d.classList.add(ctx.s.b[sq]?'cap':'dot');
     const p=ctx.s.b[sq];
     if(p){ const s=document.createElement('span'); s.className='pc '+(isW(p)?'w':'b'); s.textContent=GLYPH[p.toLowerCase()]; d.appendChild(s); }
@@ -587,7 +695,120 @@ document.addEventListener('keydown',e=>{
   if(e.key==='ArrowRight') $('oNextBtn').click(); if(e.key==='ArrowLeft') $('oPrev').click();
 });
 
-renderRoad(); renderOpList(); loadPuzzle(0);
+// ---------- lessons ----------
+const L={sel:-1,hint:null,busy:false,done:false};
+function renderLessonList(){
+  const done=store.get('lessons',{}); const box=$('lList'); box.innerHTML='';
+  LESSON_GROUPS.forEach(([g,name])=>{
+    const wrap=document.createElement('div'); wrap.className='lgroup'; wrap.innerHTML=`<h3>${name}</h3>`;
+    const grid=document.createElement('div'); grid.className='oplist';
+    LESSONS.filter(x=>x.g===g).forEach(les=>{
+      const b=document.createElement('button'); b.className='opcard';
+      b.innerHTML=`${done[les.id]?'<span class="tag done">✔ 완료</span>':''}<b>${les.title}</b><span class="muted">${les.steps.length}단계</span>`;
+      b.onclick=()=>openLesson(les); grid.appendChild(b);
+    });
+    wrap.appendChild(grid); box.appendChild(wrap);
+  });
+}
+function openLesson(les){ L.les=les; $('lPick').style.display='none'; $('lPlay').style.display=''; $('lTitle').textContent=les.title; $('lIntro').textContent=les.intro; loadStep(0); }
+const lstep=()=>L.les.steps[L.si];
+function loadStep(i){
+  const st=L.les.steps[i]; L.si=i; clearTimeout(L.timer);
+  Object.assign(L,{s:parseFEN(st.fen),sel:-1,last:null,hint:null,busy:false,done:false,stars:null,noCheck:false,mode:'',moves:0,tone:'',answered:false});
+  L.side=L.s.turn; L.flip=L.side==='b'; $('lQuiz').innerHTML='';
+  if(st.k==='stars'){
+    L.stars=new Set(st.stars.map(sqIdx)); L.par=st.par??(st.par=starPar(st.fen,st.stars));
+    L.text=`★을 모두 모으세요. 최소 ${L.par}수에 가능해요!`; L.msg=st.note||'기물을 클릭하면 갈 수 있는 칸이 점으로 보여요.';
+  } else if(st.k==='move'){
+    L.text=st.text; L.msg='';
+    if(st.pre){ L.side=other(L.s.turn); L.flip=L.side==='b'; L.busy=true; L.msg='상대가 둡니다…';
+      L.timer=setTimeout(()=>{ const m=findMove(L.s,st.pre); L.s=make(L.s,m); L.last=m; L.busy=false; L.msg='이제 당신 차례!'; L.render(); },900); }
+  } else if(st.k==='escape'){ L.text=st.text; L.msg='체크받은 킹이 빨갛게 표시돼요.'; }
+  else if(st.k==='quiz'){
+    L.mode='learn'; L.noCheck=true; L.text=(L.s.turn==='w'?'백':'흑')+' 차례예요. 지금 상황은?'; L.msg='';
+    [['mate','체크메이트'],['stale','스테일메이트'],['play','둘 수 있음']].forEach(([k,n])=>{ const b=document.createElement('button'); b.className='btn'; b.textContent=n; b.onclick=()=>answerQuiz(k); $('lQuiz').appendChild(b); });
+  } else if(st.k==='vsking'){ L.text=st.text; L.msg='수: 0'; }
+  L.render();
+}
+L.render=()=>{
+  drawBoard($('lBoard'),L);
+  const done=store.get('lessons',{});
+  $('lDots').innerHTML=''; L.les.steps.forEach((x,i)=>{ const b=document.createElement('button'); b.textContent=i+1; b.className=(i<L.si||(i===L.si&&L.done)?'solved ':'')+(i===L.si?'cur':''); b.onclick=()=>loadStep(i); $('lDots').appendChild(b); });
+  $('lText').textContent=L.text; $('lMsg').textContent=L.msg; $('lMsg').className='msg '+(L.tone||'');
+  const last=L.si>=L.les.steps.length-1; const li=LESSONS.indexOf(L.les);
+  $('lNext').textContent=last?(li<LESSONS.length-1?'다음 레슨 ▶':'목록으로'):'다음 단계 ▶';
+  $('lHint').style.display=(lstep().k==='quiz')?'none':'';
+};
+function stepDone(msg){
+  L.done=true; L.busy=false; L.msg=msg; L.tone='ok';
+  if(L.si===L.les.steps.length-1){ const d=store.get('lessons',{}); d[L.les.id]=true; store.set('lessons',d); L.msg+=' 🎉 레슨 완료!'; }
+  L.render();
+}
+function stepFail(msg,revert){
+  L.msg=msg; L.tone='bad'; L.render(); shake($('lBoard'));
+  if(revert){ L.busy=true; L.timer=setTimeout(()=>{ revert(); L.busy=false; L.render(); },1000); }
+}
+L.onMove=m=>{
+  const st=lstep(),prev=L.s,prevLast=L.last,s2=make(L.s,m); L.hint=null;
+  if(st.k==='stars'){
+    L.s={...s2,turn:'w',ep:-1,castle:''}; L.last=m; L.moves++;
+    if(L.stars.has(m.to)) L.stars.delete(m.to);
+    if(!L.stars.size){ L.stars=null; stepDone(L.moves<=L.par?`완벽해요! 최소 수(${L.par}수)로 모았어요.`:`다 모았어요! ${L.moves}수 (최소 ${L.par}수). 다시 해서 최소 수에 도전해 보세요.`); }
+    else { L.msg=`${L.moves}수째 · 남은 별 ${L.stars.size}개`; L.tone=''; L.render(); }
+    return;
+  }
+  if(st.k==='move'){
+    const good=st.accept==='mate'?isMate(s2):st.accept.includes(uci(m));
+    L.s=s2; L.last=m;
+    if(good) return stepDone('✅ '+st.ok);
+    let why=st.wrong||'다른 수를 찾아보세요.';
+    if(isStalemate(s2)) why='스테일메이트! 상대가 체크가 아닌데 둘 수가 없어서 무승부예요.';
+    return stepFail('❌ '+why,()=>{ L.s=prev; L.last=prevLast; });
+  }
+  if(st.k==='escape'){
+    const ks=kingSq(prev,prev.turn),opp=other(prev.turn);
+    const checkers=[]; for(let i=0;i<64;i++){ const p=prev.b[i]; if(p&&colorOf(p)===opp){ const t={b:prev.b.map((x,j)=>j===ks||j===i?x:null),turn:prev.turn,castle:'',ep:-1}; if(attacked(t,ks,opp)) checkers.push(i); } }
+    L.s=s2; L.last=m;
+    const how=checkers.includes(m.to)?'③ 잡기':m.from===ks?'① 피하기':'② 막기';
+    return stepDone(`✅ ${san(prev,m)} — ${how}로 체크를 풀었어요!`);
+  }
+  if(st.k==='vsking'){
+    L.s=s2; L.last=m; L.moves++;
+    if(isMate(s2)) return stepDone(`🏆 체크메이트! ${L.moves}수 만에 성공.`+(L.moves<=(L.les.id==='kq'?10:16)?' 아주 훌륭해요!':' 다시 해서 더 빨리 해 보세요.'));
+    if(isStalemate(s2)){ L.done=true; return stepFail('😮 스테일메이트(무승부)! 흑 킹이 체크가 아닌데 갈 곳이 없어요. ↺ 다시 눌러 재도전.'); }
+    L.busy=true; L.msg=`수: ${L.moves} · 흑 킹이 생각 중…`; L.tone=''; L.render();
+    L.timer=setTimeout(()=>{
+      const r=kingAI(L.s); L.s=make(L.s,r); L.last=r; L.busy=false;
+      if(!L.s.b.some(p=>p&&isW(p)&&p!=='K')){ L.done=true; return stepFail('😢 기물을 잡혔어요! 내 기물이 킹 옆에 혼자 있으면 잡혀요. ↺ 다시.'); }
+      L.msg=`수: ${L.moves}`; L.render();
+    },500);
+  }
+};
+function answerQuiz(k){
+  if(L.answered) return; L.answered=true; L.noCheck=false;
+  const a=quizAnswer(L.s),names={mate:'체크메이트',stale:'스테일메이트',play:'둘 수 있음'};
+  let why=a==='mate'?'킹이 체크를 받고 있고, 피하기·막기·잡기 모두 불가능해요.':a==='stale'?'체크는 아닌데 둘 수 있는 수가 하나도 없어요 → 무승부.':`아직 둘 수 있어요. 예: ${san(L.s,legal(L.s)[0])}`;
+  if(a==='play'&&legal(L.s).some(m=>L.s.b[m.from].toLowerCase()!=='k')) why+=' (킹이 아닌 기물이 움직일 수 있으면 스테일메이트가 아니에요)';
+  [...$('lQuiz').children].forEach(b=>b.disabled=true);
+  if(k===a) stepDone(`⭕ 정답! ${names[a]}. ${why}`);
+  else { L.done=true; L.msg=`❌ 정답은 “${names[a]}”. ${why}`; L.tone='bad'; L.render(); }
+}
+$('lHint').onclick=()=>{
+  if(L.busy||L.done) return; const st=lstep(); let m=null;
+  if(st.k==='stars'){ L.msg='💡 '+(st.note||'가까운 별부터, 한 번에 여러 별을 지나갈 수 있는 길을 생각해 보세요.'); }
+  else if(st.k==='move'){ m=st.accept==='mate'?legal(L.s).find(x=>isMate(make(L.s,x))):findMove(L.s,st.accept[0]); L.msg='💡 '+(st.hint||'빛나는 칸을 보세요.'); }
+  else if(st.k==='escape'){ L.msg='💡 피하기 → 막기 → 잡기 순서로 확인해 보세요. 킹을 클릭하면 피할 칸이 있는지 보여요.'; }
+  else if(st.k==='vsking'){ L.msg='💡 '+L.les.intro.split('요령: ')[1]; }
+  if(m) L.hint=[m.from,m.to]; L.tone=''; L.render();
+};
+$('lReset').onclick=()=>loadStep(L.si);
+$('lNext').onclick=()=>{
+  if(L.si<L.les.steps.length-1) return loadStep(L.si+1);
+  const li=LESSONS.indexOf(L.les); if(li<LESSONS.length-1) openLesson(LESSONS[li+1]); else $('lBack').click();
+};
+$('lBack').onclick=()=>{ clearTimeout(L.timer); $('lPlay').style.display='none'; $('lPick').style.display=''; renderLessonList(); };
+
+renderRoad(); renderOpList(); renderLessonList(); loadPuzzle(0);
 </script>
 </body>
 </html>
