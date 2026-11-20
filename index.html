@@ -51,7 +51,6 @@
   .board{width:var(--bs);height:var(--bs);display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);border-radius:16px;overflow:hidden;
     border:5px solid #6d9a5b;box-shadow:0 6px 0 #557c45,0 12px 28px rgba(40,80,30,.25);user-select:none;-webkit-user-select:none;touch-action:manipulation}
   .board{position:relative}
-  .arrows{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
   .matbox{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;background:#fff;border-radius:16px;padding:6px 12px;box-shadow:0 3px 0 var(--line);animation:pop .25s}
   .matgrp{display:flex;align-items:center;gap:4px}
   .matgrp .ml{font-size:12px;font-weight:800;color:var(--muted)}
@@ -64,6 +63,9 @@
   .sq{position:relative;min-width:0;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer}
   .sq.light{background:var(--light)}.sq.dark{background:var(--dark)}
   .sq.last::before{content:"";position:absolute;inset:0;background:rgba(255,220,60,.5)}
+.sq.good::before{content:"";position:absolute;inset:0;background:rgba(47,169,104,.8)}
+  .sq.bad::before{content:"";position:absolute;inset:0;background:rgba(226,69,60,.75)}
+  .cbig{font-family:ui-monospace,Menlo,monospace;font-size:30px;font-weight:900;color:var(--accent-d);padding:0 4px;vertical-align:-3px}
   .sq.sel::before{content:"";position:absolute;inset:0;background:rgba(74,140,255,.45)}
   .sq.hint::before{content:"";position:absolute;inset:0;background:rgba(255,122,61,.6);animation:pulse .8s infinite alternate}
   .sq.check::before{content:"";position:absolute;inset:0;background:radial-gradient(circle,rgba(240,40,40,.95) 0%,rgba(240,40,40,.4) 55%,transparent 75%)}
@@ -145,6 +147,8 @@
   #pLink{font-size:13px}
   #pLink a{color:var(--blue);font-weight:700}
   .quiz button{flex:1;min-width:96px}
+  .quiz.four{display:grid;grid-template-columns:repeat(4,1fr)}
+  .quiz.four button{min-width:0;padding:8px 4px}
 
   /* profiles modal */
   .modal{position:fixed;inset:0;background:rgba(45,42,62,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
@@ -554,7 +558,7 @@ const OPENINGS=[
 ];
 
 const ROADMAP=[
-  {k:'rules',t:'규칙과 기물 이동',d:'각 기물의 움직임, 체크·체크메이트·스테일메이트, 특수 규칙(캐슬링, 앙파상, 폰 승진).',go:['lesson']},
+  {k:'rules',t:'규칙과 기물 이동',d:'각 기물의 움직임, 칸 이름(좌표) 읽기, 체크·체크메이트·스테일메이트, 특수 규칙(캐슬링, 앙파상, 폰 승진).',go:['lesson']},
   {k:'value',t:'기물 가치와 교환',d:'폰 1 · 나이트 3 · 비숍 3 · 룩 5 · 퀸 9. 두기 전에 “내 기물이 공짜로 잡히지 않나?” 확인하는 습관.',go:null},
   {k:'mate1',t:'기본 메이트 패턴',d:'백랭크, 퀸 키스, 질식 메이트 등 1수 메이트 그림을 눈에 익히기. K+Q 대 K, K+R 대 K 메이트 방법.',go:['puzzle','m1']},
   {k:'tactics',t:'전술 = 수 읽기',d:'포크·핀·스큐어·디플렉션, 2수 메이트. 초보 실력 향상의 대부분이 여기서 나옵니다. 매일 10~20문제 추천.',go:['puzzle','m2']},
@@ -563,7 +567,7 @@ const ROADMAP=[
   {k:'plan',t:'중반 전략 & 실전 복기',d:'좋은/나쁜 기물, 약한 칸, 폰 구조, 계획 세우기. 15분 이상 대국을 두고 지면 꼭 복기하기.',go:null},
 ];
 
-const LESSON_GROUPS=[['move','① 기물 이동 — 별 모으기'],['rule','② 특수 규칙'],['check','③ 체크·체크메이트·스테일메이트'],['game','④ 실전 미니게임']];
+const LESSON_GROUPS=[['move','① 기물 이동 — 별 모으기'],['coord','② 좌표 찾기 게임'],['rule','③ 특수 규칙'],['check','④ 체크·체크메이트·스테일메이트'],['game','⑤ 실전 미니게임']];
 const LESSONS=[
   {id:'rook',g:'move',title:'룩 ♜',intro:'룩은 가로·세로로 원하는 만큼 직진해요. 다른 기물을 뛰어넘을 수는 없어요. 가치 5점.',steps:[
     {k:'stars',fen:'8/8/8/8/8/8/8/R7 w - - 0 1',stars:['a5','e5','e8']},
@@ -582,6 +586,12 @@ const LESSONS=[
     {k:'stars',fen:'8/8/8/8/8/8/4P3/8 w - - 0 1',stars:['e4','e5','e6'],note:'첫 수는 두 칸 전진할 수 있어요.'},
     {k:'stars',fen:'8/8/8/8/4p3/3p4/4P3/8 w - - 0 1',stars:['d3','e4'],note:'노란 점선 동그라미는 잡아야 할 기물. 폰은 대각선으로 잡아요.'}]},
 
+  {id:'coords',g:'coord',title:'좌표 찾기',intro:'칸마다 이름이 있어요. 세로줄은 왼쪽부터 a~h, 가로줄은 아래부터 1~8(백 쪽에서 볼 때). 둘을 합치면 칸 이름 — 예: e4는 e줄과 4줄이 만나는 칸. 기보를 읽고 머릿속으로 수를 따라가려면 꼭 필요해요. 하루 1~2분씩!',steps:[
+    {k:'coord',mode:'find',side:'w',count:10,fen:'8/8/8/8/8/8/8/8 w - - 0 1'},
+    {k:'coord',mode:'find',side:'w',secs:30,fen:'8/8/8/8/8/8/8/8 w - - 0 1'},
+    {k:'coord',mode:'name',side:'w',secs:30,fen:'8/8/8/8/8/8/8/8 w - - 0 1'},
+    {k:'coord',mode:'find',side:'b',secs:30,fen:'8/8/8/8/8/8/8/8 w - - 0 1'},
+    {k:'coord',mode:'find',side:'w',secs:30,noCoords:true,fen:'8/8/8/8/8/8/8/8 w - - 0 1'}]},
   {id:'castle',g:'rule',title:'캐슬링',intro:'킹과 룩이 한 번에 움직이는 특수한 수. 킹을 룩 쪽으로 두 칸 옮기면 룩이 킹을 넘어 옆에 붙어요. 조건: ① 킹과 그 룩이 한 번도 움직이지 않았고 ② 사이에 기물이 없고 ③ 지금 체크가 아니며 ④ 킹이 지나가거나 도착하는 칸이 공격받지 않을 것.',steps:[
     {k:'move',fen:'4k3/8/8/8/8/8/8/R3K2R w KQ - 0 1',accept:['e1g1'],text:'킹 쪽 캐슬링(O-O)을 하세요. 킹을 g1로 두 칸 옮기면 돼요.',ok:'O-O! 킹은 g1, 룩은 f1. 킹이 구석으로 숨고 룩은 중앙으로 나와요.'},
     {k:'move',fen:'4k3/8/8/8/8/8/8/R3K2R w KQ - 0 1',accept:['e1c1'],text:'이번엔 퀸 쪽 캐슬링(O-O-O). 킹을 c1로 두 칸.',ok:'O-O-O! 킹은 c1, 룩은 d1로 갔어요.'},
@@ -678,27 +688,12 @@ function drawBoard(el,ctx){
     if(tg.includes(sq)) d.classList.add(ctx.s.b[sq]?'cap':'dot');
     const p=ctx.s.b[sq];
     if(p){ const s=document.createElement('span'); s.className='pc '+(isW(p)?'w':'b'); s.textContent=GLYPH[p.toLowerCase()]; d.appendChild(s); }
-    if(vi%8===0){ const c=document.createElement('span'); c.className='coord r'; c.textContent=8-r; d.appendChild(c); }
-    if(vi>=56){ const c=document.createElement('span'); c.className='coord f'; c.textContent=FILES[f]; d.appendChild(c); }
+    if(ctx.flash&&ctx.flash.sq===sq) d.classList.add(ctx.flash.cls);
+    if(!ctx.noCoords&&vi%8===0){ const c=document.createElement('span'); c.className='coord r'; c.textContent=8-r; d.appendChild(c); }
+    if(!ctx.noCoords&&vi>=56){ const c=document.createElement('span'); c.className='coord f'; c.textContent=FILES[f]; d.appendChild(c); }
     d.onclick=()=>boardClick(ctx,sq);
     el.appendChild(d);
   }
-  if(ctx.arrows) el.insertAdjacentHTML('beforeend',arrowsSVG(ctx.arrows,ctx.flip));
-}
-// 수순 화살표: 내 수는 주황, 상대 수는 파랑, 순서 번호 표시
-function arrowsSVG(arrows,flip){
-  const pt=sq=>[((flip?7-(sq&7):sq&7))+.5,((flip?7-(sq>>3):sq>>3))+.5];
-  let body='';
-  arrows.forEach((a,i)=>{
-    const col=a.mine?'#ff6a2b':'#3d7bff', [x1,y1]=pt(a.from), [x2,y2]=pt(a.to);
-    const dx=x2-x1, dy=y2-y1, knight=(Math.abs(dx)===1&&Math.abs(dy)===2)||(Math.abs(dx)===2&&Math.abs(dy)===1);
-    const [cx,cy]=knight?(Math.abs(dx)===2?[x2,y1]:[x1,y2]):[x1,y1];
-    const lx=x2-cx, ly=y2-cy, L=Math.hypot(lx,ly)||1, ex=x2-lx/L*.22, ey=y2-ly/L*.22;
-    body+=`<path d="M${x1} ${y1}${knight?` L${cx} ${cy}`:''} L${ex} ${ey}" stroke="${col}" stroke-width=".17" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".8" marker-end="url(#ah${a.mine?'m':'o'})"/>`;
-    body+=`<circle cx="${x1}" cy="${y1}" r=".2" fill="${col}" stroke="#fff" stroke-width=".04"/><text x="${x1}" y="${y1+.09}" text-anchor="middle" font-size=".26" font-weight="800" fill="#fff" font-family="sans-serif">${i+1}</text>`;
-  });
-  const mk=(id,c)=>`<marker id="${id}" viewBox="0 0 10 10" refX="2" refY="5" markerWidth="2.3" markerHeight="2.3" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="${c}"/></marker>`;
-  return `<svg class="arrows" viewBox="0 0 8 8" aria-hidden="true"><defs>${mk('ahm','#ff6a2b')}${mk('aho','#3d7bff')}</defs>${body}</svg>`;
 }
 // 기물 계산 판: 얻은/내준 기물을 그림으로 크게
 function matBoxHTML(r,mate){
@@ -712,6 +707,7 @@ function matBoxHTML(r,mate){
   return `<div class="matbox">${h||'<span class="ml">잡은 기물 없음</span>'}<span class="mattotal ${tc}">${r.net>0?'+':''}${r.net}점</span></div>`;
 }
 function boardClick(ctx,sq){
+  if(ctx.onSquare){ if(!ctx.busy&&!ctx.done) ctx.onSquare(sq); return; }
   if(ctx.busy||ctx.done||ctx.mode==='learn'||ctx.s.turn!==ctx.side) return;
   if(ctx.sel>=0){
     const m=legal(ctx.s).find(m=>m.from===ctx.sel&&m.to===sq&&(!m.promo||m.promo==='q'));
@@ -761,7 +757,7 @@ function toZ(lp,review){
 function loadZ(z){
   clearTimeout(P.timer); P.z=z;
   const s0=parseFEN(z.fen), side=z.pre?other(s0.turn):s0.turn;
-  Object.assign(P,{s:s0,side,flip:side==='b',left:z.n||0,li:0,sel:-1,last:null,hint:null,hintLv:0,busy:!!z.pre,done:false,tone:'',failed:false,delta:null,t0:Date.now(),showGoal:false,played:[],arrows:null,mat:null,s0:s0});
+  Object.assign(P,{s:s0,side,flip:side==='b',left:z.n||0,li:0,sel:-1,last:null,hint:null,hintLv:0,busy:!!z.pre,done:false,tone:'',failed:false,delta:null,t0:Date.now(),showGoal:false,played:[],mat:null,s0:s0});
   P.msg=z.pre?'상대가 둡니다…':(z.type==='mate'?'메이트할 수 있는 수를 찾아보세요. 체크 → 잡기 → 위협 순으로 후보를 살펴봐요.':'후보 수를 찾아보세요.');
   P.stage={s:P.s,last:null}; P.render();
   if(z.pre) P.timer=setTimeout(()=>{
@@ -898,7 +894,6 @@ function puzzleMove(m){
   const mv=san(P.s,m); P.s=s2; P.last=m; P.played.push(m);
   if(finished){
     P.done=true; P.tone='ok';
-    const me=P.s0.turn; let t=P.s0; P.arrows=P.played.map(x=>{ const a={from:x.from,to:x.to,mine:t.turn===me}; t=make(t,x); return a; });
     const mate=isMate(P.s), r=materialOf(P.s0,P.played); P.mat={r,mate};
     if(P.src==='inf'){
       if(!P.failed){ record(true); celebrate(); }
@@ -1027,7 +1022,7 @@ document.addEventListener('keydown',e=>{
 
 // ---------- lessons ----------
 const L={sel:-1,hint:null,busy:false,done:false};
-const LESSON_ICON={rook:'♜',bishop:'♝',queen:'♛',knight:'♞',king:'♚',pawn:'♟\uFE0E',castle:'🏰',ep:'👻',promo:'👑',escape:'🏃',mates:'🤔',free:'🎁',kq:'👸',kr:'🗼'};
+const LESSON_ICON={rook:'♜',bishop:'♝',queen:'♛',knight:'♞',king:'♚',pawn:'♟\uFE0E',coords:'🔤',castle:'🏰',ep:'👻',promo:'👑',escape:'🏃',mates:'🤔',free:'🎁',kq:'👸',kr:'🗼'};
 function renderLessonList(){
   const done=store.get('lessons',{}); const box=$('lList'); box.innerHTML='';
   LESSON_GROUPS.forEach(([g,name])=>{
@@ -1044,9 +1039,10 @@ function renderLessonList(){
 function openLesson(les){ scrollTo(0,0); L.les=les; $('lPick').style.display='none'; $('lPlay').style.display=''; $('lTitle').textContent=les.title; $('lIntro').textContent=les.intro; loadStep(0); }
 const lstep=()=>L.les.steps[L.si];
 function loadStep(i){
-  const st=L.les.steps[i]; L.si=i; clearTimeout(L.timer);
-  Object.assign(L,{s:parseFEN(st.fen),sel:-1,last:null,hint:null,busy:false,done:false,stars:null,noCheck:false,mode:'',moves:0,tone:'',answered:false});
-  L.side=L.s.turn; L.flip=L.side==='b'; $('lQuiz').innerHTML='';
+  const st=L.les.steps[i]; L.si=i; clearTimeout(L.timer); if(L.cg) clearInterval(L.cg.iv);
+  Object.assign(L,{s:parseFEN(st.fen),sel:-1,last:null,hint:null,busy:false,done:false,stars:null,noCheck:false,mode:'',moves:0,tone:'',answered:false,
+    cg:null,onSquare:null,flash:null,noCoords:false,textHTML:''});
+  L.side=L.s.turn; L.flip=L.side==='b'; $('lQuiz').innerHTML=''; $('lQuiz').classList.remove('four');
   if(st.k==='stars'){
     L.stars=new Set(st.stars.map(sqIdx)); L.par=st.par??(st.par=starPar(st.fen,st.stars));
     L.text=`★을 모두 모으세요. 최소 ${L.par}수에 가능해요!`; L.msg=st.note||'기물을 클릭하면 갈 수 있는 칸이 점으로 보여요.';
@@ -1059,17 +1055,66 @@ function loadStep(i){
     L.mode='learn'; L.noCheck=true; L.text=(L.s.turn==='w'?'백':'흑')+' 차례예요. 지금 상황은?'; L.msg='';
     [['mate','체크메이트'],['stale','스테일메이트'],['play','둘 수 있음']].forEach(([k,n])=>{ const b=document.createElement('button'); b.className='btn'; b.textContent=n; b.onclick=()=>answerQuiz(k); $('lQuiz').appendChild(b); });
   } else if(st.k==='vsking'){ L.text=st.text; L.msg='수: 0'; }
+  else if(st.k==='coord'){ coordSetup(st); return; }
   L.render();
 }
 L.render=()=>{
   drawBoard($('lBoard'),L);
   const done=store.get('lessons',{});
   $('lDots').innerHTML=''; L.les.steps.forEach((x,i)=>{ const b=document.createElement('button'); b.textContent=i+1; b.className=(i<L.si||(i===L.si&&L.done)?'solved ':'')+(i===L.si?'cur':''); b.onclick=()=>loadStep(i); $('lDots').appendChild(b); });
-  $('lText').textContent=L.text; $('lMsg').textContent=L.msg; $('lMsg').className='msg '+(L.tone||'');
+  if(L.textHTML) $('lText').innerHTML=L.textHTML; else $('lText').textContent=L.text; $('lMsg').textContent=L.msg; $('lMsg').className='msg '+(L.tone||'');
   const last=L.si>=L.les.steps.length-1; const li=LESSONS.indexOf(L.les);
   $('lNext').textContent=last?(li<LESSONS.length-1?'다음 레슨 ▶':'목록으로'):'다음 ▶';
-  $('lHint').style.display=(lstep().k==='quiz')?'none':'';
+  const k=lstep().k; $('lHint').style.display=(k==='quiz'||(k==='coord'&&lstep().secs))?'none':'';
 };
+// ----- 좌표 찾기 게임 -----
+function coordSetup(st){
+  const best=store.get('coordbest',{})[L.les.id+'-'+L.si]||0;
+  Object.assign(L,{flip:st.side==='b',side:'-',noCoords:!!st.noCoords,onSquare:coordClick,cg:{n:0,miss:0,target:-1,left:st.secs||0,running:!st.secs,iv:null}});
+  const view=(st.side==='b'?'흑 쪽에서 보기 (판이 뒤집혀요)':'백 쪽에서 보기')+(st.noCoords?' · 좌표 글씨 없이!':'');
+  if(st.secs){
+    L.text=`${st.mode==='find'?'나오는 칸을 눌러요':'빛나는 칸의 이름을 골라요'} — ${st.secs}초 동안 몇 개? · ${view}`;
+    L.msg=best?`최고 기록: ${best}개`:'시작을 누르면 시간이 흘러요!';
+    const b=document.createElement('button'); b.className='btn primary'; b.textContent='▶ 시작'; b.onclick=coordStart; $('lQuiz').appendChild(b);
+    L.render();
+  } else { L.msg=`맞힘 0/${st.count} · ${view}`; coordNext(); }
+}
+function coordStart(){
+  const cg=L.cg,st=lstep(); cg.running=true; $('lQuiz').innerHTML='';
+  cg.iv=setInterval(()=>{ cg.left--; if(cg.left<=0) return coordEnd(); L.msg=`⏱ ${cg.left}초 · 맞힘 ${cg.n}`; $('lMsg').textContent=L.msg; },1000);
+  L.msg=`⏱ ${cg.left}초 · 맞힘 0`; coordNext();
+}
+function coordNext(){
+  const st=lstep(),cg=L.cg; let t; do t=Math.floor(Math.random()*64); while(t===cg.target); cg.target=t;
+  if(st.mode==='find'){ L.hint=null; L.textHTML=`<span class="cbig">${sqName(t)}</span> 칸을 눌러요!`; }
+  else{
+    L.hint=[t]; L.textHTML='빛나는 칸의 이름은?';
+    const near=[]; for(let i=0;i<64;i++) if(i!==t&&Math.abs((i&7)-(t&7))<=2&&Math.abs((i>>3)-(t>>3))<=2) near.push(i);
+    near.sort(()=>Math.random()-.5); const opts=[t,...near.slice(0,3)].sort(()=>Math.random()-.5);
+    $('lQuiz').innerHTML=''; $('lQuiz').classList.add('four'); opts.forEach(o=>{ const b=document.createElement('button'); b.className='btn'; b.style.fontFamily='ui-monospace,Menlo,monospace'; b.style.fontSize='20px';
+      b.textContent=sqName(o); b.onclick=()=>{ if(!L.busy&&cg.running&&!L.done) coordAnswer(o===t,o); }; $('lQuiz').appendChild(b); });
+  }
+  L.render();
+}
+function coordClick(sq){ if(L.cg.running&&lstep().mode==='find') coordAnswer(sq===L.cg.target,sq); }
+function coordAnswer(ok,picked){
+  const st=lstep(),cg=L.cg;
+  if(ok){ cg.n++; L.flash={sq:cg.target,cls:'good'}; }
+  else{ cg.miss++; L.flash={sq:st.mode==='find'?picked:cg.target,cls:'bad'}; L.hint=[cg.target]; }
+  const wrong=ok?'':` · ❌ 정답은 ${sqName(cg.target)}`+(st.mode==='find'?` (누른 칸: ${sqName(picked)})`:'');
+  L.msg=(st.secs?`⏱ ${cg.left}초 · 맞힘 ${cg.n}`:`맞힘 ${cg.n}/${st.count}`)+wrong; L.tone=ok?'':'bad';
+  L.busy=true; L.render();
+  L.timer=setTimeout(()=>{ L.busy=false; L.flash=null; L.tone='';
+    if(!st.secs&&cg.n>=st.count){ cg.running=false; L.hint=null; L.textHTML=''; L.text='다 찾았어요!'; return stepDone(`🎉 ${st.count}개를 모두 찾았어요!`+(cg.miss?` (틀림 ${cg.miss}번)`:' 하나도 안 틀렸어요!')); }
+    if(cg.running) coordNext(); else L.render(); },ok?250:900);
+}
+function coordEnd(){
+  const cg=L.cg,st=lstep(); clearInterval(cg.iv); clearTimeout(L.timer); cg.running=false; L.hint=null; L.flash=null; L.busy=false;
+  $('lQuiz').innerHTML=''; $('lQuiz').classList.remove('four'); L.textHTML=''; L.text='⏰ 시간 끝!';
+  const key=L.les.id+'-'+L.si, bests=store.get('coordbest',{}), prev=bests[key]||0;
+  if(cg.n>prev){ bests[key]=cg.n; store.set('coordbest',bests); }
+  stepDone(`🏆 ${st.secs}초에 ${cg.n}개 맞혔어요!`+(cg.n>prev?(prev?` 🎉 새 최고 기록! (이전 ${prev}개)`:''):` (최고 ${prev}개)`)+(cg.miss?` · 틀림 ${cg.miss}번`:''));
+}
 function stepDone(msg){
   L.done=true; L.busy=false; L.msg=msg; L.tone='ok'; celebrate(L.si===L.les.steps.length-1?40:14);
   if(L.si===L.les.steps.length-1){ const d=store.get('lessons',{}); d[L.les.id]=true; store.set('lessons',d); L.msg+=' 🎉 레슨 완료!'; }
@@ -1130,6 +1175,8 @@ $('lHint').onclick=()=>{
   else if(st.k==='move'){ m=st.accept==='mate'?legal(L.s).find(x=>isMate(make(L.s,x))):findMove(L.s,st.accept[0]); L.msg='💡 '+(st.hint||'빛나는 칸을 보세요.'); }
   else if(st.k==='escape'){ L.msg='💡 피하기 → 막기 → 잡기 순서로 확인해 보세요. 킹을 클릭하면 피할 칸이 있는지 보여요.'; }
   else if(st.k==='vsking'){ L.msg='💡 '+L.les.intro.split('요령: ')[1]; }
+  else if(st.k==='coord'&&L.cg&&L.cg.target>=0){ const t=L.cg.target,f=t&7,r=t>>3;
+    L.hint=[...Array(8).keys()].flatMap(i=>[r*8+i,i*8+f]); L.msg=`💡 ${FILES[f]} 세로줄과 ${8-r} 가로줄이 만나는 칸이에요.`; }
   if(m) L.hint=[m.from,m.to]; L.tone=''; L.render();
 };
 $('lReset').onclick=()=>loadStep(L.si);
@@ -1137,7 +1184,7 @@ $('lNext').onclick=()=>{
   if(L.si<L.les.steps.length-1) return loadStep(L.si+1);
   const li=LESSONS.indexOf(L.les); if(li<LESSONS.length-1) openLesson(LESSONS[li+1]); else $('lBack').click();
 };
-$('lBack').onclick=()=>{ clearTimeout(L.timer); $('lPlay').style.display='none'; $('lPick').style.display=''; renderLessonList(); };
+$('lBack').onclick=()=>{ clearTimeout(L.timer); if(L.cg) clearInterval(L.cg.iv); $('lPlay').style.display='none'; $('lPick').style.display=''; renderLessonList(); };
 
 // ----- 프로필 고르기 화면 -----
 let newEmoji=PROF_EMOJI[0];
