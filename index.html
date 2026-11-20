@@ -429,6 +429,49 @@ function san(s,m){
   return str;
 }
 
+// ----- 기물 점수 계산 (퍼즐 해설용) -----
+const VAL={p:1,n:3,b:3,r:5,q:9,k:100};
+const PNAME={p:'폰',n:'나이트',b:'비숍',r:'룩',q:'퀸',k:'킹'};
+// 교환 계산(SEE): 차례인 쪽이 sq에서 가장 싼 기물부터 잡아 나갈 때 얻는 최선의 이득(0 이상)
+function see(s,sq){
+  if(!s.b[sq]) return 0;
+  const caps=legal(s).filter(m=>m.to===sq); if(!caps.length) return 0;
+  caps.sort((a,b)=>VAL[s.b[a.from].toLowerCase()]-VAL[s.b[b.from].toLowerCase()]);
+  const m=caps[0], gain=VAL[s.b[sq].toLowerCase()]+(m.promo?VAL[m.promo]-1:0);
+  return Math.max(0,gain-see(make(s,m),sq));
+}
+function lineMaterial(fen,pre,line){
+  let s=parseFEN(fen); if(pre) s=make(s,findMove(s,pre));
+  const me=s.turn,gained=[],lost=[]; let promo=0,last=null;
+  for(const u of line){ const m=findMove(s,u); if(!m) break;
+    const cap=m.ep?'p':(s.b[m.to]?s.b[m.to].toLowerCase():null), mine=s.turn===me;
+    if(cap) (mine?gained:lost).push(cap);
+    if(m.promo) promo+=(mine?1:-1)*(VAL[m.promo]-1);
+    s=make(s,m); last=m; }
+  const back=(last&&s.turn!==me)?see(s,last.to):0;
+  const sum=a=>a.reduce((x,p)=>x+VAL[p],0);
+  return {gained,lost,promo,back,net:sum(gained)-sum(lost)+promo-back};
+}
+function materialText(r){
+  const nm=a=>a.map(p=>`${PNAME[p]}(${VAL[p]})`).join('+'), parts=[];
+  if(r.gained.length) parts.push('얻은 기물 '+nm(r.gained));
+  if(r.lost.length) parts.push('내준 기물 '+nm(r.lost));
+  if(r.promo>0) parts.push(`폰 승진 +${r.promo}`);
+  if(r.back>0) parts.push(`상대가 되잡으면 −${r.back}`);
+  if(r.net>0) return `💰 기물 계산: ${parts.join(' · ')} → 결과 +${r.net}점 이득!`;
+  return `💡 기물 점수는 ${r.net===0?'비슷하지만':'조금 손해지만'}${parts.length?' ('+parts.join(' · ')+')':''}, 상대의 위협을 막거나 훨씬 좋은 자리를 차지하는 수예요.`;
+}
+const hasJong=w=>{const c=w.charCodeAt(w.length-1)-0xAC00; return c>=0&&c<11172&&c%28!==0;};
+const josa=(w,a,b)=>w+(hasJong(w)?a:b);
+function wrongMoveText(s,m){
+  const s2=make(s,m), cap=m.ep?'p':(s.b[m.to]&&s.b[m.to].toLowerCase()), mover=s.b[m.from].toLowerCase(), back=see(s2,m.to);
+  if(cap){ const g=VAL[cap]-back;
+    if(g<0) return back===VAL[mover]?`${PNAME[cap]}(${VAL[cap]}점)${hasJong(PNAME[cap])?'을':'를'} 얻지만 되잡히면 ${PNAME[mover]}(${VAL[mover]}점)${hasJong(PNAME[mover])?'을':'를'} 잃어서 결국 ${-g}점 손해예요.`:`${josa(PNAME[cap],'을','를')} 잡아도 교환이 이어지면 결국 ${-g}점 손해예요.`;
+    if(g===0) return `${josa(PNAME[cap],'을','를')} 잡으면 되잡혀서 맞교환(0점)이에요. 더 이득인 수가 있어요.`;
+    return `${josa(PNAME[cap],'을','를')} 잡으면 +${g}점이지만, 더 크게 이득 보는 수가 있어요.`; }
+  if(back>0&&mover!=='k') return `그 칸에서는 ${josa(PNAME[mover],'이','가')} 잡혀서 ${back}점 손해예요.`;
+  return '더 이득이 큰 수가 있어요. 체크 → 잡기 → 위협 순으로 다시 찾아봐요.';
+}
 /*DATA*/
 const PUZZLES=[
   // ---- 1수 메이트 ----
@@ -715,10 +758,11 @@ function record(success){
   r.n++; r.last=now; r.ok=success; P.speedNote=schedule(r,success,P.secs,now); P.nextIv=r.iv;
   rec[lp.id]=r; store.set('pzrec',rec);
   if(isNew){ // 점수는 처음 보는 문제로만 계산(외운 답으로 점수가 부풀지 않게)
-    const exp=1/(1+10**((lp.rating-rating)/400)), K=st.tried<20?48:24;
-    const nr=Math.max(100,Math.round(rating+K*((success?1:0)-exp))); P.delta=nr-rating; store.set('prating',nr);
+    // 맞히면 조금 오르고, 틀리면 크게(최소 60점) 깎아서 다음엔 확실히 쉬운 문제가 나오게
+    const exp=1/(1+10**((lp.rating-rating)/400)), K=st.tried<20?40:32;
+    const nr=Math.max(100,Math.round(success?rating+K*(1-exp):rating-Math.max(60,2.5*K*exp))); P.delta=nr-rating; store.set('prating',nr);
   } else P.delta=null;
-  st.tried++; if(success){ st.ok++; st.streak++; st.best=Math.max(st.best,st.streak); } else st.streak=0;
+  st.tried++; if(success){ st.ok++; st.streak++; st.best=Math.max(st.best,st.streak); st.fstreak=0; } else { st.streak=0; st.fstreak=(st.fstreak||0)+1; }
   store.set('pzstats',st);
 }
 P.hist=[];
@@ -734,9 +778,12 @@ function nextInf(){
     P.hist.push(true); return loadZ(toZ(cand[0],true));
   }
   P.hist.push(false);
-  if(P.level==='auto'){ const ur=store.get('prating',800); cand=cand.slice().sort((a,b)=>Math.abs(a.rating-ur)-Math.abs(b.rating-ur)).slice(0,25); }
+  P.eased=false;
+  if(P.level==='auto'){ // 연속으로 틀리면 내 점수보다 150점씩 더 쉬운 문제
+    const fs=Math.min(3,store.get('pzstats',{}).fstreak||0), ur=store.get('prating',800)-150*fs; P.eased=fs>0;
+    cand=cand.slice().sort((a,b)=>Math.abs(a.rating-ur)-Math.abs(b.rating-ur)).slice(0,fs?12:25); }
   else{ const [lo,hi]={easy:[0,1000],mid:[1000,1300],hard:[1300,9999]}[P.level]; const c2=cand.filter(p=>p.rating>=lo&&p.rating<hi); if(c2.length) cand=c2; }
-  loadZ(toZ(cand[Math.floor(Math.random()*cand.length)],false));
+  const eased=P.eased; loadZ(toZ(cand[Math.floor(Math.random()*cand.length)],false)); P.z.eased=eased; P.render();
 }
 function segButtons(el,items,cur,fn,cls){
   el.innerHTML=''; if(cls) el.className='seg '+cls;
@@ -753,8 +800,8 @@ P.render=()=>{
     const {dueNow,dueToday,learning,longterm,rating,st}=infStats();
     $('pStats').innerHTML=`내 퍼즐 점수 <b>${rating}</b>${P.delta!=null?` (${P.delta>=0?'+':''}${P.delta})`:''} · 정답 <b>${st.ok}</b>/${st.tried}${st.tried?` (${Math.round(st.ok/st.tried*100)}%)`:''} · 연속 정답 <b>${st.streak}</b> (최고 ${st.best})<br>🔁 복습: 지금 <b>${dueNow}</b>개 · 오늘 안에 ${dueToday}개 · 익히는 중 ${learning} · 장기 기억 <b>${longterm}</b> (간격 3주 이상)`;
     const theme=(P.icat==='mix'&&!P.done)?'테마는 비밀!':LPZ_NAME[z.lp.cat];
-    $('pTitle').textContent=(z.review?'🔁 복습 · ':'')+theme+` · 난이도 ${z.lp.rating}`;
-    $('pGoal').textContent=P.icat==='mix'?'가장 좋은 수를 찾으세요. 메이트일 수도, 기물을 따내는 수일 수도 있어요.':z.type==='mate'?`${z.n}수 만에 체크메이트하세요.`:'기물을 따내거나 큰 이득을 보는 수를 찾으세요.';
+    $('pTitle').textContent=(z.review?'🔁 복습 · ':z.eased?'🌱 쉬운 문제 · ':'')+theme+` · 난이도 ${z.lp.rating}`;
+    $('pGoal').textContent=P.icat==='mix'?'가장 좋은 수를 찾으세요. 체크메이트일 수도 있고, 교환이 끝났을 때 기물 점수가 가장 많이 남는 수일 수도 있어요. (폰1 · 나이트3 · 비숍3 · 룩5 · 퀸9)':z.type==='mate'?`${z.n}수 만에 체크메이트하세요.`:'교환이 다 끝났을 때 내 기물 점수가 가장 많이 남는 수를 찾으세요. 공짜로 잡기뿐 아니라, 싼 기물을 주고 비싼 기물을 얻는 것도 정답이에요. (폰1 · 나이트3 · 비숍3 · 룩5 · 퀸9)';
     $('pLink').innerHTML=P.done?`<a href="https://lichess.org/training/${z.lp.id}" target="_blank" rel="noopener">lichess에서 이 퍼즐 보기 ↗</a> · 퍼즐 출처: lichess.org (CC0)`:'';
     $('pNext').textContent=P.done?'다음 문제 ▶':'건너뛰기 ▶';
   } else {
@@ -796,7 +843,8 @@ function puzzleMove(m){
     if(isStalemate(s2)) why='앗, 스테일메이트! 상대가 둘 곳이 없으면 무승부예요.';
     else if(inCheck(s2,s2.turn)) why='체크는 맞지만 상대가 피할 방법이 있어요.';
     else if(z.type==='mate') why='메이트로 이어지지 않아요. 상대에게 피할 길이 남아요.';
-    if(P.src==='inf'&&!P.failed){ P.failed=true; record(false); why+=' (10분 뒤 다시 나오고, 맞히면 점점 드물게 나와요)'; }
+    else why=wrongMoveText(P.s,m);
+    if(P.src==='inf'&&!P.failed){ P.failed=true; record(false); why+=P.delta!=null?` (점수 ${P.delta} · 다음 문제는 더 쉬워져요 · 이 문제는 10분 뒤 다시)`:' (10분 뒤 다시 나와요)'; }
     P.s=s2; P.last=m; P.msg='❌ '+why+' 다시 해보세요.'; P.tone='bad'; P.busy=true; P.render(); shake($('pBoard'));
     P.timer=setTimeout(()=>{ P.s=P.stage.s; P.last=P.stage.last; P.busy=false; P.render(); },1100);
     return;
@@ -806,9 +854,10 @@ function puzzleMove(m){
     P.done=true; P.tone='ok';
     if(P.src==='inf'){
       if(!P.failed){ record(true); celebrate(); }
-      P.msg=(P.failed?'🏁 완료! ':'✅ 정답! ')+`수순: ${solutionSan()}`+(P.failed?' — 10분 뒤에 다시 만나요.':` · ⏱ ${P.secs}초 · 다음 복습: ${fmtIv(P.nextIv)} 후`+(!P.speedNote?'':P.secs<20?' (빨리 풀어서 간격을 더 늘렸어요)':P.secs>90?' (오래 걸려서 간격을 조금 줄였어요)':''));
+      const mat=z.type==='line'&&!isMate(P.s)?' '+materialText(lineMaterial(z.fen,z.pre,z.line)):'';
+      P.msg=(P.failed?'🏁 완료! ':'✅ 정답! ')+`수순: ${solutionSan()}.`+mat+(P.failed?' — 10분 뒤에 다시 만나요.':` · ⏱ ${P.secs}초 · 다음 복습: ${fmtIv(P.nextIv)} 후`+(!P.speedNote?'':P.secs<20?' (빨리 풀어서 간격을 더 늘렸어요)':P.secs>90?' (오래 걸려서 간격을 조금 줄였어요)':''));
     } else {
-      P.msg='✅ 정답! '+mv+' — '+z.explain;
+      P.msg='✅ 정답! '+mv+' — '+z.explain+(z.type==='line'?' '+materialText(lineMaterial(z.fen,z.pre,z.line)):'');
       const sv=store.get('solved',{}); sv[z.title]=true; store.set('solved',sv);
     }
     P.render(); return;
