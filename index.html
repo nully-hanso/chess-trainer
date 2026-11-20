@@ -235,7 +235,8 @@
   <section class="view" id="v-puzzle">
     <div class="play">
       <div class="boardcol">
-        <div class="bhead"><span class="turn" id="pTurn"></span><span class="ttl" id="pTitle"></span></div>
+        <div class="bhead"><span class="turn" id="pTurn"></span><span class="ttl" id="pTitle"></span><button class="btn small" id="pGoalBtn">🎯 목표 보기</button></div>
+        <div class="msg" id="pGoal" style="display:none;background:#fff8e1;box-shadow:0 3px 0 #f6e3a6;min-height:0;font-size:14px"></div>
         <div class="board" id="pBoard"></div>
         <div class="msg" id="pMsg"></div>
         <div class="actions">
@@ -246,7 +247,6 @@
         <div id="pLink"></div>
       </div>
       <div class="panel">
-        <div class="muted" id="pGoal" style="font-weight:700;color:var(--ink)"></div>
         <div class="seg" id="pSrc"></div>
         <div id="pBasic"><div class="seg" id="pCats"></div><div class="dots" id="pDots"></div></div>
         <div id="pInf" style="display:none">
@@ -718,7 +718,7 @@ function toZ(lp,review){
 function loadZ(z){
   clearTimeout(P.timer); P.z=z;
   const s0=parseFEN(z.fen), side=z.pre?other(s0.turn):s0.turn;
-  Object.assign(P,{s:s0,side,flip:side==='b',left:z.n||0,li:0,sel:-1,last:null,hint:null,hintLv:0,busy:!!z.pre,done:false,tone:'',failed:false,delta:null,t0:Date.now()});
+  Object.assign(P,{s:s0,side,flip:side==='b',left:z.n||0,li:0,sel:-1,last:null,hint:null,hintLv:0,busy:!!z.pre,done:false,tone:'',failed:false,delta:null,t0:Date.now(),showGoal:false});
   P.msg=z.pre?'상대가 둡니다…':(z.type==='mate'?'메이트할 수 있는 수를 찾아보세요. 체크 → 잡기 → 위협 순으로 후보를 살펴봐요.':'후보 수를 찾아보세요.');
   P.stage={s:P.s,last:null}; P.render();
   if(z.pre) P.timer=setTimeout(()=>{
@@ -813,6 +813,7 @@ P.render=()=>{
     $('pLink').innerHTML='';
     $('pNext').textContent=P.idx<list.length-1?'다음 ▶':'다음 단계 ▶';
   }
+  $('pGoal').style.display=P.showGoal?'':'none'; $('pGoalBtn').textContent=P.showGoal?'🎯 숨기기':'🎯 목표 보기';
   $('pTurn').textContent=P.side==='w'?'백 차례':'흑 차례'; $('pTurn').className='turn '+P.side;
   $('pMsg').textContent=P.msg; $('pMsg').className='msg '+(P.tone||'');
 };
@@ -884,6 +885,7 @@ function puzzleHint(){
   P.tone=''; P.render();
 }
 $('pHint').onclick=puzzleHint;
+$('pGoalBtn').onclick=()=>{ P.showGoal=!P.showGoal; P.render(); };
 $('pReset').onclick=()=>loadZ(P.z);
 $('pNext').onclick=()=>{
   if(P.src==='inf') return nextInf();
