@@ -50,6 +50,17 @@
   /* board */
   .board{width:var(--bs);height:var(--bs);display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);border-radius:16px;overflow:hidden;
     border:5px solid #6d9a5b;box-shadow:0 6px 0 #557c45,0 12px 28px rgba(40,80,30,.25);user-select:none;-webkit-user-select:none;touch-action:manipulation}
+  .board{position:relative}
+  .arrows{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+  .matbox{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;background:#fff;border-radius:16px;padding:6px 12px;box-shadow:0 3px 0 var(--line);animation:pop .25s}
+  .matgrp{display:flex;align-items:center;gap:4px}
+  .matgrp .ml{font-size:12px;font-weight:800;color:var(--muted)}
+  .matgrp .pcs{display:flex}
+  .matgrp .pcs .pc{font-size:32px;line-height:1}
+  .matgrp b{font-size:20px;font-weight:900}
+  .matgrp.plus b{color:var(--ok)} .matgrp.minus b{color:var(--warn)}
+  .mattotal{margin-left:auto;font-size:24px;font-weight:900;padding:2px 14px;border-radius:99px;color:#fff;background:var(--muted)}
+  .mattotal.win{background:var(--ok)} .mattotal.lose{background:var(--warn)}
   .sq{position:relative;min-width:0;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer}
   .sq.light{background:var(--light)}.sq.dark{background:var(--dark)}
   .sq.last::before{content:"";position:absolute;inset:0;background:rgba(255,220,60,.5)}
@@ -238,6 +249,7 @@
         <div class="bhead"><span class="turn" id="pTurn"></span><span class="ttl" id="pTitle"></span><button class="btn small" id="pGoalBtn">🎯 목표 보기</button></div>
         <div class="msg" id="pGoal" style="display:none;background:#fff8e1;box-shadow:0 3px 0 #f6e3a6;min-height:0;font-size:14px"></div>
         <div class="board" id="pBoard"></div>
+        <div id="pMat"></div>
         <div class="msg" id="pMsg"></div>
         <div class="actions">
           <button class="btn" id="pHint">💡 힌트</button>
@@ -440,17 +452,21 @@ function see(s,sq){
   const m=caps[0], gain=VAL[s.b[sq].toLowerCase()]+(m.promo?VAL[m.promo]-1:0);
   return Math.max(0,gain-see(make(s,m),sq));
 }
-function lineMaterial(fen,pre,line){
-  let s=parseFEN(fen); if(pre) s=make(s,findMove(s,pre));
-  const me=s.turn,gained=[],lost=[]; let promo=0,last=null;
-  for(const u of line){ const m=findMove(s,u); if(!m) break;
+function materialOf(s0,moves){
+  let s=s0,last=null,promo=0; const me=s0.turn,gained=[],lost=[];
+  for(const m of moves){
     const cap=m.ep?'p':(s.b[m.to]?s.b[m.to].toLowerCase():null), mine=s.turn===me;
     if(cap) (mine?gained:lost).push(cap);
     if(m.promo) promo+=(mine?1:-1)*(VAL[m.promo]-1);
     s=make(s,m); last=m; }
-  const back=(last&&s.turn!==me)?see(s,last.to):0;
+  const back=(last&&s.turn!==me)?see(s,last.to):0, backPiece=back>0?s.b[last.to].toLowerCase():null;
   const sum=a=>a.reduce((x,p)=>x+VAL[p],0);
-  return {gained,lost,promo,back,net:sum(gained)-sum(lost)+promo-back};
+  return {gained,lost,promo,back,backPiece,me,net:sum(gained)-sum(lost)+promo-back};
+}
+function lineMaterial(fen,pre,line){
+  let s=parseFEN(fen); if(pre) s=make(s,findMove(s,pre));
+  const s0=s,ms=[]; for(const u of line){ const m=findMove(s,u); if(!m) break; ms.push(m); s=make(s,m); }
+  return materialOf(s0,ms);
 }
 function materialText(r){
   const nm=a=>a.map(p=>`${PNAME[p]}(${VAL[p]})`).join('+'), parts=[];
@@ -667,6 +683,33 @@ function drawBoard(el,ctx){
     d.onclick=()=>boardClick(ctx,sq);
     el.appendChild(d);
   }
+  if(ctx.arrows) el.insertAdjacentHTML('beforeend',arrowsSVG(ctx.arrows,ctx.flip));
+}
+// 수순 화살표: 내 수는 주황, 상대 수는 파랑, 순서 번호 표시
+function arrowsSVG(arrows,flip){
+  const pt=sq=>[((flip?7-(sq&7):sq&7))+.5,((flip?7-(sq>>3):sq>>3))+.5];
+  let body='';
+  arrows.forEach((a,i)=>{
+    const col=a.mine?'#ff6a2b':'#3d7bff', [x1,y1]=pt(a.from), [x2,y2]=pt(a.to);
+    const dx=x2-x1, dy=y2-y1, knight=(Math.abs(dx)===1&&Math.abs(dy)===2)||(Math.abs(dx)===2&&Math.abs(dy)===1);
+    const [cx,cy]=knight?(Math.abs(dx)===2?[x2,y1]:[x1,y2]):[x1,y1];
+    const lx=x2-cx, ly=y2-cy, L=Math.hypot(lx,ly)||1, ex=x2-lx/L*.22, ey=y2-ly/L*.22;
+    body+=`<path d="M${x1} ${y1}${knight?` L${cx} ${cy}`:''} L${ex} ${ey}" stroke="${col}" stroke-width=".17" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".8" marker-end="url(#ah${a.mine?'m':'o'})"/>`;
+    body+=`<circle cx="${x1}" cy="${y1}" r=".2" fill="${col}" stroke="#fff" stroke-width=".04"/><text x="${x1}" y="${y1+.09}" text-anchor="middle" font-size=".26" font-weight="800" fill="#fff" font-family="sans-serif">${i+1}</text>`;
+  });
+  const mk=(id,c)=>`<marker id="${id}" viewBox="0 0 10 10" refX="2" refY="5" markerWidth="2.3" markerHeight="2.3" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="${c}"/></marker>`;
+  return `<svg class="arrows" viewBox="0 0 8 8" aria-hidden="true"><defs>${mk('ahm','#ff6a2b')}${mk('aho','#3d7bff')}</defs>${body}</svg>`;
+}
+// 기물 계산 판: 얻은/내준 기물을 그림으로 크게
+function matBoxHTML(r,mate){
+  if(mate) return `<div class="matbox"><span class="mattotal win">👑 체크메이트 승리!</span></div>`;
+  const opp=r.me==='w'?'b':'w', g=p=>`<span class="pc ${p.c}">${GLYPH[p.t]}</span>`;
+  const grp=(label,list,c,sign,cls)=>list.length?`<div class="matgrp ${cls}"><span class="ml">${label}</span><span class="pcs">${list.map(t=>g({t,c})).join('')}</span><b>${sign}${list.reduce((x,t)=>x+VAL[t],0)}</b></div>`:'';
+  let h=grp('얻음',r.gained,opp,'+','plus')+grp('줌',r.lost,r.me,'−','minus');
+  if(r.promo>0) h+=`<div class="matgrp plus"><span class="ml">승진</span><span class="pcs">${g({t:'q',c:r.me})}</span><b>+${r.promo}</b></div>`;
+  if(r.back>0) h+=`<div class="matgrp minus"><span class="ml">되잡힘</span><span class="pcs">${g({t:r.backPiece,c:r.me})}</span><b>−${r.back}</b></div>`;
+  const tc=r.net>0?'win':r.net<0?'lose':'even';
+  return `<div class="matbox">${h||'<span class="ml">잡은 기물 없음</span>'}<span class="mattotal ${tc}">${r.net>0?'+':''}${r.net}점</span></div>`;
 }
 function boardClick(ctx,sq){
   if(ctx.busy||ctx.done||ctx.mode==='learn'||ctx.s.turn!==ctx.side) return;
@@ -718,11 +761,11 @@ function toZ(lp,review){
 function loadZ(z){
   clearTimeout(P.timer); P.z=z;
   const s0=parseFEN(z.fen), side=z.pre?other(s0.turn):s0.turn;
-  Object.assign(P,{s:s0,side,flip:side==='b',left:z.n||0,li:0,sel:-1,last:null,hint:null,hintLv:0,busy:!!z.pre,done:false,tone:'',failed:false,delta:null,t0:Date.now(),showGoal:false});
+  Object.assign(P,{s:s0,side,flip:side==='b',left:z.n||0,li:0,sel:-1,last:null,hint:null,hintLv:0,busy:!!z.pre,done:false,tone:'',failed:false,delta:null,t0:Date.now(),showGoal:false,played:[],arrows:null,mat:null,s0:s0});
   P.msg=z.pre?'상대가 둡니다…':(z.type==='mate'?'메이트할 수 있는 수를 찾아보세요. 체크 → 잡기 → 위협 순으로 후보를 살펴봐요.':'후보 수를 찾아보세요.');
   P.stage={s:P.s,last:null}; P.render();
   if(z.pre) P.timer=setTimeout(()=>{
-    const m=findMove(P.s,z.pre); P.s=make(P.s,m); P.last=m; P.stage={s:P.s,last:m}; P.busy=false; P.t0=Date.now();
+    const m=findMove(P.s,z.pre); P.s=make(P.s,m); P.last=m; P.stage={s:P.s,last:m}; P.busy=false; P.t0=Date.now(); P.s0=P.s;
     P.msg=`상대가 ${san(s0,m)}를 뒀어요. 이제 당신 차례! 체크 → 잡기 → 위협 순으로 후보를 찾아보세요.`; P.render();
   },800);
 }
@@ -816,10 +859,12 @@ P.render=()=>{
   $('pGoal').style.display=P.showGoal?'':'none'; $('pGoalBtn').textContent=P.showGoal?'🎯 숨기기':'🎯 목표 보기';
   $('pTurn').textContent=P.side==='w'?'백 차례':'흑 차례'; $('pTurn').className='turn '+P.side;
   $('pMsg').textContent=P.msg; $('pMsg').className='msg '+(P.tone||'');
+  $('pMat').innerHTML=P.done&&P.mat?matBoxHTML(P.mat.r,P.mat.mate):'';
 };
 function setSrc(k){ P.src=k; savePrefs(); if(k==='inf') nextInf(); else loadPuzzle(P.idx); }
 function selectCat(k){ P.src='basic'; savePrefs(); P.cat=k; loadPuzzle(0); }
 function loadPuzzle(i){ P.idx=i; loadZ(PUZZLES.filter(x=>x.cat===P.cat)[i]); }
+function playedSan(){ let t=P.s0; return P.played.map(m=>{ const x=san(t,m); t=make(t,m); return x; }).join(' '); }
 function solutionSan(){
   const z=P.z; let s=parseFEN(z.fen); if(z.pre) s=make(s,findMove(s,z.pre)); const out=[];
   for(const u of z.line){ const m=findMove(s,u); if(!m) break; out.push(san(s,m)); s=make(s,m); }
@@ -850,22 +895,24 @@ function puzzleMove(m){
     P.timer=setTimeout(()=>{ P.s=P.stage.s; P.last=P.stage.last; P.busy=false; P.render(); },1100);
     return;
   }
-  const mv=san(P.s,m); P.s=s2; P.last=m;
+  const mv=san(P.s,m); P.s=s2; P.last=m; P.played.push(m);
   if(finished){
     P.done=true; P.tone='ok';
+    const me=P.s0.turn; let t=P.s0; P.arrows=P.played.map(x=>{ const a={from:x.from,to:x.to,mine:t.turn===me}; t=make(t,x); return a; });
+    const mate=isMate(P.s), r=materialOf(P.s0,P.played); P.mat={r,mate};
     if(P.src==='inf'){
       if(!P.failed){ record(true); celebrate(); }
-      const mat=z.type==='line'&&!isMate(P.s)?' '+materialText(lineMaterial(z.fen,z.pre,z.line)):'';
-      P.msg=(P.failed?'🏁 완료! ':'✅ 정답! ')+`수순: ${solutionSan()}.`+mat+(P.failed?' — 10분 뒤에 다시 만나요.':` · ⏱ ${P.secs}초 · 다음 복습: ${fmtIv(P.nextIv)} 후`+(!P.speedNote?'':P.secs<20?' (빨리 풀어서 간격을 더 늘렸어요)':P.secs>90?' (오래 걸려서 간격을 조금 줄였어요)':''));
+      const mat=!mate&&r.net<=0?' '+materialText(r):'';
+      P.msg=(P.failed?'🏁 완료! ':'✅ 정답! ')+`수순: ${playedSan()}`+mat+(P.failed?' — 10분 뒤에 다시 만나요.':` · ⏱ ${P.secs}초 · 다음 복습: ${fmtIv(P.nextIv)} 후`+(!P.speedNote?'':P.secs<20?' (빨리 풀어서 간격을 더 늘렸어요)':P.secs>90?' (오래 걸려서 간격을 조금 줄였어요)':''));
     } else {
-      P.msg='✅ 정답! '+mv+' — '+z.explain+(z.type==='line'?' '+materialText(lineMaterial(z.fen,z.pre,z.line)):'');
+      P.msg='✅ 정답! '+mv+' — '+z.explain;
       const sv=store.get('solved',{}); sv[z.title]=true; store.set('solved',sv);
     }
     P.render(); return;
   }
   P.msg='👍 '+mv+' 좋아요! 상대의 응수를 보세요…'; P.tone='ok'; P.busy=true; P.render();
   P.timer=setTimeout(()=>{
-    const rs=san(P.s,reply); P.s=make(P.s,reply); P.last=reply; P.left--; P.busy=false;
+    const rs=san(P.s,reply); P.s=make(P.s,reply); P.last=reply; P.played.push(reply); P.left--; P.busy=false;
     P.stage={s:P.s,last:reply}; P.msg=`상대는 ${rs}. 계속해서 가장 좋은 수를!`; P.tone=''; P.render();
   },800);
 }
