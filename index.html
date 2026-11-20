@@ -547,7 +547,7 @@ const LPZ_CATS=[['mix','🎲 섞어서'],['mate1','1수 메이트'],['mate2','2�
 const LPZ_NAME=Object.fromEntries(LPZ_CATS);
 const LPZ=LPZ_RAW.split('\n').map(l=>{ const [cat,id,fen,moves,r]=l.split('|'); return {cat,id,fen,moves:moves.split(' '),rating:+r}; });
 const LEVELS=[['auto','🎯 내 점수에 맞춤'],['easy','입문 ~1000'],['mid','초급 1000~1300'],['hard','중급 1300~']];
-const DAY=864e5, REVIEW_DAYS=[0,1,3,7];
+const DAY=864e5, RELEARN_MS=10*60e3;
 const prefs=store.get('pzprefs',{src:'inf',icat:'mix',level:'auto'});
 const P={src:prefs.src,cat:'m1',idx:0,icat:prefs.icat,level:prefs.level,sel:-1,hint:null,busy:false,done:false};
 const pz=()=>P.z;
@@ -560,37 +560,65 @@ function toZ(lp,review){
 function loadZ(z){
   clearTimeout(P.timer); P.z=z;
   const s0=parseFEN(z.fen), side=z.pre?other(s0.turn):s0.turn;
-  Object.assign(P,{s:s0,side,flip:side==='b',left:z.n||0,li:0,sel:-1,last:null,hint:null,hintLv:0,busy:!!z.pre,done:false,tone:'',failed:false,delta:null});
+  Object.assign(P,{s:s0,side,flip:side==='b',left:z.n||0,li:0,sel:-1,last:null,hint:null,hintLv:0,busy:!!z.pre,done:false,tone:'',failed:false,delta:null,t0:Date.now()});
   P.msg=z.pre?'상대가 둡니다…':(z.type==='mate'?'메이트할 수 있는 수를 찾아보세요. 체크 → 잡기 → 위협 순으로 후보를 살펴봐요.':'후보 수를 찾아보세요.');
   P.stage={s:P.s,last:null}; P.render();
   if(z.pre) P.timer=setTimeout(()=>{
-    const m=findMove(P.s,z.pre); P.s=make(P.s,m); P.last=m; P.stage={s:P.s,last:m}; P.busy=false;
+    const m=findMove(P.s,z.pre); P.s=make(P.s,m); P.last=m; P.stage={s:P.s,last:m}; P.busy=false; P.t0=Date.now();
     P.msg=`상대가 ${san(s0,m)}를 뒀어요. 이제 당신 차례! 체크 → 잡기 → 위협 순으로 후보를 찾아보세요.`; P.render();
   },800);
 }
+// 망각곡선(SM-2 간소화): 기억할수록 복습 간격이 길어지고, 틀리면 짧게 다시 시작
+function loadRec(){
+  const rec=store.get('pzrec',{});
+  for(const k in rec){ const r=rec[k]; if(r.ease==null){ // 이전 버전 기록 변환
+    r.ease=2.5; r.lapses=r.ok?0:1;
+    if(r.due){ r.iv=0; } else { r.iv=2; r.due=(r.last||Date.now())+2*DAY; } } }
+  return rec;
+}
 function infStats(){
-  const rec=store.get('pzrec',{}),now=Date.now(); let dueNow=0,dueLater=0;
-  for(const k in rec){ const d=rec[k].due; if(d){ if(d<=now) dueNow++; else dueLater++; } }
-  return {rec,dueNow,dueLater,rating:store.get('prating',800),st:store.get('pzstats',{tried:0,ok:0,streak:0,best:0})};
+  const rec=loadRec(),now=Date.now(),eod=new Date().setHours(23,59,59,999);
+  let dueNow=0,dueToday=0,learning=0,longterm=0;
+  for(const k in rec){ const r=rec[k]; if(r.due<=now) dueNow++; else if(r.due<=eod) dueToday++; if(r.iv>=21) longterm++; else learning++; }
+  return {rec,dueNow,dueToday,learning,longterm,rating:store.get('prating',800),st:store.get('pzstats',{tried:0,ok:0,streak:0,best:0})};
+}
+const fmtIv=d=>d<1?'10분':d<30?`${Math.round(d)}일`:`약 ${Math.round(d/30)}개월`;
+function schedule(r,success,secs,now){
+  const fast=secs<20, slow=secs>90;
+  if(!success){ r.lapses=(r.lapses||0)+1; r.ease=Math.max(1.3,r.ease-0.2); r.iv=0; r.due=now+RELEARN_MS; return false; }
+  const relearn=!r.iv&&r.lapses;
+  if(!r.iv) r.iv=r.lapses?1:(fast?4:slow?1:2);
+  else{ r.iv=Math.min(180,Math.round(r.iv*r.ease*(fast?1.3:slow?0.8:1)*10)/10); r.ease=Math.min(3,Math.max(1.3,r.ease+(fast?0.1:slow?-0.15:0))); }
+  r.due=now+r.iv*DAY;
+  return !relearn&&(fast||slow);
 }
 function record(success){
   if(P.src!=='inf'||P.z.recorded) return; P.z.recorded=true;
-  const lp=P.z.lp,now=Date.now(),{rec,rating,st}=infStats(); const r=rec[lp.id]||{n:0,box:0};
-  r.n++; r.last=now; r.ok=success;
-  if(success){ if(P.z.review){ r.box++; r.due=r.box>=REVIEW_DAYS.length?null:now+REVIEW_DAYS[r.box]*DAY; } else { r.box=0; r.due=null; } }
-  else { r.box=1; r.due=now+DAY; }
+  const lp=P.z.lp,now=Date.now(),{rec,rating,st}=infStats();
+  const isNew=!rec[lp.id], r=rec[lp.id]||{n:0,ease:2.5,iv:0,lapses:0};
+  P.secs=Math.round((now-P.t0)/1000);
+  r.n++; r.last=now; r.ok=success; P.speedNote=schedule(r,success,P.secs,now); P.nextIv=r.iv;
   rec[lp.id]=r; store.set('pzrec',rec);
-  const exp=1/(1+10**((lp.rating-rating)/400)), K=st.tried<20?48:24;
-  const nr=Math.max(100,Math.round(rating+K*((success?1:0)-exp))); P.delta=nr-rating; store.set('prating',nr);
+  if(isNew){ // 점수는 처음 보는 문제로만 계산(외운 답으로 점수가 부풀지 않게)
+    const exp=1/(1+10**((lp.rating-rating)/400)), K=st.tried<20?48:24;
+    const nr=Math.max(100,Math.round(rating+K*((success?1:0)-exp))); P.delta=nr-rating; store.set('prating',nr);
+  } else P.delta=null;
   st.tried++; if(success){ st.ok++; st.streak++; st.best=Math.max(st.best,st.streak); } else st.streak=0;
   store.set('pzstats',st);
 }
+P.hist=[];
 function nextInf(){
-  const {rec}=infStats(),now=Date.now();
-  const pool=LPZ.filter(p=>P.icat==='mix'||p.cat===P.icat);
-  const due=pool.filter(p=>rec[p.id]&&rec[p.id].due&&rec[p.id].due<=now).sort((a,b)=>rec[a.id].due-rec[b.id].due);
-  if(due.length) return loadZ(toZ(due[0],true));
-  let cand=pool.filter(p=>!rec[p.id]); if(!cand.length) cand=pool;
+  const {rec}=infStats(),now=Date.now(),cur=P.z&&P.z.lp?P.z.lp.id:null;
+  const pool=LPZ.filter(p=>(P.icat==='mix'||p.cat===P.icat)&&p.id!==cur);
+  const due=pool.filter(p=>rec[p.id]&&rec[p.id].due<=now).sort((a,b)=>rec[a.id].due-rec[b.id].due);
+  let cand=pool.filter(p=>!rec[p.id]);
+  const reviewStreak=P.hist.slice(-3).every(x=>x)&&P.hist.length>=3;
+  if(due.length&&!(reviewStreak&&cand.length)){ P.hist.push(true); return loadZ(toZ(due[0],true)); }
+  if(!cand.length){ // 새 문제를 다 풀었으면 가장 빨리 돌아올 문제부터
+    cand=pool.slice().sort((a,b)=>(rec[a.id]?.due||0)-(rec[b.id]?.due||0)).slice(0,1);
+    P.hist.push(true); return loadZ(toZ(cand[0],true));
+  }
+  P.hist.push(false);
   if(P.level==='auto'){ const ur=store.get('prating',800); cand=cand.slice().sort((a,b)=>Math.abs(a.rating-ur)-Math.abs(b.rating-ur)).slice(0,25); }
   else{ const [lo,hi]={easy:[0,1000],mid:[1000,1300],hard:[1300,9999]}[P.level]; const c2=cand.filter(p=>p.rating>=lo&&p.rating<hi); if(c2.length) cand=c2; }
   loadZ(toZ(cand[Math.floor(Math.random()*cand.length)],false));
@@ -607,8 +635,8 @@ P.render=()=>{
   if(inf){
     segButtons($('pThemes'),LPZ_CATS,P.icat,k=>{P.icat=k; savePrefs(); nextInf();},'small');
     segButtons($('pLevels'),LEVELS,P.level,k=>{P.level=k; savePrefs(); nextInf();},'small');
-    const {dueNow,dueLater,rating,st}=infStats();
-    $('pStats').innerHTML=`내 퍼즐 점수 <b>${rating}</b>${P.delta!=null?` (${P.delta>=0?'+':''}${P.delta})`:''} · 정답 <b>${st.ok}</b>/${st.tried}${st.tried?` (${Math.round(st.ok/st.tried*100)}%)`:''} · 연속 정답 <b>${st.streak}</b> (최고 ${st.best})<br>🔁 복습 대기: 지금 <b>${dueNow}</b>개 · 나중에 ${dueLater}개`;
+    const {dueNow,dueToday,learning,longterm,rating,st}=infStats();
+    $('pStats').innerHTML=`내 퍼즐 점수 <b>${rating}</b>${P.delta!=null?` (${P.delta>=0?'+':''}${P.delta})`:''} · 정답 <b>${st.ok}</b>/${st.tried}${st.tried?` (${Math.round(st.ok/st.tried*100)}%)`:''} · 연속 정답 <b>${st.streak}</b> (최고 ${st.best})<br>🔁 복습: 지금 <b>${dueNow}</b>개 · 오늘 안에 ${dueToday}개 · 익히는 중 ${learning} · 장기 기억 <b>${longterm}</b> (간격 3주 이상)`;
     const theme=(P.icat==='mix'&&!P.done)?'테마는 비밀!':LPZ_NAME[z.lp.cat];
     $('pTitle').textContent=(z.review?'🔁 복습 · ':'')+theme+` · 난이도 ${z.lp.rating}`;
     $('pGoal').textContent=P.icat==='mix'?'가장 좋은 수를 찾으세요. 메이트일 수도, 기물을 따내는 수일 수도 있어요.':z.type==='mate'?`${z.n}수 만에 체크메이트하세요.`:'기물을 따내거나 큰 이득을 보는 수를 찾으세요.';
@@ -653,7 +681,7 @@ function puzzleMove(m){
     if(isStalemate(s2)) why='앗, 스테일메이트! 상대가 둘 곳이 없으면 무승부예요.';
     else if(inCheck(s2,s2.turn)) why='체크는 맞지만 상대가 피할 방법이 있어요.';
     else if(z.type==='mate') why='메이트로 이어지지 않아요. 상대에게 피할 길이 남아요.';
-    if(P.src==='inf'&&!P.failed){ P.failed=true; record(false); why+=' (이 문제는 내일 복습에 나와요)'; }
+    if(P.src==='inf'&&!P.failed){ P.failed=true; record(false); why+=' (10분 뒤 다시 나오고, 맞히면 점점 드물게 나와요)'; }
     P.s=s2; P.last=m; P.msg='❌ '+why+' 다시 해보세요.'; P.tone='bad'; P.busy=true; P.render(); shake($('pBoard'));
     P.timer=setTimeout(()=>{ P.s=P.stage.s; P.last=P.stage.last; P.busy=false; P.render(); },1100);
     return;
@@ -663,7 +691,7 @@ function puzzleMove(m){
     P.done=true; P.tone='ok';
     if(P.src==='inf'){
       if(!P.failed) record(true);
-      P.msg=(P.failed?'🏁 완료! ':'✅ 정답! ')+`수순: ${solutionSan()}`+(P.failed?' — 실수가 있었으니 내일 다시 만나요.':(P.z.review?' — 복습 성공! 다음 복습 간격이 늘어나요.':''));
+      P.msg=(P.failed?'🏁 완료! ':'✅ 정답! ')+`수순: ${solutionSan()}`+(P.failed?' — 10분 뒤에 다시 만나요.':` · ⏱ ${P.secs}초 · 다음 복습: ${fmtIv(P.nextIv)} 후`+(!P.speedNote?'':P.secs<20?' (빨리 풀어서 간격을 더 늘렸어요)':P.secs>90?' (오래 걸려서 간격을 조금 줄였어요)':''));
     } else {
       P.msg='✅ 정답! '+mv+' — '+z.explain;
       const sv=store.get('solved',{}); sv[z.title]=true; store.set('solved',sv);
@@ -688,7 +716,7 @@ function puzzleHint(){
   if(P.src==='inf'&&!P.failed){ P.failed=true; record(false); }
   P.hintLv++;
   P.hint=P.hintLv>=2?[m.from,m.to]:[m.from];
-  P.msg=(P.hintLv>=2?'💡 파란 칸으로 옮겨 보세요.':'💡 빛나는 기물을 움직여 보세요. (한 번 더 누르면 도착 칸까지)'+(z.hint?' '+z.hint:''))+(P.src==='inf'?' 힌트를 쓴 문제는 내일 복습에 나와요.':'');
+  P.msg=(P.hintLv>=2?'💡 파란 칸으로 옮겨 보세요.':'💡 빛나는 기물을 움직여 보세요. (한 번 더 누르면 도착 칸까지)'+(z.hint?' '+z.hint:''))+(P.src==='inf'?' 힌트를 쓴 문제는 10분 뒤 다시 나와요.':'');
   P.tone=''; P.render();
 }
 $('pHint').onclick=puzzleHint;
