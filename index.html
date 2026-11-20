@@ -6,120 +6,199 @@
 <title>체스 첫걸음 — 초보자 트레이너</title>
 <style>
   :root{
-    --bg:#f6f3ee; --card:#fff; --ink:#2b2a28; --muted:#77736c; --line:#e4dfd6;
-    --accent:#3d6b4f; --accent2:#e9f1ec; --warn:#b4472f; --warn2:#fbece8;
-    --light:#efe3c8; --dark:#b28a62; --bs:min(92vw,460px);
+    --bg1:#e8f5ff; --bg2:#fff6e8; --card:#fff; --ink:#2d2a3e; --muted:#7a7590; --line:#ece6f5;
+    --accent:#ff7a3d; --accent-d:#e5602a; --accent2:#fff0e6;
+    --ok:#2fa968; --ok2:#e6f8ee; --warn:#e2453c; --warn2:#ffecea; --blue:#4a8cff;
+    --light:#fdf3dc; --dark:#8bbf73;
+    --bs:max(250px,min(94vw,540px,calc(100svh - 300px)));
   }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR",sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
-  header{padding:18px 20px 0;max-width:1040px;margin:0 auto}
-  h1{font-size:22px;margin:0 0 4px}
-  .sub{color:var(--muted);font-size:14px;margin:0 0 14px}
-  nav{display:flex;gap:6px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-  nav button{border:0;background:none;padding:10px 14px;font-size:15px;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;font-weight:600}
-  nav button.on{color:var(--accent);border-color:var(--accent)}
-  main{max-width:1040px;margin:0 auto;padding:18px 20px 40px}
-  .view{display:none}.view.on{display:block}
-  .layout{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
-  .panel{flex:1;min-width:280px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
-  .panel h2{font-size:18px;margin:0 0 6px}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{font-family:ui-rounded,"SF Pro Rounded","Apple SD Gothic Neo","Pretendard","Noto Sans KR",system-ui,sans-serif;
+    background:linear-gradient(180deg,var(--bg1),var(--bg2) 60%);background-attachment:fixed;color:var(--ink);line-height:1.5;min-height:100vh}
+  button{font-family:inherit}
+
+  /* header + tabs */
+  .top{max-width:1060px;margin:0 auto;padding:10px 14px 0;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .brand{font-size:20px;font-weight:800;letter-spacing:-.3px;display:flex;align-items:center;gap:6px}
+  .brand .logo{font-size:26px;filter:drop-shadow(0 2px 0 rgba(0,0,0,.12))}
+  .who{border:0;background:#fff;border-radius:99px;padding:6px 12px 6px 6px;display:flex;align-items:center;gap:6px;font-weight:800;font-size:15px;color:var(--ink);box-shadow:0 3px 0 var(--line),0 4px 12px rgba(80,60,140,.08);cursor:pointer}
+  .who .av{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-size:20px;background:var(--accent2)}
+  nav{max-width:1060px;margin:8px auto 0;padding:0 14px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  nav button{border:0;background:#fff;border-radius:16px;padding:6px 4px 7px;cursor:pointer;color:var(--muted);font-weight:800;font-size:13px;
+    display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 3px 0 var(--line);transition:transform .1s}
+  nav button .ic{font-size:22px;line-height:1.15}
+  nav button.on{color:#fff;background:var(--tab,var(--accent));box-shadow:0 3px 0 rgba(0,0,0,.18)}
+  nav button[data-tab=road]{--tab:#8a6cff} nav button[data-tab=lesson]{--tab:#2fb6a3}
+  nav button[data-tab=puzzle]{--tab:#ff7a3d} nav button[data-tab=opening]{--tab:#4a8cff}
+  main{max-width:1060px;margin:0 auto;padding:12px 14px 40px}
+  .view{display:none}.view.on{display:block;animation:fade .25s}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}}
+
+  /* play layout: board column (board + message + buttons) + side panel */
+  .play{display:flex;gap:20px;align-items:flex-start;justify-content:center;flex-wrap:wrap}
+  .boardcol{width:var(--bs);display:flex;flex-direction:column;gap:8px}
+  #lPlay{--bs:max(240px,min(94vw,540px,calc(100svh - 370px)))}
+  #oPlay{--bs:max(240px,min(94vw,540px,calc(100svh - 320px)))}
+  .bhead{display:flex;align-items:center;gap:8px;min-height:36px}
+  .bhead .ttl{font-weight:800;font-size:17px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .panel{flex:1;min-width:280px;max-width:480px;background:var(--card);border-radius:22px;padding:16px 18px;box-shadow:0 4px 0 var(--line),0 8px 24px rgba(80,60,140,.06)}
+  .panel h2{font-size:19px;margin:0 0 6px}
   .panel h3{font-size:15px;margin:14px 0 6px}
-  .muted{color:var(--muted);font-size:13px}
+  .muted{color:var(--muted);font-size:14px}
 
   /* board */
-  .boardwrap{width:var(--bs)}
-  .board{width:var(--bs);height:var(--bs);display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);border-radius:8px;overflow:hidden;box-shadow:0 6px 20px rgba(60,40,20,.18);user-select:none;-webkit-user-select:none;touch-action:manipulation}
+  .board{width:var(--bs);height:var(--bs);display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);border-radius:16px;overflow:hidden;
+    border:5px solid #6d9a5b;box-shadow:0 6px 0 #557c45,0 12px 28px rgba(40,80,30,.25);user-select:none;-webkit-user-select:none;touch-action:manipulation}
   .sq{position:relative;min-width:0;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer}
   .sq.light{background:var(--light)}.sq.dark{background:var(--dark)}
-  .sq.last::before{content:"";position:absolute;inset:0;background:rgba(255,214,64,.42)}
-  .sq.sel::before{content:"";position:absolute;inset:0;background:rgba(80,160,90,.55)}
-  .sq.hint::before{content:"";position:absolute;inset:0;background:rgba(70,140,255,.5);animation:pulse 1s infinite alternate}
-  .sq.check::before{content:"";position:absolute;inset:0;background:radial-gradient(circle,rgba(230,40,30,.9) 0%,rgba(230,40,30,.35) 55%,transparent 75%)}
-  .sq.dot::after{content:"";position:absolute;width:28%;height:28%;border-radius:50%;background:rgba(30,60,30,.35)}
-  .sq.cap::after{content:"";position:absolute;inset:4%;border-radius:50%;border:5px solid rgba(30,60,30,.35)}
+  .sq.last::before{content:"";position:absolute;inset:0;background:rgba(255,220,60,.5)}
+  .sq.sel::before{content:"";position:absolute;inset:0;background:rgba(74,140,255,.45)}
+  .sq.hint::before{content:"";position:absolute;inset:0;background:rgba(255,122,61,.6);animation:pulse .8s infinite alternate}
+  .sq.check::before{content:"";position:absolute;inset:0;background:radial-gradient(circle,rgba(240,40,40,.95) 0%,rgba(240,40,40,.4) 55%,transparent 75%)}
+  .sq.dot::after{content:"";position:absolute;width:30%;height:30%;border-radius:50%;background:rgba(40,60,120,.32)}
+  .sq.cap::after{content:"";position:absolute;inset:5%;border-radius:50%;border:5px solid rgba(40,60,120,.32)}
   @keyframes pulse{from{opacity:.35}to{opacity:1}}
-  .pc{position:relative;z-index:1;font-size:calc(var(--bs) / 8 * .8);line-height:1;pointer-events:none}
-  .pc.w{color:#fffdf8;text-shadow:0 0 1px #000,0 0 1px #000,0 1px 2px rgba(0,0,0,.6)}
-  .pc.b{color:#23201d;text-shadow:0 1px 1px rgba(255,255,255,.25)}
-  .coord{position:absolute;font-size:10px;font-weight:700;z-index:2;pointer-events:none}
+  .pc{position:relative;z-index:1;font-size:calc(var(--bs) / 8 * .82);line-height:1;pointer-events:none;transition:transform .12s}
+  .sq.sel .pc{transform:scale(1.12) translateY(-3%)}
+  .pc.w{color:#fff;text-shadow:0 0 1px #2d2a3e,0 0 1px #2d2a3e,0 0 2px #2d2a3e,0 2px 2px rgba(0,0,0,.35)}
+  .pc.b{color:#2d2a3e;text-shadow:0 2px 2px rgba(0,0,0,.25)}
+  .coord{position:absolute;font-size:10px;font-weight:800;z-index:2;pointer-events:none;opacity:.8}
   .coord.r{top:2px;left:3px}.coord.f{bottom:1px;right:3px}
-  .sq.light .coord{color:var(--dark)}.sq.dark .coord{color:var(--light)}
+  .sq.light .coord{color:#6d9a5b}.sq.dark .coord{color:#fdf3dc}
   .shake{animation:shake .35s}
-  @keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+  @keyframes shake{25%{transform:translateX(-7px)}50%{transform:translateX(7px)}75%{transform:translateX(-3px)}}
+  .star{position:absolute;z-index:2;font-size:calc(var(--bs) / 8 * .55);color:#ffc21a;text-shadow:0 2px 0 #e09a00;pointer-events:none;animation:bob 1.4s ease-in-out infinite}
+  @keyframes bob{50%{transform:translateY(-8%) scale(1.06)}}
+  .sq.target::before{content:"";position:absolute;inset:6%;border-radius:50%;border:4px dashed #ffb300}
 
-  .turn{display:inline-block;font-size:13px;font-weight:700;padding:3px 10px;border-radius:99px;background:#222;color:#fff;margin-bottom:8px}
-  .turn.w{background:#fff;color:#222;border:1px solid #ccc}
-  .msg{border-radius:10px;padding:10px 12px;margin:10px 0;font-size:14.5px;background:#f4f2ee;min-height:44px}
-  .msg.ok{background:var(--accent2);color:#1f4a31}
-  .msg.bad{background:var(--warn2);color:var(--warn)}
-  .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-  .btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;font-size:14px;cursor:pointer;font-weight:600;color:var(--ink)}
-  .btn:hover{border-color:#bbb}
-  .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
-  .btn:disabled{opacity:.4;cursor:default}
+  /* message + buttons */
+  .turn{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:800;padding:4px 10px;border-radius:99px;background:#2d2a3e;color:#fff;flex:none}
+  .turn.w{background:#fff;color:#2d2a3e;box-shadow:inset 0 0 0 2px #2d2a3e}
+  .msg{border-radius:16px;padding:9px 13px;font-size:15px;font-weight:600;background:#fff;min-height:3.3em;max-height:6.2em;overflow:auto;box-shadow:0 3px 0 var(--line)}
+  .msg:empty{display:none}
+  .msg.ok{background:var(--ok2);color:#1b6b40;box-shadow:0 3px 0 #bfe8d0}
+  .msg.bad{background:var(--warn2);color:#b02a22;box-shadow:0 3px 0 #f7c9c5}
+  .btns{display:flex;gap:8px;flex-wrap:wrap}
+  .actions{display:flex;gap:8px}
+  .actions .btn{flex:1}
+  .btn{white-space:nowrap;border:0;background:#fff;border-radius:16px;padding:10px 14px;min-height:48px;font-size:16px;cursor:pointer;font-weight:800;color:var(--ink);
+    box-shadow:0 4px 0 var(--line);transition:transform .08s,box-shadow .08s}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+  .btn.primary{background:var(--accent);color:#fff;box-shadow:0 4px 0 var(--accent-d)}
+  .btn.primary:active{box-shadow:0 1px 0 var(--accent-d)}
+  .btn.small{min-height:38px;padding:6px 12px;font-size:14px;border-radius:12px}
+  .btn:disabled{opacity:.4;cursor:default;transform:none}
   .seg{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
-  .seg button{border:1px solid var(--line);background:#fff;border-radius:99px;padding:6px 12px;font-size:13px;cursor:pointer}
-  .seg button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .seg button{border:0;background:#f4f1fa;border-radius:99px;padding:8px 13px;font-size:14px;font-weight:700;cursor:pointer;color:var(--ink);min-height:38px}
+  .seg button.on{background:var(--ink);color:#fff}
+  .seg.small button{font-size:13px;padding:6px 11px;min-height:34px}
   .dots{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
-  .dots button{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:12px;font-weight:700}
-  .dots button.solved{background:var(--accent2);border-color:#9cc3aa;color:var(--accent)}
-  .dots button.cur{outline:2px solid var(--ink)}
+  .dots button{width:38px;height:38px;border-radius:12px;border:0;background:#f4f1fa;cursor:pointer;font-size:14px;font-weight:800;color:var(--ink)}
+  .dots button.solved{background:var(--ok2);color:var(--ok)}
+  .dots button.cur{box-shadow:inset 0 0 0 3px var(--ink)}
+  details.more{margin-top:4px}
+  details.more summary{cursor:pointer;font-weight:800;font-size:14px;color:var(--muted);padding:6px 0}
 
-  .oplist{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
-  .opcard{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff;cursor:pointer;text-align:left;font:inherit;color:inherit}
-  .opcard:hover{border-color:var(--accent)}
-  .opcard b{display:block;font-size:15px}
-  .tag{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;margin-right:4px}
-  .tag.w{background:#fff;border:1px solid #bbb}.tag.b{background:#222;color:#fff}
-  .tag.done{background:var(--accent2);color:var(--accent)}
-  .movelist{font-family:ui-monospace,Menlo,monospace;font-size:14px;line-height:1.9;margin:8px 0;padding:8px 10px;background:#faf8f4;border-radius:8px;min-height:40px}
-  .movelist span{padding:1px 4px;border-radius:4px}
-  .movelist span.cur{background:#ffe08a}
-  .movelist span.todo{color:#c5c0b6}
-
+  /* cards & lists */
+  .oplist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .opcard{border:0;border-radius:20px;padding:14px;background:#fff;cursor:pointer;text-align:left;font:inherit;color:inherit;
+    box-shadow:0 4px 0 var(--line);transition:transform .1s;display:flex;flex-direction:column;gap:3px}
+  .opcard:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+  .opcard b{display:block;font-size:17px}
+  .opcard.row{flex-direction:row;align-items:center;gap:12px;padding:12px}
+  .opcard .big{font-size:30px;line-height:1;width:54px;height:54px;flex:none;border-radius:16px;display:grid;place-items:center;background:var(--accent2)}
+  .opcard .txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .tag{display:inline-block;font-size:11px;font-weight:800;padding:2px 8px;border-radius:99px;margin-right:4px}
+  .tag.w{background:#fff;box-shadow:inset 0 0 0 2px #2d2a3e}.tag.b{background:#2d2a3e;color:#fff}
+  .tag.done{background:var(--ok2);color:var(--ok)}
+  .movelist{font-family:ui-monospace,Menlo,monospace;font-size:14px;line-height:1.9;margin:8px 0;padding:8px 10px;background:#f8f6fc;border-radius:12px;min-height:40px}
+  .movelist span{padding:1px 4px;border-radius:5px}
+  .movelist span.cur{background:#ffe07a}
+  .movelist span.todo{color:#c9c3d8}
+  .lgroup h3{font-size:16px;margin:18px 0 8px}
   .road{display:grid;gap:10px}
-  .step{display:flex;gap:12px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;align-items:flex-start}
-  .step input{width:20px;height:20px;margin-top:3px;accent-color:var(--accent);flex:none}
-  .step .n{font-weight:800;color:var(--accent);margin-right:4px}
-  .step p{margin:4px 0 0;font-size:14px;color:#4a4742}
-  .step .go{font-size:12px;margin-top:6px}
-  .step .go a{color:var(--accent);font-weight:700;cursor:pointer;text-decoration:underline}
+  .step{display:flex;gap:12px;background:#fff;border-radius:20px;padding:14px 16px;align-items:flex-start;box-shadow:0 4px 0 var(--line)}
+  .step input{width:24px;height:24px;margin-top:2px;accent-color:var(--ok);flex:none}
+  .step .n{font-weight:800;color:#8a6cff;margin-right:6px}
+  .step p{margin:4px 0 0;font-size:14px;color:#5b5670}
+  .step .go{margin-top:8px}
+  .step .go a{display:inline-block;background:var(--accent2);color:var(--accent-d);font-weight:800;font-size:13px;padding:5px 12px;border-radius:99px;cursor:pointer;text-decoration:none}
   .step.done{opacity:.6}
-  .stats{font-size:13px;background:#faf8f4;border-radius:8px;padding:8px 10px;margin:4px 0 10px;line-height:1.7}
-  .stats b{color:var(--accent)}
-  #pLink a{color:var(--accent);font-weight:600}
-  .seg.small button{font-size:12px;padding:4px 10px}
-  .star{position:absolute;z-index:2;font-size:calc(var(--bs) / 8 * .5);color:#f2b400;text-shadow:0 1px 2px rgba(0,0,0,.35);pointer-events:none}
-  .sq.target::before{content:"";position:absolute;inset:6%;border-radius:50%;border:4px dashed #f2b400}
-  .lgroup h3{font-size:15px;margin:18px 0 8px}
-  .quiz button{flex:1;min-width:110px}
-  .note{background:#fff8e6;border:1px solid #f0dfae;border-radius:12px;padding:12px 14px;font-size:14px;margin-bottom:14px}
-  .legend{font-size:12.5px;color:var(--muted);margin-top:8px}
-  .bar{height:8px;background:#e9e5dd;border-radius:9px;overflow:hidden;margin:6px 0 14px}
-  .bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+  .note{background:#fff;border-radius:20px;padding:14px 16px;font-size:14.5px;margin-bottom:14px;box-shadow:0 4px 0 var(--line)}
+  .note b{color:var(--accent-d)}
+  .bar{height:14px;background:#fff;border-radius:99px;overflow:hidden;margin:6px 0 14px;box-shadow:inset 0 2px 3px rgba(0,0,0,.08)}
+  .bar i{display:block;height:100%;background:linear-gradient(90deg,#8a6cff,#ff7a3d);width:0;transition:width .4s;border-radius:99px}
+  .stats{font-size:13.5px;background:#f8f6fc;border-radius:14px;padding:9px 12px;margin:4px 0 10px;line-height:1.75}
+  .stats b{color:var(--accent-d)}
+  #pLink{font-size:13px}
+  #pLink a{color:var(--blue);font-weight:700}
+  .quiz button{flex:1;min-width:96px}
+
+  /* profiles modal */
+  .modal{position:fixed;inset:0;background:rgba(45,42,62,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+  .modal.on{display:flex}
+  .sheet{background:#fff;border-radius:26px;padding:20px;width:min(440px,100%);max-height:90vh;overflow:auto;box-shadow:0 12px 40px rgba(0,0,0,.25);animation:pop .2s}
+  @keyframes pop{from{transform:scale(.92);opacity:0}}
+  .sheet h2{margin:0 0 4px;font-size:22px;text-align:center}
+  .plist{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin:14px 0}
+  .pcard{border:0;background:#f8f6fc;border-radius:20px;padding:12px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:800;font-size:15px;color:var(--ink);position:relative}
+  .pcard .av{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-size:36px;background:#fff;box-shadow:0 3px 0 var(--line)}
+  .pcard small{font-weight:600;color:var(--muted);font-size:11.5px;text-align:center}
+  .pcard.cur{box-shadow:inset 0 0 0 3px var(--accent)}
+  .pcard .del{position:absolute;top:4px;right:6px;font-size:13px;color:var(--muted);background:none;border:0;cursor:pointer;padding:4px}
+  .emojis{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0}
+  .emojis button{font-size:26px;width:46px;height:46px;border-radius:50%;border:0;background:#f8f6fc;cursor:pointer}
+  .emojis button.on{box-shadow:inset 0 0 0 3px var(--accent);background:var(--accent2)}
+  .sheet input{width:100%;font:inherit;font-size:17px;padding:12px 14px;border-radius:14px;border:2px solid var(--line);outline:none}
+  .sheet input:focus{border-color:var(--accent)}
+
+  /* confetti */
+  .confetti{position:fixed;top:-40px;z-index:60;pointer-events:none;font-size:26px;animation:fall 1.6s ease-in forwards}
+  @keyframes fall{to{transform:translateY(105vh) rotate(540deg);opacity:.2}}
+  @media (prefers-reduced-motion:reduce){.confetti,.star,.view.on{animation:none}.confetti{display:none}}
+
+  @media (max-height:720px){
+    :root{--bs:max(200px,min(94vw,540px,calc(100svh - 250px)))}
+    #lPlay{--bs:max(190px,min(94vw,540px,calc(100svh - 315px)))}
+    #oPlay{--bs:max(190px,min(94vw,540px,calc(100svh - 270px)))}
+    .top{padding-top:6px}.brand{font-size:16px}.brand .logo{font-size:20px}
+    .who{padding:3px 10px 3px 3px;font-size:13px}.who .av{width:26px;height:26px;font-size:16px}
+    nav{margin-top:6px;gap:6px}
+    nav button{flex-direction:row;justify-content:center;gap:4px;padding:6px 2px;font-size:12px}
+    nav button .ic{font-size:16px}
+    main{padding-top:8px}
+    .boardcol{gap:6px}.bhead{min-height:30px}
+    .msg{min-height:2.6em;font-size:14px;padding:7px 11px}
+    .btn{min-height:44px;font-size:15px}
+  }
+  @media (max-width:820px){
+    .brand{font-size:18px}
+    .panel{max-width:none;width:100%}
+    main{padding-top:10px}
+  }
 </style>
 </head>
 <body>
-<header>
-  <h1>♞ 체스 첫걸음</h1>
-  <p class="sub">로드맵 → 기초 레슨 → 퍼즐(기본 15 + 무한 퍼즐 1,800여 개) → 오프닝 연습. 진도는 이 브라우저에 자동 저장돼요.</p>
-  <nav>
-    <button data-tab="road" class="on">🗺️ 학습 로드맵</button>
-    <button data-tab="lesson">🎓 기초 레슨</button>
-    <button data-tab="puzzle">🧩 퍼즐</button>
-    <button data-tab="opening">📖 오프닝 연습</button>
-  </nav>
+<header class="top">
+  <div class="brand"><span class="logo">🐴</span>체스 첫걸음</div>
+  <button class="who" id="who" title="누가 하고 있나요?"><span class="av" id="whoAv">🦁</span><span id="whoName">나</span> ▾</button>
 </header>
+<nav>
+  <button data-tab="road" class="on"><span class="ic">🗺️</span>길잡이</button>
+  <button data-tab="lesson"><span class="ic">🎓</span>레슨</button>
+  <button data-tab="puzzle"><span class="ic">🧩</span>퍼즐</button>
+  <button data-tab="opening"><span class="ic">📖</span>오프닝</button>
+</nav>
 
 <main>
   <!-- ROADMAP -->
   <section class="view on" id="v-road">
     <div class="note">
-      대부분의 체계적인 교육 과정(네덜란드 <b>스텝 메소드</b>, 각국 연맹의 학교 체스 프로그램 등)은
-      <b>규칙 → 기물 가치 → 기본 메이트 → 전술 → 오프닝 원칙 → 기초 엔드게임 → 전략</b> 순서로 갑니다.
-      공통 조언: 초보 단계에선 오프닝 암기보다 <b>전술(수 읽기)</b>에 시간을 훨씬 많이 쓰세요.
+      체스는 보통 <b>규칙 → 기물 가치 → 기본 메이트 → 전술 → 오프닝 원칙 → 엔드게임 → 전략</b> 순서로 배워요
+      (네덜란드 스텝 메소드, 각국 학교 체스 프로그램 공통). 처음엔 오프닝 암기보다 <b>퍼즐(수 읽기)</b>을 많이 하세요!
     </div>
-    <div class="muted">진행률</div>
+    <div class="muted" style="font-weight:800">나의 진행률</div>
     <div class="bar"><i id="roadBar"></i></div>
     <div class="road" id="road"></div>
   </section>
@@ -127,26 +206,26 @@
   <!-- LESSON -->
   <section class="view" id="v-lesson">
     <div id="lPick">
-      <div class="note">체스 규칙을 직접 두면서 익히는 미니 레슨이에요. 위에서부터 차례로 해 보세요. 완료한 레슨에는 ✔가 붙어요.</div>
+      <div class="note">직접 두면서 체스 규칙을 배워요. 위에서부터 하나씩! 다 하면 <b>✔</b>가 붙어요.</div>
       <div id="lList"></div>
     </div>
     <div id="lPlay" style="display:none">
-      <div class="layout">
-        <div class="boardwrap"><div class="board" id="lBoard"></div>
-          <div class="legend">기물을 클릭 → 점 찍힌 칸을 클릭해서 이동.</div></div>
-        <div class="panel">
-          <button class="btn" id="lBack">← 목록</button>
-          <h2 id="lTitle" style="margin-top:10px"></h2>
-          <div class="muted" id="lIntro"></div>
-          <div class="dots" id="lDots"></div>
-          <div id="lText" style="font-weight:600;margin-top:4px"></div>
+      <div class="play">
+        <div class="boardcol">
+          <div class="bhead"><button class="btn small" id="lBack">←</button><span class="ttl" id="lTitle"></span></div>
+          <div class="msg" id="lText" style="background:#fff8e1;box-shadow:0 3px 0 #f6e3a6;min-height:0"></div>
+          <div class="board" id="lBoard"></div>
           <div class="msg" id="lMsg"></div>
           <div class="btns quiz" id="lQuiz"></div>
-          <div class="btns">
+          <div class="actions">
             <button class="btn" id="lHint">💡 힌트</button>
             <button class="btn" id="lReset">↺ 다시</button>
             <button class="btn primary" id="lNext">다음 ▶</button>
           </div>
+        </div>
+        <div class="panel">
+          <div class="muted" id="lIntro"></div>
+          <div class="dots" id="lDots"></div>
         </div>
       </div>
     </div>
@@ -154,31 +233,31 @@
 
   <!-- PUZZLE -->
   <section class="view" id="v-puzzle">
-    <div class="layout">
-      <div class="boardwrap"><div class="board" id="pBoard"></div>
-        <div class="legend">기물을 클릭 → 점 찍힌 칸을 클릭해서 이동. 폰 승진은 자동으로 퀸.</div>
-      </div>
-      <div class="panel">
-        <div class="seg" id="pSrc"></div>
-        <div id="pBasic"><div class="seg" id="pCats"></div><div class="dots" id="pDots"></div></div>
-        <div id="pInf" style="display:none">
-          <div class="seg" id="pThemes"></div>
-          <div class="seg" id="pLevels"></div>
-          <div class="stats" id="pStats"></div>
-        </div>
-        <span class="turn" id="pTurn"></span>
-        <h2 id="pTitle"></h2>
-        <div class="muted" id="pGoal"></div>
+    <div class="play">
+      <div class="boardcol">
+        <div class="bhead"><span class="turn" id="pTurn"></span><span class="ttl" id="pTitle"></span></div>
+        <div class="board" id="pBoard"></div>
         <div class="msg" id="pMsg"></div>
-        <div class="muted" id="pLink"></div>
-        <div class="btns">
+        <div class="actions">
           <button class="btn" id="pHint">💡 힌트</button>
           <button class="btn" id="pReset">↺ 다시</button>
           <button class="btn primary" id="pNext">다음 ▶</button>
         </div>
-        <h3>수 읽기 요령 (CCT)</h3>
-        <div class="muted">두기 전에 항상 이 순서로 후보 수를 찾아보세요:
-          <b>C</b>heck(체크) → <b>C</b>apture(잡기) → <b>T</b>hreat(위협). 그리고 “상대가 어떻게 받을까?”를 한 번 더.</div>
+        <div id="pLink"></div>
+      </div>
+      <div class="panel">
+        <div class="muted" id="pGoal" style="font-weight:700;color:var(--ink)"></div>
+        <div class="seg" id="pSrc"></div>
+        <div id="pBasic"><div class="seg" id="pCats"></div><div class="dots" id="pDots"></div></div>
+        <div id="pInf" style="display:none">
+          <div class="stats" id="pStats"></div>
+          <details class="more"><summary>⚙️ 테마 · 난이도 고르기</summary>
+            <div class="seg" id="pThemes"></div>
+            <div class="seg" id="pLevels"></div>
+          </details>
+        </div>
+        <h3>🔍 수 읽기 요령</h3>
+        <div class="muted">두기 전에 이 순서로 찾아봐요: <b>체크</b> → <b>잡기</b> → <b>위협</b>. 그리고 “상대는 어떻게 받을까?” 한 번 더!</div>
       </div>
     </div>
   </section>
@@ -186,37 +265,54 @@
   <!-- OPENING -->
   <section class="view" id="v-opening">
     <div id="oPick">
-      <div class="note">오프닝 3원칙: <b>① 중앙 장악</b> (e4·d4·e5·d5) <b>② 기물 전개</b> (나이트·비숍 먼저, 같은 기물 두 번 X) <b>③ 킹 안전</b> (빨리 캐슬링).
-        아래 수순을 외우기보다 “왜 이 수인지”를 읽어보세요.</div>
+      <div class="note">오프닝 3원칙: <b>① 가운데 차지하기</b> <b>② 나이트·비숍 먼저 꺼내기</b> <b>③ 캐슬링으로 킹 지키기</b>.
+        외우기보다 “왜 이 수일까?”를 읽어 보세요.</div>
       <div class="oplist" id="oList"></div>
     </div>
     <div id="oPlay" style="display:none">
-      <div class="layout">
-        <div class="boardwrap"><div class="board" id="oBoard"></div></div>
-        <div class="panel">
-          <button class="btn" id="oBack">← 목록</button>
-          <h2 id="oTitle" style="margin-top:10px"></h2>
-          <div class="muted" id="oDesc"></div>
-          <div class="seg" id="oModes">
-            <button data-m="learn" class="on">👀 따라보기</button>
-            <button data-m="drill">✍️ 직접 두기</button>
+      <div class="play">
+        <div class="boardcol">
+          <div class="bhead"><button class="btn small" id="oBack">←</button><span class="ttl" id="oTitle"></span>
+            <div class="seg" id="oModes" style="margin:0">
+              <button data-m="learn" class="on">👀 보기</button>
+              <button data-m="drill">✍️ 두기</button>
+            </div>
           </div>
-          <div class="movelist" id="oMoves"></div>
+          <div class="board" id="oBoard"></div>
           <div class="msg" id="oMsg"></div>
-          <div class="btns" id="oLearnBtns">
-            <button class="btn" id="oFirst">⏮</button>
+          <div class="actions" id="oLearnBtns">
+            <button class="btn" id="oFirst" style="flex:.5">⏮</button>
             <button class="btn" id="oPrev">◀ 이전</button>
             <button class="btn primary" id="oNextBtn">다음 ▶</button>
           </div>
-          <div class="btns" id="oDrillBtns" style="display:none">
+          <div class="actions" id="oDrillBtns" style="display:none">
             <button class="btn" id="oHint">💡 힌트</button>
             <button class="btn" id="oRestart">↺ 처음부터</button>
           </div>
+        </div>
+        <div class="panel">
+          <div class="muted" id="oDesc"></div>
+          <div class="movelist" id="oMoves"></div>
         </div>
       </div>
     </div>
   </section>
 </main>
+
+<!-- 누가 할래요? -->
+<div class="modal" id="profModal">
+  <div class="sheet">
+    <h2>누가 할래요? 🙋</h2>
+    <div class="muted" style="text-align:center">사람마다 진도가 따로 저장돼요.</div>
+    <div class="plist" id="plist"></div>
+    <div id="pform" style="display:none">
+      <input id="pname" maxlength="10" placeholder="이름 (예: 지우)">
+      <div class="emojis" id="pemojis"></div>
+      <div class="actions"><button class="btn" id="pcancel">취소</button><button class="btn primary" id="psave">추가하기</button></div>
+    </div>
+    <div class="actions" id="pfoot"><button class="btn" id="padd">＋ 새 친구 추가</button><button class="btn" id="pclose">닫기</button></div>
+  </div>
+</div>
 
 <script>
 /*ENGINE*/
@@ -485,7 +581,26 @@ const LPZ_RAW="mate1|0FxWD|2r2rk1/pp1b1pp1/5q1p/3pp3/1Pn5/P2QPP2/1PB1N1PP/2R2RK1
 /*END-DATA*/
 
 // ================= UI =================
-const store={get(k,d){try{return JSON.parse(localStorage.getItem('chess.'+k))??d}catch(e){return d}},set(k,v){try{localStorage.setItem('chess.'+k,JSON.stringify(v))}catch(e){}}};
+// ----- 사용자 프로필: 사람마다 진도를 따로 저장 -----
+const LS={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const DATA_KEYS=['road','solved','openings','lessons','pzprefs','pzrec','prating','pzstats'];
+const PROF_EMOJI=['🦁','🐰','🐻','🐼','🦊','🐸','🐯','🐧','🦄','🐶','🐱','🐵'];
+let PROFILES=LS.get('chess.profiles',[]);
+if(!PROFILES.length){ // 첫 실행: 기존 진도를 첫 프로필로 옮김
+  PROFILES=[{id:'p1',name:'나',emoji:'🦁'}];
+  for(const k of DATA_KEYS){ const v=localStorage.getItem('chess.'+k); if(v!=null){ localStorage.setItem('chess.u.p1.'+k,v); localStorage.removeItem('chess.'+k); } }
+  LS.set('chess.profiles',PROFILES); LS.set('chess.current','p1');
+}
+let CUR=LS.get('chess.current',PROFILES[0].id); if(!PROFILES.some(p=>p.id===CUR)) CUR=PROFILES[0].id;
+const store={get(k,d){return LS.get('chess.u.'+CUR+'.'+k,d)},set(k,v){LS.set('chess.u.'+CUR+'.'+k,v)}};
+const peek=(id,k,d)=>LS.get('chess.u.'+id+'.'+k,d);
+function celebrate(n=26){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const em=['⭐','🎉','✨','🌟','🏆','💛'];
+  for(let i=0;i<n;i++){ const e=document.createElement('span'); e.className='confetti'; e.textContent=em[i%em.length];
+    e.style.left=Math.random()*100+'vw'; e.style.animationDelay=Math.random()*.4+'s'; e.style.fontSize=(18+Math.random()*18)+'px';
+    document.body.appendChild(e); setTimeout(()=>e.remove(),2200); }
+}
 const GLYPH={k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟︎'};
 const $=id=>document.getElementById(id);
 
@@ -690,7 +805,7 @@ function puzzleMove(m){
   if(finished){
     P.done=true; P.tone='ok';
     if(P.src==='inf'){
-      if(!P.failed) record(true);
+      if(!P.failed){ record(true); celebrate(); }
       P.msg=(P.failed?'🏁 완료! ':'✅ 정답! ')+`수순: ${solutionSan()}`+(P.failed?' — 10분 뒤에 다시 만나요.':` · ⏱ ${P.secs}초 · 다음 복습: ${fmtIv(P.nextIv)} 후`+(!P.speedNote?'':P.secs<20?' (빨리 풀어서 간격을 더 늘렸어요)':P.secs>90?' (오래 걸려서 간격을 조금 줄였어요)':''));
     } else {
       P.msg='✅ 정답! '+mv+' — '+z.explain;
@@ -734,11 +849,11 @@ function renderOpList(){
   const done=store.get('openings',{}); $('oList').innerHTML='';
   OPENINGS.forEach(op=>{
     const b=document.createElement('button'); b.className='opcard';
-    b.innerHTML=`<span class="tag ${op.side}">${op.side==='w'?'백으로':'흑으로'}</span>${done[op.id]?'<span class="tag done">✔ 완주</span>':''}<b>${op.name}</b><span class="muted">${op.desc}</span>`;
+    b.innerHTML=`<div><span class="tag ${op.side}">${op.side==='w'?'백으로':'흑으로'}</span>${done[op.id]?'<span class="tag done">✔ 완주</span>':''}</div><b>${op.name}</b><span class="muted">${op.desc}</span>`;
     b.onclick=()=>openOp(op); $('oList').appendChild(b);
   });
 }
-function openOp(op){
+function openOp(op){ scrollTo(0,0);
   O.op=op; O.ucis=op.moves.split(' ');
   O.sans=[]; let s=parseFEN('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'); O.start=s;
   for(const u of O.ucis){ const m=findMove(s,u); O.sans.push(san(s,m)); s=make(s,m); }
@@ -783,7 +898,7 @@ function autoReply(){
 function finishDrill(){
   O.done=true;
   O.msg=O.mistakes===0?'🎉 실수 없이 완주! 이 오프닝을 익혔어요.':`🏁 완주! 실수 ${O.mistakes}회 — 한 번 더 해서 실수 0회에 도전해 보세요.`; O.tone='ok';
-  if(O.mistakes===0){ const d=store.get('openings',{}); d[O.op.id]=true; store.set('openings',d); }
+  if(O.mistakes===0){ celebrate(); const d=store.get('openings',{}); d[O.op.id]=true; store.set('openings',d); }
   O.render();
 }
 O.onMove=m=>{
@@ -814,6 +929,7 @@ document.addEventListener('keydown',e=>{
 
 // ---------- lessons ----------
 const L={sel:-1,hint:null,busy:false,done:false};
+const LESSON_ICON={rook:'♜',bishop:'♝',queen:'♛',knight:'♞',king:'♚',pawn:'♟\uFE0E',castle:'🏰',ep:'👻',promo:'👑',escape:'🏃',mates:'🤔',free:'🎁',kq:'👸',kr:'🗼'};
 function renderLessonList(){
   const done=store.get('lessons',{}); const box=$('lList'); box.innerHTML='';
   LESSON_GROUPS.forEach(([g,name])=>{
@@ -821,13 +937,13 @@ function renderLessonList(){
     const grid=document.createElement('div'); grid.className='oplist';
     LESSONS.filter(x=>x.g===g).forEach(les=>{
       const b=document.createElement('button'); b.className='opcard';
-      b.innerHTML=`${done[les.id]?'<span class="tag done">✔ 완료</span>':''}<b>${les.title}</b><span class="muted">${les.steps.length}단계</span>`;
+      b.className='opcard row'; b.innerHTML=`<span class="big">${LESSON_ICON[les.id]||'⭐'}</span><span class="txt"><b>${les.title.replace(/ [♜♝♛♞♚♟]$/,'')}</b><span class="muted">${done[les.id]?'<span class="tag done">✔ 완료</span>':les.steps.length+'단계'}</span></span>`;
       b.onclick=()=>openLesson(les); grid.appendChild(b);
     });
     wrap.appendChild(grid); box.appendChild(wrap);
   });
 }
-function openLesson(les){ L.les=les; $('lPick').style.display='none'; $('lPlay').style.display=''; $('lTitle').textContent=les.title; $('lIntro').textContent=les.intro; loadStep(0); }
+function openLesson(les){ scrollTo(0,0); L.les=les; $('lPick').style.display='none'; $('lPlay').style.display=''; $('lTitle').textContent=les.title; $('lIntro').textContent=les.intro; loadStep(0); }
 const lstep=()=>L.les.steps[L.si];
 function loadStep(i){
   const st=L.les.steps[i]; L.si=i; clearTimeout(L.timer);
@@ -853,11 +969,11 @@ L.render=()=>{
   $('lDots').innerHTML=''; L.les.steps.forEach((x,i)=>{ const b=document.createElement('button'); b.textContent=i+1; b.className=(i<L.si||(i===L.si&&L.done)?'solved ':'')+(i===L.si?'cur':''); b.onclick=()=>loadStep(i); $('lDots').appendChild(b); });
   $('lText').textContent=L.text; $('lMsg').textContent=L.msg; $('lMsg').className='msg '+(L.tone||'');
   const last=L.si>=L.les.steps.length-1; const li=LESSONS.indexOf(L.les);
-  $('lNext').textContent=last?(li<LESSONS.length-1?'다음 레슨 ▶':'목록으로'):'다음 단계 ▶';
+  $('lNext').textContent=last?(li<LESSONS.length-1?'다음 레슨 ▶':'목록으로'):'다음 ▶';
   $('lHint').style.display=(lstep().k==='quiz')?'none':'';
 };
 function stepDone(msg){
-  L.done=true; L.busy=false; L.msg=msg; L.tone='ok';
+  L.done=true; L.busy=false; L.msg=msg; L.tone='ok'; celebrate(L.si===L.les.steps.length-1?40:14);
   if(L.si===L.les.steps.length-1){ const d=store.get('lessons',{}); d[L.les.id]=true; store.set('lessons',d); L.msg+=' 🎉 레슨 완료!'; }
   L.render();
 }
@@ -924,6 +1040,44 @@ $('lNext').onclick=()=>{
   const li=LESSONS.indexOf(L.les); if(li<LESSONS.length-1) openLesson(LESSONS[li+1]); else $('lBack').click();
 };
 $('lBack').onclick=()=>{ clearTimeout(L.timer); $('lPlay').style.display='none'; $('lPick').style.display=''; renderLessonList(); };
+
+// ----- 프로필 고르기 화면 -----
+let newEmoji=PROF_EMOJI[0];
+function renderWho(){ const me=PROFILES.find(p=>p.id===CUR); $('whoAv').textContent=me.emoji; $('whoName').textContent=me.name; }
+function renderProfiles(){
+  const box=$('plist'); box.innerHTML='';
+  PROFILES.forEach(pr=>{
+    const les=Object.keys(peek(pr.id,'lessons',{})).length, st=peek(pr.id,'pzstats',{ok:0});
+    const b=document.createElement('button'); b.className='pcard'+(pr.id===CUR?' cur':'');
+    b.innerHTML=`<span class="av">${pr.emoji}</span>${pr.name}<small>레슨 ${les}개 · 퍼즐 ${st.ok||0}개</small>`+(PROFILES.length>1?`<span class="del" title="지우기">✕</span>`:'');
+    b.onclick=e=>{
+      if(e.target.classList.contains('del')){
+        if(!confirm(`${pr.name}의 진도를 모두 지울까요? 되돌릴 수 없어요.`)) return;
+        for(const k of DATA_KEYS) localStorage.removeItem('chess.u.'+pr.id+'.'+k);
+        PROFILES=PROFILES.filter(x=>x.id!==pr.id); LS.set('chess.profiles',PROFILES);
+        if(pr.id===CUR){ LS.set('chess.current',PROFILES[0].id); sessionStorage.setItem('chess.picked','1'); location.reload(); return; }
+        return renderProfiles();
+      }
+      LS.set('chess.current',pr.id); sessionStorage.setItem('chess.picked','1');
+      if(pr.id===CUR) $('profModal').classList.remove('on'); else location.reload();
+    };
+    box.appendChild(b);
+  });
+}
+function showForm(on){ $('pform').style.display=on?'':'none'; $('pfoot').style.display=on?'none':''; if(on){ $('pname').value=''; $('pname').focus(); } }
+$('pemojis').innerHTML=''; PROF_EMOJI.forEach(e=>{ const b=document.createElement('button'); b.textContent=e; b.className=e===newEmoji?'on':'';
+  b.onclick=()=>{ newEmoji=e; [...$('pemojis').children].forEach(x=>x.classList.toggle('on',x.textContent===e)); }; $('pemojis').appendChild(b); });
+$('padd').onclick=()=>showForm(true);
+$('pcancel').onclick=()=>showForm(false);
+$('psave').onclick=()=>{
+  const name=$('pname').value.trim(); if(!name){ $('pname').focus(); return; }
+  const id='p'+Date.now().toString(36); PROFILES.push({id,name,emoji:newEmoji}); LS.set('chess.profiles',PROFILES);
+  LS.set('chess.current',id); sessionStorage.setItem('chess.picked','1'); location.reload();
+};
+$('pclose').onclick=()=>$('profModal').classList.remove('on');
+$('who').onclick=()=>{ renderProfiles(); showForm(false); $('profModal').classList.add('on'); };
+renderWho();
+if(PROFILES.length>1&&!sessionStorage.getItem('chess.picked')) $('who').click();
 
 renderRoad(); renderOpList(); renderLessonList(); if(P.src==='inf') nextInf(); else loadPuzzle(0);
 </script>
