@@ -91,19 +91,22 @@ disc:{title:'🎬 디스커버드 어택',scenes:[
 const S={id:null,i:0,tl:null,voice:LS.get('chess.voice',true)};
 const el=document.createElement('div'); el.className='story'; el.id='story'; el.hidden=true;
 el.innerHTML=`<div class="st-card" role="dialog" aria-modal="true">
-  <div class="st-top"><span class="st-ttl" id="stTitle"></span><button class="st-ic" id="stVoice"></button><button class="st-ic" id="stReplay" title="다시 보기">↻</button><button class="st-ic" id="stClose" title="닫기">✕</button></div>
+  <div class="st-top"><span class="st-ttl" id="stTitle"></span><button class="st-ic" id="stVoice" hidden></button><button class="st-ic" id="stReplay" title="다시 보기">↻</button><button class="st-ic" id="stClose" title="닫기">✕</button></div>
   <div class="st-body"><div class="st-stage" id="stStage"></div>
     <div class="st-side"><div class="st-say" id="stSay"></div>
       <div class="st-nav"><button class="btn" id="stPrev">◀</button><div class="st-dots" id="stDots"></div><button class="btn primary" id="stNext">다음 ▶</button></div></div></div></div>`;
 document.body.appendChild(el);
 const $s=id=>document.getElementById(id);
 
-function speak(text){
-  try{ speechSynthesis.cancel(); }catch(e){}
-  if(!S.voice||!window.speechSynthesis) return;
-  const u=new SpeechSynthesisUtterance(clean(text)); u.lang='ko-KR'; u.rate=.95; u.pitch=1.05;
-  const v=speechSynthesis.getVoices().find(v=>/^ko/i.test(v.lang)); if(v) u.voice=v;
-  speechSynthesis.speak(u);
+// 목소리: 기계 음성(TTS)은 쓰지 않아요. 직접 녹음한 파일이 voice/<이야기>-<장면번호>.m4a 로 있으면 그것만 재생
+// (예: voice/intro-01.m4a). 파일이 없으면 조용히 넘어가요. 녹음이 하나라도 재생되면 🔊 버튼이 나타나요.
+let audio=null;
+const stopAudio=()=>{ if(audio){ audio.pause(); audio=null; } };
+function speak(i){
+  stopAudio(); if(!S.voice) return;
+  const a=new Audio(`voice/${S.id}-${String(i+1).padStart(2,'0')}.m4a`); audio=a;
+  a.addEventListener('canplay',()=>{ $s('stVoice').hidden=false; },{once:true});
+  a.play().catch(()=>{});
 }
 function voiceBtn(){ $s('stVoice').textContent=S.voice?'🔊':'🔇'; $s('stVoice').title=S.voice?'읽어 주기 끄기':'읽어 주기 켜기'; }
 
@@ -154,7 +157,7 @@ function scene(i){
     for(const a of sc.act||[]) act(B,tl,a,fx);
   }
   if(RM()) tl.progress(1);
-  speak(sc.say);
+  speak(i);
 }
 
 function act(B,tl,a,fx){
@@ -218,18 +221,18 @@ function open(id,opts={}){
   scene(0);
 }
 function close(){
-  if(S.tl) S.tl.kill(); try{ speechSynthesis.cancel(); }catch(e){}
+  if(S.tl) S.tl.kill(); stopAudio();
   el.hidden=true; document.body.classList.remove('st-open'); const f=S.onClose; S.onClose=null; refreshHooks(); if(f) f();
 }
 $s('stClose').onclick=close;
 $s('stReplay').onclick=()=>scene(S.i);
 $s('stPrev').onclick=()=>{ if(S.i>0) scene(S.i-1); };
 $s('stNext').onclick=()=>{ const n=STORIES[S.id].scenes.length; if(S.i<n-1) scene(S.i+1); else { celebrate(12); close(); } };
-$s('stVoice').onclick=()=>{ S.voice=!S.voice; LS.set('chess.voice',S.voice); voiceBtn(); if(S.voice) speak(STORIES[S.id].scenes[S.i].say); else speechSynthesis.cancel(); };
+$s('stVoice').onclick=()=>{ S.voice=!S.voice; LS.set('chess.voice',S.voice); voiceBtn(); if(S.voice) speak(S.i); else stopAudio(); };
 el.addEventListener('click',e=>{ if(e.target===el) close(); });
 addEventListener('keydown',e=>{ if(el.hidden) return; if(e.key==='Escape') close(); if(e.key==='ArrowRight') $s('stNext').click(); if(e.key==='ArrowLeft') $s('stPrev').click(); });
 const seen=id=>!!store.get('stories',{})[id];
-window.Story={open,seen,STORIES};
+window.Story={open,seen,STORIES,clean};
 
 // ---------------- 앱 곳곳에 연결 ----------------
 // 1) 길잡이: 맨 위에 "체스 이야기" 카드
