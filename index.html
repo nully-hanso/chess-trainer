@@ -75,6 +75,9 @@
   @keyframes pulse{from{opacity:.35}to{opacity:1}}
   .pc{position:relative;z-index:1;font-size:calc(var(--bs) / 8 * .82);line-height:1;pointer-events:none;transition:transform .12s}
   .sq.sel .pc{transform:scale(1.12) translateY(-3%)}
+  /* 판 위의 기물: 점수가 클수록 크게 (크기·가운데 맞춤은 pieceSizes()가 기기에서 재서 정함) */
+  .sq .pc[class*=" t-"]{font-size:calc(var(--bs) / 8 * var(--fs,.82));transform:translate(calc(var(--bs) / 8 * var(--dx,0)),calc(var(--bs) / 8 * var(--dy,0)))}
+  .sq.sel .pc[class*=" t-"]{transform:translate(calc(var(--bs) / 8 * var(--dx,0)),calc(var(--bs) / 8 * var(--dy,0) - var(--bs) / 8 * .04)) scale(1.1)}
   .pc.w{color:#fff;text-shadow:0 0 1px #2d2a3e,0 0 1px #2d2a3e,0 0 2px #2d2a3e,0 2px 2px rgba(0,0,0,.35)}
   .pc.b{color:#2d2a3e;text-shadow:0 2px 2px rgba(0,0,0,.25)}
   .coord{position:absolute;font-size:10px;font-weight:800;z-index:2;pointer-events:none;opacity:.8}
@@ -830,7 +833,7 @@ function drawBoard(el,ctx){
     if(ctx.stars&&ctx.stars.has(sq)){ if(ctx.s.b[sq]) d.classList.add('target'); else { const st=document.createElement('span'); st.className='star'; st.textContent='★'; d.appendChild(st); } }
     if(tg.includes(sq)) d.classList.add(ctx.s.b[sq]?'cap':'dot');
     const p=ctx.s.b[sq];
-    if(p){ const s=document.createElement('span'); s.className='pc '+(isW(p)?'w':'b'); s.textContent=GLYPH[p.toLowerCase()]; d.appendChild(s); }
+    if(p){ const s=document.createElement('span'); s.className='pc '+(isW(p)?'w':'b')+' t-'+p.toLowerCase(); s.textContent=GLYPH[p.toLowerCase()]; d.appendChild(s); }
     if(ctx.flash&&ctx.flash.sq===sq) d.classList.add(ctx.flash.cls);
     if(!ctx.noCoords&&vi%8===0){ const c=document.createElement('span'); c.className='coord r'; c.textContent=8-r; d.appendChild(c); }
     if(!ctx.noCoords&&vi>=56){ const c=document.createElement('span'); c.className='coord f'; c.textContent=FILES[f]; d.appendChild(c); }
@@ -838,6 +841,27 @@ function drawBoard(el,ctx){
     el.appendChild(d);
   }
 }
+// 기물 크기: 글꼴마다 기호 높이가 제각각이라(폰이 비숍만 하기도 해요) 기기에서 실제 잉크 크기를 재서
+// 점수 순서(폰 < 나이트·비숍 < 룩 < 퀸 < 킹)대로 칸 높이 대비 크기를 맞추고, 칸 가운데에 오게 해요.
+const PIECE_H={p:.44,n:.58,b:.61,r:.67,q:.74,k:.78};
+function pieceSizes(){
+  const probe=document.createElement('span'); probe.className='pc b'; probe.style.cssText='position:absolute;visibility:hidden;font-size:100px';
+  document.body.appendChild(probe); const font=getComputedStyle(probe).font; probe.remove();
+  const c=document.createElement('canvas').getContext('2d'); c.font=font; let css='';
+  for(const [t,target] of Object.entries(PIECE_H)){
+    const m=c.measureText(GLYPH[t]), h=m.actualBoundingBoxAscent+m.actualBoundingBoxDescent;
+    if(!(h>5)) continue; // 잴 수 없으면 기본 크기
+    const fa=m.fontBoundingBoxAscent??80, fd=m.fontBoundingBoxDescent??20;
+    const fs=target/(h/100);
+    // 글자 상자(줄높이 1) 가운데와 잉크 가운데의 차이(100px 기준)
+    const baseY=(100-(fa+fd))/2+fa, inkY=baseY-(m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2;
+    const inkX=(m.actualBoundingBoxRight-m.actualBoundingBoxLeft)/2, boxX=m.width/2;
+    css+=`.pc.t-${t}{--fs:${fs.toFixed(3)};--dx:${(-(inkX-boxX)/100*fs).toFixed(3)};--dy:${(-(inkY-50)/100*fs).toFixed(3)}}\n`;
+  }
+  let st=document.getElementById('pieceSizes'); if(!st){ st=document.createElement('style'); st.id='pieceSizes'; document.head.appendChild(st); }
+  st.textContent=css;
+}
+pieceSizes(); if(document.fonts&&document.fonts.ready) document.fonts.ready.then(pieceSizes);
 // 기물 계산 판: 얻은/내준 기물을 그림으로 크게
 function matBoxHTML(r,mate){
   if(mate) return `<div class="matbox"><span class="mattotal win">👑 체크메이트 승리!</span></div>`;
