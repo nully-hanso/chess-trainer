@@ -8,9 +8,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="체스 첫걸음">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#ff7a3d">
+<meta name="theme-color" content="#e7ecdc">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
 <title>체스 첫걸음 — 초보자 트레이너</title>
 <style>
   :root{
@@ -332,20 +334,132 @@
     .play>.panel{max-width:none;width:auto}
     .msg{max-height:none}
   }
+
+  /* =====================================================================
+     디자인: "어린이 체스 클럽"
+     - 판이 주인공: 호두나무 테두리의 진짜 체스판처럼. 나머지는 조용하게.
+     - 색은 판과 기물에서 가져와요: 올리브(판) · 호두나무(테두리) · 초콜릿(흑 기물) · 아이보리(백 기물) · 호박색(별·보상)
+     - 제목·버튼·숫자는 둥근 손글씨 느낌의 Jua, 본문은 기기 기본 글꼴
+     - 그림자는 판처럼 아래로 두툼한 '장난감' 그림자, 모서리는 크기에 따라 다르게(판 14 · 패널 22 · 버튼 14 · 칩 둥글게)
+     ===================================================================== */
+  :root{
+    --paper:#e7ecdc; --paper2:#f1f3e8; --card:#fffdf6; --ink:#2f2721; --muted:#7a6f60; --line:#ddd6c2;
+    --olive:#5c8a2e; --olive-d:#43681f; --olive2:#e7efd8;
+    --amber:#eea52a; --amber-d:#c9841a; --amber2:#fdf0d4;
+    --wood:#7a4e2b; --wood-d:#563519; --wood-l:#9a6a3f;
+    --ok:#3a8f45; --ok2:#e3f2dc; --warn:#c4472f; --warn2:#fbe6df;
+    --accent:var(--olive); --accent-d:var(--olive-d); --accent2:var(--olive2);
+    --display:"Jua",ui-rounded,"SF Pro Rounded","Apple SD Gothic Neo",sans-serif;
+  }
+  body{background:var(--paper);color:var(--ink)}
+  h2,h3,.brand,nav button,.btn,.seg button,.ttl,.big-r,.st-ttl,.result b,.stg,.dots button,.n{font-family:var(--display);font-weight:400}
+  h2{font-size:22px;letter-spacing:-.2px} h3{font-size:16px;color:var(--wood)}
+
+  /* 머리글: 나이트 그림 로고 */
+  .brand{font-size:23px;gap:8px;color:var(--ink)}
+  .brand .logo{width:34px;height:34px;background:url(pieces/bn.svg) center/118% no-repeat;filter:none;font-size:0}
+  .who,.snd{background:var(--card);box-shadow:0 3px 0 var(--line)}
+  .who .av{background:var(--amber2)}
+
+  /* 탭: 섹션마다 기물 하나 */
+  nav button{background:var(--card);color:var(--muted);box-shadow:0 3px 0 var(--line);font-size:15px;border-radius:16px}
+  nav button .ic{display:block;width:30px;height:30px;margin:0;font-size:0;background:var(--pi) center/118% no-repeat}
+  @media (max-width:600px){ nav button .ic{width:22px;height:22px} nav button{font-size:13px} }
+  @media (orientation:landscape) and (min-width:900px) and (min-height:600px){ nav button .ic{width:26px;height:26px} nav button{gap:6px} }
+  nav button[data-tab=road]{--pi:url(pieces/br.svg)} nav button[data-tab=lesson]{--pi:url(pieces/bp.svg)}
+  nav button[data-tab=puzzle]{--pi:url(pieces/bn.svg)} nav button[data-tab=opening]{--pi:url(pieces/bb.svg)} nav button[data-tab=play]{--pi:url(pieces/bk.svg)}
+  nav button.on{color:#fff;background:var(--olive);box-shadow:0 3px 0 var(--olive-d)}
+  nav button.on[data-tab=road]{--pi:url(pieces/wr.svg)} nav button.on[data-tab=lesson]{--pi:url(pieces/wp.svg)}
+  nav button.on[data-tab=puzzle]{--pi:url(pieces/wn.svg)} nav button.on[data-tab=opening]{--pi:url(pieces/wb.svg)} nav button.on[data-tab=play]{--pi:url(pieces/wk.svg)}
+
+  /* 주인공: 호두나무 테두리 체스판 */
+  .board,.stb{border:10px solid var(--wood);border-radius:14px;
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.25),0 0 0 1px var(--wood-d),0 7px 0 var(--wood-d),0 16px 30px rgba(70,45,20,.28)}
+  .board{background:var(--wood)}
+  .sq.c0,.sq.c0::before{border-top-left-radius:4px}.sq.c7,.sq.c7::before{border-top-right-radius:4px}
+  .sq.c56,.sq.c56::before{border-bottom-left-radius:4px}.sq.c63,.sq.c63::before{border-bottom-right-radius:4px}
+  .sq.light .coord{color:#7c6a3e}.sq.dark .coord{color:#eef3dc}
+  .sq.last::before{background:rgba(238,165,42,.42)}
+  .sq.sel::before{background:rgba(255,236,150,.55)}
+  .sq.hint::before{background:rgba(238,165,42,.7)}
+  .sq.dot::after{background:rgba(47,39,33,.28)} .sq.cap::after{border-color:rgba(47,39,33,.28)}
+
+  /* 패널 = 기록지 */
+  .panel,.note,.step,.msg,.matbox,.sheet{background:var(--card);box-shadow:0 4px 0 var(--line)}
+  .panel{border-radius:22px}
+  .muted{color:var(--muted)}
+  .stats{background:var(--paper2)}
+  .big-r{color:var(--olive-d);font-size:40px}
+  .msg.ok{background:var(--ok2);color:#245e2c;box-shadow:0 3px 0 #c8e2bd}
+  .msg.bad{background:var(--warn2);color:#9c3420;box-shadow:0 3px 0 #f1cbbf}
+  .turn{background:var(--ink)} .turn.w{background:var(--card);color:var(--ink);box-shadow:inset 0 0 0 2px var(--ink)}
+
+  /* 버튼과 칩 */
+  .btn{background:var(--card);color:var(--ink);border-radius:14px;box-shadow:0 4px 0 var(--line);font-size:17px}
+  .btn.primary{background:var(--olive);color:#fff;box-shadow:0 4px 0 var(--olive-d)}
+  .btn.primary:active{box-shadow:0 1px 0 var(--olive-d)}
+  .btn:focus-visible,.seg button:focus-visible,nav button:focus-visible,.stg:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+  .seg button{background:var(--paper2);font-size:15px}
+  .seg button.on{background:var(--ink);color:#fff}
+  .dots button,.stg{background:var(--paper2)}
+  .dots button.solved,.stg.full{background:var(--ok2);color:var(--ok)}
+  .dots button.retry{background:var(--amber2);color:var(--amber-d)}
+  .dots button.cur,.stg.cur{box-shadow:inset 0 0 0 3px var(--ink)}
+  .stg i{background:var(--ok)}
+  .movelist{background:var(--paper2)} .movelist span.cur{background:#ffe2a0}
+  .saverow,.histrow{background:var(--paper2)}
+  .st-new{background:var(--amber-d)}
+  .modal{background:rgba(47,39,33,.5)}
+  .pcard{background:var(--paper2)} .pcard.cur{box-shadow:inset 0 0 0 3px var(--olive)}
+  .credit{color:var(--muted)}
+
+  /* 레슨·오프닝 카드 */
+  .oplist{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+  .opcard{background:var(--card);box-shadow:0 4px 0 var(--line)}
+  .opcard b{font-family:var(--display);font-weight:400;font-size:19px}
+  .opcard .big{background:var(--paper2)}
+  .opcard .big.pcico{background:var(--olive2) var(--img) center/112% no-repeat;font-size:0}
+  .lgroup h3{margin:18px 0 8px}
+  /* 길잡이: 징검다리 길 (실제로 순서가 있는 단계라 번호를 써요) */
+  .note{font-size:15px;line-height:1.7}
+  .note b{color:var(--olive-d)}
+  .bar{background:var(--card);box-shadow:inset 0 2px 3px rgba(60,40,20,.12)} .bar i{background:linear-gradient(90deg,var(--olive),#86b24c)}
+  .road{position:relative;gap:14px;padding-left:4px}
+  .road::before{content:"";position:absolute;left:27px;top:20px;bottom:20px;width:4px;border-radius:4px;background:repeating-linear-gradient(var(--line) 0 10px,transparent 10px 18px)}
+  .step{position:relative;border-radius:22px;padding:16px 18px 16px 14px;gap:14px}
+  .step input{appearance:none;-webkit-appearance:none;width:30px;height:30px;margin:0;border-radius:50%;background:var(--paper2);box-shadow:inset 0 0 0 3px var(--line);cursor:pointer;display:grid;place-items:center;position:relative;z-index:1}
+  .step input:checked{background:var(--olive);box-shadow:0 2px 0 var(--olive-d)}
+  .step input:checked::after{content:"✓";color:#fff;font-size:17px;font-weight:900}
+  .step .n{color:var(--wood-l);font-size:15px}
+  .step b{font-family:var(--display);font-weight:400;font-size:19px}
+  .step p{color:var(--muted);font-size:14.5px}
+  .step .go a{background:var(--olive2);color:var(--olive-d);font-size:14px;padding:6px 14px}
+  .step.done{opacity:1;background:var(--paper2);box-shadow:0 3px 0 var(--line)}
+  .step.done b{color:var(--muted)}
+  .st-entry{background:var(--wood);color:#fff7e6;box-shadow:0 5px 0 var(--wood-d);border-radius:22px}
+  .st-entry b{font-family:var(--display);font-weight:400;font-size:20px}
+  .st-entry .go{white-space:nowrap;flex:none;background:var(--amber);color:var(--ink);padding:6px 14px;border-radius:99px;font-family:var(--display);font-weight:400}
+
+  /* 이야기 플레이어도 같은 말투로 */
+  .st-card{background:var(--card)} .st-ic{background:var(--paper2)}
+  .st-say{box-shadow:0 3px 0 var(--line)} .st-say b{color:var(--olive-d)}
+  .st-dots i.on{background:var(--olive)}
+  .stc{background:linear-gradient(160deg,#f6f1df,#e9e0c4)}
+  .sttxt.good span{background:var(--ok)} .sttxt.bad span{background:var(--warn)}
 </style>
 </head>
 <body>
 <header class="top">
-  <div class="brand"><span class="logo">🐴</span>체스 첫걸음</div>
+  <div class="brand"><span class="logo" aria-hidden="true"></span>체스 첫걸음</div>
   <div class="topr"><button class="snd" id="snd" title="소리 끄기">🔊</button>
   <button class="who" id="who" title="누가 하고 있나요?"><span class="av" id="whoAv">🦁</span><span id="whoName">나</span> ▾</button></div>
 </header>
 <nav>
-  <button data-tab="road" class="on"><span class="ic">🗺️</span>길잡이</button>
-  <button data-tab="lesson"><span class="ic">🎓</span>레슨</button>
-  <button data-tab="puzzle"><span class="ic">🧩</span>퍼즐</button>
-  <button data-tab="opening"><span class="ic">📖</span>오프닝</button>
-  <button data-tab="play"><span class="ic">⚔️</span>대국</button>
+  <button data-tab="road" class="on"><span class="ic" aria-hidden="true"></span>길잡이</button>
+  <button data-tab="lesson"><span class="ic" aria-hidden="true"></span>레슨</button>
+  <button data-tab="puzzle"><span class="ic" aria-hidden="true"></span>퍼즐</button>
+  <button data-tab="opening"><span class="ic" aria-hidden="true"></span>오프닝</button>
+  <button data-tab="play"><span class="ic" aria-hidden="true"></span>대국</button>
 </nav>
 
 <main>
@@ -835,7 +949,7 @@ const ROADMAP=[
   {k:'plan',t:'중반 전략 & 실전 복기',d:'좋은/나쁜 기물, 약한 칸, 폰 구조, 계획 세우기. 15분 이상 대국을 두고 지면 꼭 복기하기.',go:['play']},
 ];
 
-const LESSON_GROUPS=[['move','① 기물 이동 — 별 모으기'],['coord','② 좌표 찾기 게임'],['rule','③ 특수 규칙'],['check','④ 체크·체크메이트·스테일메이트'],['game','⑤ 실전 미니게임']];
+const LESSON_GROUPS=[['move','① 기물 이동 (별 모으기)'],['coord','② 좌표 찾기 게임'],['rule','③ 특수 규칙'],['check','④ 체크·체크메이트·스테일메이트'],['game','⑤ 실전 미니게임']];
 const LESSONS=[
   {id:'rook',g:'move',title:'룩 ♜',intro:'룩은 가로·세로로 원하는 만큼 직진해요. 다른 기물을 뛰어넘을 수는 없어요. 가치 5점.',steps:[
     {k:'stars',fen:'8/8/8/8/8/8/8/R7 w - - 0 1',stars:['a5','e5','e8']},
@@ -1470,7 +1584,8 @@ function renderLessonList(){
     const grid=document.createElement('div'); grid.className='oplist';
     LESSONS.filter(x=>x.g===g).forEach(les=>{
       const b=document.createElement('button'); b.className='opcard';
-      b.className='opcard row'; b.innerHTML=`<span class="big">${LESSON_ICON[les.id]||'⭐'}</span><span class="txt"><b>${les.title.replace(/ [♜♝♛♞♚♟]$/,'')}</b><span class="muted">${done[les.id]?'<span class="tag done">✔ 완료</span>':les.steps.length+'단계'}</span></span>`;
+      const pk={rook:'r',bishop:'b',queen:'q',knight:'n',king:'k',pawn:'p'}[les.id];
+      b.className='opcard row'; b.innerHTML=(pk?`<span class="big pcico" style="--img:url(pieces/w${pk}.svg)"></span>`:`<span class="big">${LESSON_ICON[les.id]||'⭐'}</span>`)+`<span class="txt"><b>${les.title.replace(/ [♜♝♛♞♚♟]$/,'')}</b><span class="muted">${done[les.id]?'<span class="tag done">✔ 완료</span>':les.steps.length+'단계'}</span></span>`;
       b.onclick=()=>openLesson(les); grid.appendChild(b);
     });
     wrap.appendChild(grid); box.appendChild(wrap);
