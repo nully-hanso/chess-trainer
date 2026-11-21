@@ -153,6 +153,18 @@
   .dots button{width:38px;height:38px;border-radius:12px;border:0;background:#f4f1fa;cursor:pointer;font-size:14px;font-weight:800;color:var(--ink)}
   .dots button.solved{background:var(--ok2);color:var(--ok)}
   .dots button.cur{box-shadow:inset 0 0 0 3px var(--ink)}
+  .dots button.retry{background:#fff1d6;color:#c77700}
+  .seg.goals{display:grid;grid-template-columns:repeat(4,1fr)}
+  .seg.goals button{font-size:13px;padding:7px 4px;line-height:1.25;white-space:normal}
+  .stages{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:6px;max-height:176px;overflow:auto;padding:3px;margin:8px 0 2px;overscroll-behavior:contain}
+  .stg{position:relative;border:0;border-radius:12px;background:#f4f1fa;height:42px;font-weight:900;font-size:14px;color:var(--ink);cursor:pointer;overflow:hidden;font-family:inherit}
+  .stg i{position:absolute;left:0;bottom:0;height:5px;background:var(--ok);border-radius:0 3px 3px 0}
+  .stg.full{background:var(--ok2);color:var(--ok)}
+  .stg.cur{box-shadow:inset 0 0 0 3px var(--ink)}
+  .stg.rec::after{content:"🎯";position:absolute;top:0;right:2px;font-size:11px}
+  .stg.basic{grid-column:span 2}
+  .pmini{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px;color:var(--muted);margin:8px 0}
+  .pmini b{color:var(--ink)}
   details.more{margin-top:4px}
   details.more summary{cursor:pointer;font-weight:800;font-size:14px;color:var(--muted);padding:6px 0}
 
@@ -346,8 +358,15 @@
         <div id="pLink"></div>
       </div>
       <div class="panel">
-        <div class="seg" id="pSrc"></div>
-        <div id="pBasic"><div class="seg" id="pCats"></div><div class="dots" id="pDots"></div></div>
+        <div class="seg goals" id="pGoals"></div>
+        <div id="pStageBox">
+          <div class="muted" id="pGoalTxt"></div>
+          <div class="seg small" id="pTacs"></div>
+          <div class="stages" id="pStages"></div>
+          <h3 id="pStageTtl"></h3>
+          <div class="dots" id="pDots"></div>
+        </div>
+        <div class="pmini" id="pMini"></div>
         <div id="pInf" style="display:none">
           <div class="stats" id="pStats"></div>
           <details class="more"><summary>⚙️ 테마 · 난이도 고르기</summary>
@@ -775,7 +794,7 @@ const LESSONS=[
   {id:'king',g:'move',title:'킹 ♚',intro:'킹은 모든 방향으로 한 칸씩만. 잡히면 지는 기물이라 공격받는 칸으로는 갈 수 없어요.',steps:[
     {k:'stars',fen:'8/8/8/8/8/8/8/4K3 w - - 0 1',stars:['e3','g4','e6','c5']}]},
   {id:'pawn',g:'move',title:'폰 ♟',intro:'폰은 앞으로 한 칸(처음 자리에서는 두 칸도 가능). 뒤로는 못 가고, 잡을 때만 대각선 앞으로 움직여요. 가치 1점.',steps:[
-    {k:'stars',fen:'8/8/8/8/8/8/4P3/8 w - - 0 1',stars:['e4','e5','e6'],note:'첫 수는 두 칸 전진할 수 있어요.'},
+    {k:'stars',fen:'8/8/8/8/8/8/4P3/8 w - - 0 1',stars:['e4','e5','e6'],note:'별은 폰이 걸어갈 길이에요. 폰은 앞으로 걸어가고, 첫 수는 두 칸도 갈 수 있어요. (잡는 건 다음 단계에서!)'},
     {k:'stars',fen:'8/8/8/8/4p3/3p4/4P3/8 w - - 0 1',stars:['d3','e4'],note:'노란 점선 동그라미는 잡아야 할 기물. 폰은 대각선으로 잡아요.'}]},
 
   {id:'coords',g:'coord',title:'좌표 찾기',intro:'칸마다 이름이 있어요. 세로줄은 왼쪽부터 a~h, 가로줄은 아래부터 1~8(백 쪽에서 볼 때). 둘을 합치면 칸 이름 — 예: e4는 e줄과 4줄이 만나는 칸. 기보를 읽고 머릿속으로 수를 따라가려면 꼭 필요해요. 하루 1~2분씩!',steps:[
@@ -844,7 +863,7 @@ const LPZ_RAW="mate1|0FxWD|2r2rk1/pp1b1pp1/5q1p/3pp3/1Pn5/P2QPP2/1PB1N1PP/2R2RK1
 // ================= UI =================
 // ----- 사용자 프로필: 사람마다 진도를 따로 저장 -----
 const LS={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const DATA_KEYS=['road','solved','openings','lessons','pzprefs','pzrec','prating','pzstats','grating','gstats','ggame','gprefs','gsaves'];
+const DATA_KEYS=['road','solved','openings','lessons','pzprefs','pzrec','prating','pzstats','grating','gstats','ggame','gprefs','gsaves','pzdone'];
 const PROF_EMOJI=['🦁','🐰','🐻','🐼','🦊','🐸','🐯','🐧','🦄','🐶','🐱','🐵'];
 let PROFILES=LS.get('chess.profiles',[]);
 if(!PROFILES.length){ // 첫 실행: 기존 진도를 첫 프로필로 옮김
@@ -1029,10 +1048,56 @@ const LPZ_NAME=Object.fromEntries(LPZ_CATS);
 const LPZ=LPZ_RAW.split('\n').map(l=>{ const [cat,id,fen,moves,r]=l.split('|'); return {cat,id,fen,moves:moves.split(' '),rating:+r}; });
 const LEVELS=[['auto','🎯 내 점수에 맞춤'],['easy','입문 ~1000'],['mid','초급 1000~1300'],['hard','중급 1300~']];
 const DAY=864e5, RELEARN_MS=10*60e3;
-const prefs=store.get('pzprefs',{src:'inf',icat:'mix',level:'auto'});
-const P={src:prefs.src,cat:'m1',idx:0,icat:prefs.icat,level:prefs.level,sel:-1,hint:null,busy:false,done:false};
+const prefs=Object.assign({icat:'mix',level:'auto',goal:'m1',stage:{},tac:'all'},store.get('pzprefs',{}));
+const P={goal:prefs.goal,src:prefs.goal==='mix'?'inf':'stage',stg:0,idx:0,tac:prefs.tac,stgOf:prefs.stage||{},icat:prefs.icat,level:prefs.level,sel:-1,hint:null,busy:false,done:false};
 const pz=()=>P.z;
-const savePrefs=()=>store.set('pzprefs',{src:P.src,icat:P.icat,level:P.level});
+const savePrefs=()=>store.set('pzprefs',{goal:P.goal,icat:P.icat,level:P.level,stage:P.stgOf,tac:P.tac});
+
+// ----- 목표별 퍼즐: 1수 메이트 · 2수 메이트 · 기물 얻기 → 난이도 순 10문제씩 단계로 -----
+// 손으로 만든 설명 있는 문제가 각 목표의 '입문' 단계, 그다음부터 lichess 퍼즐을 쉬운 것부터 10개씩.
+const GOALS=[['m1','👑 1수 메이트'],['m2','👑 2수 메이트'],['mat','💎 기물 얻기'],['mix','🎲 섞어서']];
+const GOAL_NAME={m1:'1수 메이트',m2:'2수 메이트',mat:'기물 얻기'};
+const GOAL_TXT={m1:'상대 킹을 한 수 만에 체크메이트! 단계가 올라갈수록 어려워져요.',
+  m2:'두 수 만에 체크메이트. 내 수 → 상대 응수 → 마무리, 세 수를 미리 읽어요.',
+  mat:'교환이 다 끝났을 때 기물 점수를 더 많이 얻는 수를 찾아요. (폰1 · 나이트3 · 비숍3 · 룩5 · 퀸9)'};
+const GOAL_CATS={m1:['mate1'],m2:['mate2'],mat:['hanging','fork','pin','skewer','disc']};
+const GOAL_BASIC={m1:'m1',m2:'m2',mat:'tac'};
+const TACS=[['all','모든 기술'],['hanging','공짜 기물'],['fork','포크'],['pin','핀'],['skewer','스큐어'],['disc','디스커버드 어택']];
+const STAGE_N=10, _stc={};
+function stages(g){
+  const key=g+'|'+P.tac; if(_stc[key]) return _stc[key];
+  const out=[];
+  if(g!=='mat'||P.tac==='all') out.push({label:'입문',basic:true,items:PUZZLES.filter(x=>x.cat===GOAL_BASIC[g]).map(z=>({z}))});
+  const cats=g==='mat'&&P.tac!=='all'?[P.tac]:GOAL_CATS[g];
+  const pool=LPZ.filter(p=>cats.includes(p.cat)).sort((a,b)=>a.rating-b.rating||(a.id<b.id?-1:1));
+  for(let i=0,k=1;i<pool.length;i+=STAGE_N,k++){ const it=pool.slice(i,i+STAGE_N); out.push({label:String(k),lo:it[0].rating,hi:it[it.length-1].rating,items:it.map(lp=>({lp}))}); }
+  return _stc[key]=out;
+}
+const pzDone=()=>store.get('pzdone',{});
+const itemSolved=(it,done,sv)=>it.z?!!sv[it.z.title]:!!done[it.lp.id];
+const stageProg=(st,done,sv)=>st.items.filter(it=>itemSolved(it,done,sv)).length;
+function recStage(g){ // 추천 단계: 입문을 안 끝냈으면 입문, 아니면 아직 다 못 푼 단계 중 내 퍼즐 점수와 가장 가까운 곳
+  const r=store.get('prating',800), L=stages(g), done=pzDone(), sv=store.get('solved',{});
+  if(L[0].basic&&stageProg(L[0],done,sv)<L[0].items.length) return 0;
+  let best=L.length-1,bd=1e9;
+  L.forEach((st,i)=>{ if(st.basic||stageProg(st,done,sv)>=st.items.length) return; const d=Math.abs((st.lo+st.hi)/2-r); if(d<bd){ bd=d; best=i; } });
+  return best;
+}
+const stageKey=()=>P.goal+(P.goal==='mat'?':'+P.tac:'');
+function setGoal(g){
+  P.goal=g; P.src=g==='mix'?'inf':'stage'; savePrefs();
+  if(g==='mix') return nextInf();
+  const st=P.stgOf[stageKey()];
+  openStage(st!=null&&st<stages(g).length?st:recStage(g));
+}
+function openStage(i,idx){
+  P.stg=i; P.stgOf[stageKey()]=i; savePrefs(); P.scrollStage=true;
+  const st=stages(P.goal)[i], done=pzDone(), sv=store.get('solved',{});
+  if(idx==null){ idx=st.items.findIndex(it=>!itemSolved(it,done,sv)); if(idx<0) idx=0; }
+  loadItem(idx);
+}
+function loadItem(idx){ P.idx=idx; const it=stages(P.goal)[P.stg].items[idx]; loadZ(it.z||toZ(it.lp,false)); }
+function markDone(id,v){ const d=pzDone(); if(!d[id]||d[id]>v){ d[id]=v; store.set('pzdone',d); } }
 
 function toZ(lp,review){
   const mate=lp.cat.startsWith('mate');
@@ -1074,7 +1139,7 @@ function schedule(r,success,secs,now){
   return !relearn&&(fast||slow);
 }
 function record(success){
-  if(P.src!=='inf'||P.z.recorded) return; P.z.recorded=true;
+  if(!P.z.lp||P.z.recorded) return; P.z.recorded=true;
   const lp=P.z.lp,now=Date.now(),{rec,rating,st}=infStats();
   const isNew=!rec[lp.id], r=rec[lp.id]||{n:0,ease:2.5,iv:0,lapses:0};
   P.secs=Math.round((now-P.t0)/1000);
@@ -1115,8 +1180,11 @@ function segButtons(el,items,cur,fn,cls){
 P.render=()=>{
   drawBoard($('pBoard'),P);
   const z=P.z, inf=P.src==='inf';
-  segButtons($('pSrc'),[['basic',`📘 기본 문제 ${PUZZLES.length}`],['inf',`♾️ 무한 퍼즐 ${LPZ.length.toLocaleString()}`]],P.src,setSrc);
-  $('pBasic').style.display=inf?'none':''; $('pInf').style.display=inf?'':'none';
+  segButtons($('pGoals'),GOALS,P.goal,setGoal,'goals');
+  $('pStageBox').style.display=inf?'none':''; $('pInf').style.display=inf?'':'none';
+  { const {dueNow,rating}=infStats();
+    $('pMini').innerHTML=inf?'':`내 퍼즐 점수 <b>${rating}</b>${P.delta!=null?` (${P.delta>=0?'+':''}${P.delta})`:''}`+(dueNow?` · <button class="btn small" id="pRev">🔁 복습할 문제 ${dueNow}개</button>`:'');
+    if($('pRev')) $('pRev').onclick=()=>{ P.icat='mix'; setGoal('mix'); }; }
   if(inf){
     segButtons($('pThemes'),LPZ_CATS,P.icat,k=>{P.icat=k; savePrefs(); nextInf();},'small');
     segButtons($('pLevels'),LEVELS,P.level,k=>{P.level=k; savePrefs(); nextInf();},'small');
@@ -1128,22 +1196,39 @@ P.render=()=>{
     $('pLink').innerHTML=P.done?`<a href="https://lichess.org/training/${z.lp.id}" target="_blank" rel="noopener">lichess에서 이 퍼즐 보기 ↗</a> · 퍼즐 출처: lichess.org (CC0)`:'';
     $('pNext').textContent=P.done?'다음 문제 ▶':'건너뛰기 ▶';
   } else {
-    const list=PUZZLES.filter(x=>x.cat===P.cat), solved=store.get('solved',{});
-    segButtons($('pCats'),CATS,P.cat,selectCat);
-    $('pDots').innerHTML=''; list.forEach((x,i)=>{const b=document.createElement('button'); b.textContent=i+1; b.className=(solved[x.title]?'solved ':'')+(i===P.idx?'cur':''); b.onclick=()=>loadPuzzle(i); $('pDots').appendChild(b);});
-    $('pTitle').textContent=z.title;
-    $('pGoal').textContent=z.type==='mate'?`${z.n}수 만에 체크메이트하세요.`+(z.n>1?' 상대의 응수는 자동으로 둬요.':''):z.goal;
-    $('pLink').innerHTML='';
-    $('pNext').textContent=P.idx<list.length-1?'다음 ▶':'다음 단계 ▶';
+    const L=stages(P.goal), st=L[P.stg], done=pzDone(), sv=store.get('solved',{}), rec=recStage(P.goal), it=st.items[P.idx];
+    $('pGoalTxt').textContent=GOAL_TXT[P.goal];
+    $('pTacs').style.display=P.goal==='mat'?'':'none';
+    if(P.goal==='mat') segButtons($('pTacs'),TACS,P.tac,k=>{ P.tac=k; savePrefs(); setGoal('mat'); },'small');
+    const box=$('pStages'); box.innerHTML='';
+    L.forEach((x,i)=>{ const n=stageProg(x,done,sv), b=document.createElement('button');
+      b.className='stg'+(x.basic?' basic':'')+(n>=x.items.length?' full':'')+(i===P.stg?' cur':'')+(i===rec&&i!==P.stg?' rec':'');
+      b.innerHTML=`${x.basic?'📘 입문':x.label}<i style="width:${n/x.items.length*100}%"></i>`;
+      b.title=x.basic?'설명이 있는 입문 문제':`난이도 ${x.lo}~${x.hi} · ${n}/${x.items.length}`;
+      b.onclick=()=>openStage(i); box.appendChild(b); });
+    if(P.scrollStage){ P.scrollStage=false; const cur=box.children[P.stg]; if(cur) box.scrollTop=Math.max(0,cur.offsetTop-box.offsetTop-50); }
+    const prog=stageProg(st,done,sv);
+    $('pStageTtl').innerHTML=(st.basic?'📘 입문 문제':`${st.label}단계`)+` · <span style="color:var(--ok)">${prog}/${st.items.length}</span>`+(st.basic?'':` <span class="muted">· 난이도 ${st.lo}~${st.hi}</span>`);
+    $('pDots').innerHTML=''; st.items.forEach((x,i)=>{ const b=document.createElement('button'); b.textContent=i+1;
+      const v=x.z?(sv[x.z.title]?1:0):done[x.lp.id]||0;
+      b.className=(v===1?'solved ':v===2?'retry ':'')+(i===P.idx?'cur':''); b.title=v===2?'힌트나 다시 하기로 푼 문제':''; b.onclick=()=>loadItem(i); $('pDots').appendChild(b); });
+    if(z.lp){
+      $('pTitle').textContent=`${GOAL_NAME[P.goal]} ${st.label}단계 · ${P.idx+1}번`+(P.goal==='mat'&&P.done?` · ${LPZ_NAME[z.lp.cat]}`:'');
+      $('pGoal').textContent=z.type==='mate'?`${z.n}수 만에 체크메이트하세요.`+(z.n>1?' 상대의 응수는 자동으로 둬요.':''):GOAL_TXT.mat;
+      $('pLink').innerHTML=P.done?`<a href="https://lichess.org/training/${z.lp.id}" target="_blank" rel="noopener">lichess에서 이 퍼즐 보기 ↗</a> · 퍼즐 출처: lichess.org (CC0)`:'';
+    } else {
+      $('pTitle').textContent=z.title;
+      $('pGoal').textContent=z.type==='mate'?`${z.n}수 만에 체크메이트하세요.`+(z.n>1?' 상대의 응수는 자동으로 둬요.':''):z.goal;
+      $('pLink').innerHTML='';
+    }
+    $('pNext').textContent=!P.done?'건너뛰기 ▶':P.idx<st.items.length-1?'다음 문제 ▶':P.stg<L.length-1?'다음 단계 ▶':'처음 단계로 ▶';
   }
   $('pGoal').style.display=P.showGoal?'':'none'; $('pGoalBtn').textContent=P.showGoal?'🎯 숨기기':'🎯 목표 보기';
   $('pTurn').textContent=P.side==='w'?'백 차례':'흑 차례'; $('pTurn').className='turn '+P.side;
   $('pMsg').textContent=P.msg; $('pMsg').className='msg '+(P.tone||'');
   $('pMat').innerHTML=P.done&&P.mat?matBoxHTML(P.mat.r,P.mat.mate):'';
 };
-function setSrc(k){ P.src=k; savePrefs(); if(k==='inf') nextInf(); else loadPuzzle(P.idx); }
-function selectCat(k){ P.src='basic'; savePrefs(); P.cat=k; loadPuzzle(0); }
-function loadPuzzle(i){ P.idx=i; loadZ(PUZZLES.filter(x=>x.cat===P.cat)[i]); }
+function selectCat(k){ setGoal({m1:'m1',m2:'m2',tac:'mat'}[k]||'m1'); } // 길잡이 링크용
 function playedSan(){ let t=P.s0; return P.played.map(m=>{ const x=san(t,m); t=make(t,m); return x; }).join(' '); }
 function solutionSan(){
   const z=P.z; let s=parseFEN(z.fen); if(z.pre) s=make(s,findMove(s,z.pre)); const out=[];
@@ -1177,7 +1262,7 @@ function puzzleMove(m){
     else if(inCheck(s2,s2.turn)) why='체크는 맞지만 상대가 피할 방법이 있어요.';
     else if(z.type==='mate') why='메이트로 이어지지 않아요. 상대에게 피할 길이 남아요.';
     else why=wrongMoveText(P.s,m);
-    if(P.src==='inf'&&!P.failed){ P.failed=true; record(false); why+=P.delta!=null?` (점수 ${P.delta} · 다음 문제는 더 쉬워져요 · 이 문제는 10분 뒤 다시)`:' (10분 뒤 다시 나와요)'; }
+    if(z.lp&&!P.failed){ P.failed=true; record(false); why+=P.src==='inf'?(P.delta!=null?` (점수 ${P.delta} · 다음 문제는 더 쉬워져요 · 이 문제는 10분 뒤 다시)`:' (10분 뒤 다시 나와요)'):(P.delta!=null?` (점수 ${P.delta} · 이 문제는 나중에 복습으로 다시 나와요)`:''); }
     P.s=s2; P.last=m; P.msg='❌ '+why+' 다시 해보세요.'; P.tone='bad'; P.busy=true; P.render(); shake($('pBoard'));
     P.timer=setTimeout(()=>{ P.s=P.stage.s; P.last=P.stage.last; P.busy=false; P.render(); },1100);
     return;
@@ -1186,13 +1271,20 @@ function puzzleMove(m){
   if(finished){
     P.done=true; P.tone='ok';
     const mate=isMate(P.s), r=materialOf(P.s0,P.played); P.mat={r,mate};
-    if(P.src==='inf'){
+    if(z.lp){
       if(!P.failed){ record(true); celebrate(); }
+      if(P.src==='stage'){ markDone(z.lp.id,P.failed?2:1); }
       const mat=!mate&&r.net<=0?' '+materialText(r):'';
+      if(P.src==='stage'){
+        const st=stages(P.goal)[P.stg], n=stageProg(st,pzDone(),store.get('solved',{})), full=n>=st.items.length;
+        P.msg=(P.failed?'🏁 완료! 다음엔 한 번에 풀어 봐요. ':'✅ 정답! ')+`수순: ${playedSan()}`+(P.alt?' '+P.alt:mat)+` · ${st.label}단계 ${n}/${st.items.length}`+(full?` 🎉 ${st.label}단계 완료!`:'');
+        if(full&&!P.failed) celebrate(40);
+      } else
       P.msg=(P.failed?'🏁 완료! ':'✅ 정답! ')+`수순: ${playedSan()}`+(P.alt?' '+P.alt:mat)+(P.failed?' — 10분 뒤에 다시 만나요.':` · ⏱ ${P.secs}초 · 다음 복습: ${fmtIv(P.nextIv)} 후`+(!P.speedNote?'':P.secs<20?' (빨리 풀어서 간격을 더 늘렸어요)':P.secs>90?' (오래 걸려서 간격을 조금 줄였어요)':''));
     } else {
       P.msg='✅ 정답! '+mv+' — '+(P.alt?P.alt+' ':'')+z.explain;
       const sv=store.get('solved',{}); sv[z.title]=true; store.set('solved',sv);
+      const st=stages(P.goal)[P.stg]; if(st&&st.basic){ const n=stageProg(st,pzDone(),sv); P.msg+=` · 입문 ${n}/${st.items.length}`+(n>=st.items.length?' 🎉 입문 완료! 다음 단계로 가 봐요.':''); }
     }
     P.render(); return;
   }
@@ -1211,10 +1303,10 @@ function puzzleHint(){
     m=(cand&&winsIn(P.s,cand,P.left))?cand:legal(P.s).find(x=>winsIn(P.s,x,P.left));
   } else m=findMove(P.s,z.line[P.li]);
   if(!m) return;
-  if(P.src==='inf'&&!P.failed){ P.failed=true; record(false); }
+  if(z.lp&&!P.failed){ P.failed=true; record(false); }
   P.hintLv++;
   P.hint=P.hintLv>=2?[m.from,m.to]:[m.from];
-  P.msg=(P.hintLv>=2?'💡 파란 칸으로 옮겨 보세요.':'💡 빛나는 기물을 움직여 보세요. (한 번 더 누르면 도착 칸까지)'+(z.hint?' '+z.hint:''))+(P.src==='inf'?' 힌트를 쓴 문제는 10분 뒤 다시 나와요.':'');
+  P.msg=(P.hintLv>=2?'💡 파란 칸으로 옮겨 보세요.':'💡 빛나는 기물을 움직여 보세요. (한 번 더 누르면 도착 칸까지)'+(z.hint?' '+z.hint:''))+(z.lp?' 힌트를 쓴 문제는 나중에 복습으로 다시 나와요.':'');
   P.tone=''; P.render();
 }
 $('pHint').onclick=puzzleHint;
@@ -1222,9 +1314,9 @@ $('pGoalBtn').onclick=()=>{ P.showGoal=!P.showGoal; P.render(); };
 $('pReset').onclick=()=>loadZ(P.z);
 $('pNext').onclick=()=>{
   if(P.src==='inf') return nextInf();
-  const n=PUZZLES.filter(x=>x.cat===P.cat).length;
-  if(P.idx<n-1) loadPuzzle(P.idx+1);
-  else{ const ci=CATS.findIndex(c=>c[0]===P.cat); selectCat(CATS[(ci+1)%CATS.length][0]); }
+  const L=stages(P.goal), st=L[P.stg];
+  if(P.idx<st.items.length-1) loadItem(P.idx+1);
+  else openStage(P.stg<L.length-1?P.stg+1:0);
 };
 
 // ---------- openings ----------
@@ -1740,7 +1832,7 @@ renderWho();
 $('snd').onclick=()=>{ setMute(!MUTE); if(!MUTE){ ac(); sfx('move'); } }; setMute(MUTE);
 if(PROFILES.length>1&&!sessionStorage.getItem('chess.picked')) $('who').click();
 
-renderRoad(); renderOpList(); renderLessonList(); if(P.src==='inf') nextInf(); else loadPuzzle(0);
+renderRoad(); renderOpList(); renderLessonList(); setGoal(P.goal);
 // 오프라인 지원(HTTPS 주소나 localhost에서만 동작)
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
