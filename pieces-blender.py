@@ -6,9 +6,13 @@ ONLY = sys.argv[sys.argv.index('--')+2] if len(sys.argv) > sys.argv.index('--')+
 os.makedirs(OUT, exist_ok=True)
 ELEV = math.radians(24)
 KING_H = 0.92
-LINE = 3.0
+LINE = 1.0
 LINECOL = (0.03, 0.03, 0.05)
-TARGET = {'p': .44, 'n': .58, 'b': .61, 'r': .67, 'q': .70, 'k': .74}
+# FIDE 장비 규정의 스탠턴 기물 키(cm): 킹 9.5 · 퀸 8.5 · 비숍 7 · 나이트 6 · 룩 5.5 · 폰 5
+TARGET = {'p': 5.0, 'n': 6.0, 'b': 7.0, 'r': 5.5, 'q': 8.5, 'k': 9.5}
+# 받침 지름(칸 너비 대비): 아이 눈에 잘 보이게 조금 통통하게, 룩은 낮고 넓은 성탑
+BASE_D = {'p': .50, 'n': .54, 'b': .54, 'r': .56, 'q': .58, 'k': .60}
+BASE_R = {'p': .30, 'n': .33, 'b': .31, 'r': .33, 'q': .34, 'k': .35}
 W, H = 288, 360
 
 def reset():
@@ -166,10 +170,10 @@ for t in 'pnbrqk':
             if ob.hide_render: continue
             dg = bpy.context.evaluated_depsgraph_get(); ev = ob.evaluated_get(dg)
             for v in ev.to_mesh().vertices: top = max(top, (ob.matrix_world @ v.co).z)
-        s = KING_H*TARGET[t]/TARGET['k']/top
+        s = KING_H*TARGET[t]/TARGET['k']/top; sxy = BASE_D[t]/2/BASE_R[t]
         body, eye = materials(c)
         for ob in [o for o in bpy.data.objects if o.type == 'MESH']:
-            ob.scale = [x*s for x in ob.scale]; ob.location = Vector(ob.location)*s
+            ob.scale = (ob.scale[0]*sxy, ob.scale[1]*sxy, ob.scale[2]*s); ob.location = Vector((ob.location[0]*sxy, ob.location[1]*sxy, ob.location[2]*s))
         for ob in parts:
             if ob.type == 'MESH':
                 ob.data.materials.clear(); ob.data.materials.append(eye if ob.get('eye') else body)
