@@ -5,7 +5,7 @@
 # 기물 모양은 design/pieces-svg/*.svg(선 외곽선 버전)를 그대로 옮겨 넣어요.
 import os, re
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE); D = os.path.join(ROOT, 'design')
-LIGHT, DARK, BORDER, COORD_L, COORD_D = '#e2c98f', '#6f9440', '#557330', '#5e7d33', '#f3e6c2'
+LIGHT, DARK, BORDER, COORD_L, COORD_D = '#e6c899', '#a5724a', '#7a4e2b', '#8a5f36', '#f6e6c8'
 FIT = 1.087   # 앱과 같은 크기: 기물 그림을 칸의 108.7%로 가운데 맞춤
 NAMES = {'k': '킹', 'q': '퀸', 'r': '룩', 'b': '비숍', 'n': '나이트', 'p': '폰'}
 
