@@ -1588,6 +1588,8 @@ renderWho();
 if(PROFILES.length>1&&!sessionStorage.getItem('chess.picked')) $('who').click();
 
 renderRoad(); renderOpList(); renderLessonList(); if(P.src==='inf') nextInf(); else loadPuzzle(0);
+// 오프라인 지원(HTTPS 주소나 localhost에서만 동작)
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
 </html>
