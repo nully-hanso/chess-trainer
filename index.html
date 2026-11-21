@@ -88,26 +88,26 @@
   .sq.dot::after{content:"";position:absolute;width:30%;height:30%;border-radius:50%;background:rgba(40,60,120,.32)}
   .sq.cap::after{content:"";position:absolute;inset:5%;border-radius:50%;border:5px solid rgba(40,60,120,.32)}
   @keyframes pulse{from{opacity:.35}to{opacity:1}}
-  /* 기물: 블렌더로 렌더한 입체 그림(pieces/*.webp). 그림 상자는 칸 너비 × 1.25칸 높이이고 받침이 칸 안쪽에 서서
+  /* 기물: 블렌더로 렌더한 입체 그림(pieces/*.svg). 그림 상자는 칸 너비 × 1.25칸 높이이고 받침이 칸 안쪽에 서서
      키 큰 기물은 위 칸으로 살짝 솟아요(2.5D). 아래 줄 기물이 DOM에서 나중이라 뒤 기물을 자연스럽게 가려요. */
   .sq.c0{border-top-left-radius:11px}.sq.c7{border-top-right-radius:11px}.sq.c56{border-bottom-left-radius:11px}.sq.c63{border-bottom-right-radius:11px}
   .sq.c0::before{border-top-left-radius:11px}.sq.c7::before{border-top-right-radius:11px}.sq.c56::before{border-bottom-left-radius:11px}.sq.c63::before{border-bottom-right-radius:11px}
-  .pc{display:inline-block;width:1em;height:1em;font-size:32px;background:var(--img) center/100% 100% no-repeat;vertical-align:middle;pointer-events:none}
+  .pc{display:inline-block;width:1em;height:1em;font-size:32px;background:var(--img) center/108.7% no-repeat;vertical-align:middle;pointer-events:none}
   .sq .pc{position:absolute;left:0;right:0;bottom:0;width:auto;height:100%;z-index:1;background:none;filter:none;font-size:inherit}
   .sq .pc::before{content:"";position:absolute;left:calc(50% - var(--sw,.58)*50%);width:calc(var(--sw,.58)*100%);bottom:calc(17% - var(--sw,.58)*6%);height:calc(var(--sw,.58)*12%);
     border-radius:50%;background:radial-gradient(closest-side,rgba(30,40,20,.42),rgba(30,40,20,.18) 60%,transparent);transition:transform .25s cubic-bezier(.175,.885,.32,1.275),opacity .25s}
-  .sq .pc::after{content:"";position:absolute;inset:0;background:var(--img) center/100% 100% no-repeat;transform-origin:50% 92%;
+  .sq .pc::after{content:"";position:absolute;inset:0;background:var(--img) center/108.7% no-repeat;transform-origin:50% 92%;
     transition:transform .25s cubic-bezier(.175,.885,.32,1.275)}
   .sq.sel .pc{z-index:3}
   .sq .pc::before{display:none}
   .sq.sel .pc::after{transform:translateY(-7%) scale(1.07);filter:drop-shadow(0 calc(var(--bs) / 8 * .07) calc(var(--bs) / 8 * .05) rgba(40,30,10,.35))}
   .pc.t-p{--sw:.46}.pc.t-n{--sw:.54}.pc.t-b{--sw:.5}.pc.t-r{--sw:.58}.pc.t-q{--sw:.56}.pc.t-k{--sw:.58}
-  .pc.w.t-p{--img:url(pieces/wp.webp)}.pc.w.t-n{--img:url(pieces/wn.webp)}.pc.w.t-b{--img:url(pieces/wb.webp)}.pc.w.t-r{--img:url(pieces/wr.webp)}.pc.w.t-q{--img:url(pieces/wq.webp)}.pc.w.t-k{--img:url(pieces/wk.webp)}
-  .pc.b.t-p{--img:url(pieces/bp.webp)}.pc.b.t-n{--img:url(pieces/bn.webp)}.pc.b.t-b{--img:url(pieces/bb.webp)}.pc.b.t-r{--img:url(pieces/br.webp)}.pc.b.t-q{--img:url(pieces/bq.webp)}.pc.b.t-k{--img:url(pieces/bk.webp)}
+  .pc.w.t-p{--img:url(pieces/wp.svg)}.pc.w.t-n{--img:url(pieces/wn.svg)}.pc.w.t-b{--img:url(pieces/wb.svg)}.pc.w.t-r{--img:url(pieces/wr.svg)}.pc.w.t-q{--img:url(pieces/wq.svg)}.pc.w.t-k{--img:url(pieces/wk.svg)}
+  .pc.b.t-p{--img:url(pieces/bp.svg)}.pc.b.t-n{--img:url(pieces/bn.svg)}.pc.b.t-b{--img:url(pieces/bb.svg)}.pc.b.t-r{--img:url(pieces/br.svg)}.pc.b.t-q{--img:url(pieces/bq.svg)}.pc.b.t-k{--img:url(pieces/bk.svg)}
   .sq.check .pc::after{animation:kshake .5s ease-in-out}
   @keyframes kshake{20%{transform:rotate(-7deg)}40%{transform:rotate(6deg)}60%{transform:rotate(-4deg)}80%{transform:rotate(2deg)}}
   .ghost{position:absolute;z-index:4;pointer-events:none}
-  .ghost::after{content:"";position:absolute;inset:0;background:var(--img) center/100% 100% no-repeat}
+  .ghost::after{content:"";position:absolute;inset:0;background:var(--img) center/108.7% no-repeat}
   .burst{position:absolute;z-index:5;pointer-events:none;border-radius:50%;border:3px solid #ffc21a;animation:burst .45s ease-out forwards}
   @keyframes burst{from{transform:scale(.3);opacity:1}to{transform:scale(1.25);opacity:0}}
   @media (prefers-reduced-motion: reduce){.sq .pc::after,.sq .pc::before{transition:none}.sq.check .pc::after{animation:none}}
@@ -886,7 +886,7 @@ function celebrate(n=26){
 const GLYPH={k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟︎'};
 const pcHTML=(t,c)=>`<span class="pc ${c} t-${t}"></span>`;
 // 그림을 미리 받아 두기(처음 둘 때 깜빡이지 않게)
-for(const c of 'wb') for(const t of 'pnbrqk'){ const im=new Image(); im.src=`pieces/${c}${t}.webp`; }
+for(const c of 'wb') for(const t of 'pnbrqk'){ const im=new Image(); im.src=`pieces/${c}${t}.svg`; }
 const $=id=>document.getElementById(id);
 // ----- 효과음: 파일 없이 Web Audio로 직접 만들어요(오프라인에서도 소리 남) -----
 let AC=null, MUTE=LS.get('chess.mute',false);
