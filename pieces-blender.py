@@ -4,15 +4,15 @@ from mathutils import Vector, Matrix
 OUT = sys.argv[sys.argv.index('--')+1]
 ONLY = sys.argv[sys.argv.index('--')+2] if len(sys.argv) > sys.argv.index('--')+2 else ''
 os.makedirs(OUT, exist_ok=True)
-ELEV = math.radians(24)
-KING_H = 0.80
+ELEV = math.radians(9)
+KING_H = 0.84
 LINE = 1.0
 LINECOL = (0.03, 0.03, 0.05)
 # FIDE 장비 규정의 스탠턴 기물 키(cm): 킹 9.5 · 퀸 8.5 · 비숍 7 · 나이트 6 · 룩 5.5 · 폰 5
 # 칸 밖으로 솟지 않게 키 차이는 줄이고(순서는 FIDE 그대로) 대신 폭·부피로 구분
-TARGET = {'p': 5.0, 'n': 6.4, 'b': 6.8, 'r': 5.8, 'q': 7.4, 'k': 8.0}
+TARGET = {'p': 4.7, 'n': 6.3, 'b': 7.0, 'r': 5.9, 'q': 7.6, 'k': 8.2}
 # 받침 지름(칸 너비 대비): 아이 눈에 잘 보이게 조금 통통하게, 룩은 낮고 넓은 성탑
-BASE_D = {'p': .50, 'n': .58, 'b': .56, 'r': .62, 'q': .64, 'k': .66}
+BASE_D = {'p': .40, 'n': .48, 'b': .44, 'r': .52, 'q': .50, 'k': .52}
 BASE_R = {'p': .30, 'n': .33, 'b': .31, 'r': .33, 'q': .34, 'k': .35}
 W, H = 288, 288
 
@@ -23,7 +23,7 @@ def arc(cz, R, a0, a1, n=10, cx=0.0):
     return [(cx + R*math.cos(math.radians(a0+(a1-a0)*i/n)), cz + R*math.sin(math.radians(a0+(a1-a0)*i/n))) for i in range(n+1)]
 
 def base(rb):
-    return [(0, 0), (rb, 0), (rb, .03)] + arc(.05, .022, -60, 60, 6, rb-.012) + [(rb*.9, .075), (rb*.9, .088)] + arc(.105, .02, -90, 60, 5, rb*.78) + [(rb*.68, .13)]
+    return [(0, 0), (rb, 0), (rb, .022)] + arc(.036, .015, -60, 60, 6, rb-.009) + [(rb*.86, .052), (rb*.86, .06)] + arc(.074, .013, -90, 60, 5, rb*.72) + [(rb*.6, .095)]
 
 def lathe(name, prof, seg=72):
     me = bpy.data.meshes.new(name); bm = bmesh.new()
@@ -66,7 +66,7 @@ def cut(ob, cutter):
 def build(t):
     parts = []
     if t == 'p':
-        prof = base(.30) + [(.165, .15), (.115, .33), (.175, .36), (.18, .38), (.11, .40)] + arc(.485, .115, -48, 90, 14)
+        prof = base(.30) + [(.15, .13), (.10, .30), (.165, .33), (.17, .35), (.095, .37)] + arc(.47, .125, -50, 90, 14)
         parts.append(lathe('pawn', prof))
     elif t == 'r':
         prof = base(.33) + [(.21, .15), (.18, .20), (.165, .66), (.185, .70), (.225, .73), (.225, .905), (.165, .905), (.165, .86), (0, .86)]
@@ -74,9 +74,9 @@ def build(t):
         for i, a in enumerate((0, 60, 120)):
             cut(ob, box(f'c{i}', (.7, .065, .2), (0, 0, .98), (0, 0, math.radians(a))))
     elif t == 'b':
-        prof = base(.31) + [(.175, .15), (.12, .41), (.20, .445), (.205, .47), (.13, .49), (.10, .51), (.13, .54), (.165, .60), (.17, .65), (.15, .70), (.11, .75), (.06, .785), (.03, .795)] + arc(.82, .03, -60, 90, 8)
+        prof = base(.31) + [(.16, .13), (.11, .36), (.19, .39), (.195, .415), (.12, .435), (.10, .45), (.14, .49), (.185, .55), (.20, .61), (.19, .67), (.155, .73), (.10, .78), (.05, .81), (.03, .815)] + arc(.845, .035, -60, 90, 8)
         ob = lathe('bishop', prof); parts.append(ob)
-        cut(ob, box('slit', (.32, .5, .03), (.09*math.cos(math.radians(-62)), .09*math.sin(math.radians(-62)), .70), (0, math.radians(-50), math.radians(-62))))
+        cut(ob, box('slit', (.34, .5, .045), (.11*math.cos(math.radians(-38)), .11*math.sin(math.radians(-38)), .66), (0, math.radians(-48), math.radians(-38))))
     elif t == 'q':
         prof = base(.34) + [(.205, .15), (.13, .50), (.215, .545), (.215, .575), (.14, .60), (.15, .66), (.225, .80), (.205, .82), (.15, .825), (.09, .85), (.075, .87)] + arc(.905, .042, -50, 90, 8)
         parts.append(lathe('queen', prof))
@@ -153,7 +153,7 @@ def scene():
     bg = sc.world.node_tree.nodes['Background']; bg.inputs[0].default_value = (0.75, 0.8, 0.9, 1); bg.inputs[1].default_value = 0.55
     cam = bpy.data.cameras.new('cam'); cam.type = 'ORTHO'; cam.ortho_scale = 1.0
     co = bpy.data.objects.new('cam', cam); sc.collection.objects.link(co); sc.camera = co
-    zt = 0.28/math.cos(ELEV); d = 10
+    zt = 0.33/math.cos(ELEV); d = 10
     co.location = (0, -d*math.cos(ELEV), zt + d*math.sin(ELEV))
     co.rotation_euler = (math.pi/2 - ELEV, 0, 0)
     sun = bpy.data.lights.new('sun', 'SUN'); sun.energy = 3.0; sun.angle = math.radians(3)

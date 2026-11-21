@@ -92,14 +92,14 @@
   .sq.c0::before{border-top-left-radius:11px}.sq.c7::before{border-top-right-radius:11px}.sq.c56::before{border-bottom-left-radius:11px}.sq.c63::before{border-bottom-right-radius:11px}
   .pc{display:inline-block;width:1em;height:1em;font-size:32px;background:var(--img) center/100% 100% no-repeat;vertical-align:middle;pointer-events:none}
   .sq .pc{position:absolute;left:0;right:0;bottom:0;width:auto;height:100%;z-index:1;background:none;filter:none;font-size:inherit}
-  .sq .pc::before{content:"";position:absolute;left:calc(50% - var(--sw,.58)*50%);width:calc(var(--sw,.58)*100%);bottom:calc(22% - var(--sw,.58)*12%);height:calc(var(--sw,.58)*24%);
+  .sq .pc::before{content:"";position:absolute;left:calc(50% - var(--sw,.58)*50%);width:calc(var(--sw,.58)*100%);bottom:calc(17% - var(--sw,.58)*6%);height:calc(var(--sw,.58)*12%);
     border-radius:50%;background:radial-gradient(closest-side,rgba(30,40,20,.42),rgba(30,40,20,.18) 60%,transparent);transition:transform .25s cubic-bezier(.175,.885,.32,1.275),opacity .25s}
-  .sq .pc::after{content:"";position:absolute;inset:0;background:var(--img) center/100% 100% no-repeat;transform-origin:50% 78%;
+  .sq .pc::after{content:"";position:absolute;inset:0;background:var(--img) center/100% 100% no-repeat;transform-origin:50% 83%;
     transition:transform .25s cubic-bezier(.175,.885,.32,1.275)}
   .sq.sel .pc{z-index:3}
   .sq.sel .pc::after{transform:translateY(-9%) scale(1.06)}
   .sq.sel .pc::before{transform:scale(.72);opacity:.55}
-  .pc.t-p{--sw:.52}.pc.t-n{--sw:.6}.pc.t-b{--sw:.58}.pc.t-r{--sw:.64}.pc.t-q{--sw:.66}.pc.t-k{--sw:.68}
+  .pc.t-p{--sw:.46}.pc.t-n{--sw:.54}.pc.t-b{--sw:.5}.pc.t-r{--sw:.58}.pc.t-q{--sw:.56}.pc.t-k{--sw:.58}
   .pc.w.t-p{--img:url(pieces/wp.webp)}.pc.w.t-n{--img:url(pieces/wn.webp)}.pc.w.t-b{--img:url(pieces/wb.webp)}.pc.w.t-r{--img:url(pieces/wr.webp)}.pc.w.t-q{--img:url(pieces/wq.webp)}.pc.w.t-k{--img:url(pieces/wk.webp)}
   .pc.b.t-p{--img:url(pieces/bp.webp)}.pc.b.t-n{--img:url(pieces/bn.webp)}.pc.b.t-b{--img:url(pieces/bb.webp)}.pc.b.t-r{--img:url(pieces/br.webp)}.pc.b.t-q{--img:url(pieces/bq.webp)}.pc.b.t-k{--img:url(pieces/bk.webp)}
   .sq.check .pc::after{animation:kshake .5s ease-in-out}
