@@ -6,6 +6,8 @@ ONLY = sys.argv[sys.argv.index('--')+2] if len(sys.argv) > sys.argv.index('--')+
 os.makedirs(OUT, exist_ok=True)
 ELEV = math.radians(24)
 KING_H = 0.92
+LINE = 3.0
+LINECOL = (0.03, 0.03, 0.05)
 TARGET = {'p': .44, 'n': .58, 'b': .61, 'r': .67, 'q': .70, 'k': .74}
 W, H = 288, 360
 
@@ -69,7 +71,7 @@ def build(t):
     elif t == 'b':
         prof = base(.31) + [(.175, .15), (.12, .41), (.20, .445), (.205, .47), (.13, .49), (.10, .51), (.13, .54), (.165, .60), (.17, .65), (.15, .70), (.11, .75), (.06, .785), (.03, .795)] + arc(.82, .03, -60, 90, 8)
         ob = lathe('bishop', prof); parts.append(ob)
-        cut(ob, box('slit', (.32, .5, .03), (.09, 0, .70), (0, math.radians(-50), 0)))
+        cut(ob, box('slit', (.32, .5, .03), (.09*math.cos(math.radians(-62)), .09*math.sin(math.radians(-62)), .70), (0, math.radians(-50), math.radians(-62))))
     elif t == 'q':
         prof = base(.34) + [(.205, .15), (.13, .50), (.215, .545), (.215, .575), (.14, .60), (.15, .66), (.225, .80), (.205, .82), (.15, .825), (.09, .85), (.075, .87)] + arc(.905, .042, -50, 90, 8)
         parts.append(lathe('queen', prof))
@@ -106,22 +108,39 @@ def build(t):
         for ob in parts: ob.rotation_euler.z += math.radians(-28)
     return parts
 
+def srgb(h):
+    c = [int(h[i:i+2], 16)/255 for i in (0, 2, 4)]
+    return tuple(x/12.92 if x <= .04045 else ((x+.055)/1.055)**2.4 for x in c)
+
+# 툰 재질: 빛의 양을 3단계 색으로 끊어 칠하고(하이라이트·반사 없음), 외곽선은 Freestyle로
+def toon(name, cols, stops=(0.0, 0.30, 0.62)):
+    m = bpy.data.materials.new(name); m.use_nodes = True
+    nt = m.node_tree; nt.nodes.clear()
+    out = nt.nodes.new('ShaderNodeOutputMaterial'); dif = nt.nodes.new('ShaderNodeBsdfDiffuse')
+    s2r = nt.nodes.new('ShaderNodeShaderToRGB'); ramp = nt.nodes.new('ShaderNodeValToRGB'); em = nt.nodes.new('ShaderNodeEmission')
+    ramp.color_ramp.interpolation = 'CONSTANT'
+    el = ramp.color_ramp.elements
+    while len(el) < len(cols): el.new(0.5)
+    for e, pos, c in zip(el, stops, cols): e.position = pos; e.color = (*srgb(c), 1)
+    nt.links.new(dif.outputs[0], s2r.inputs[0]); nt.links.new(s2r.outputs[0], ramp.inputs[0])
+    nt.links.new(ramp.outputs[0], em.inputs[0]); nt.links.new(em.outputs[0], out.inputs[0])
+    return m
+
 def materials(color):
-    def mat(name, rgb, rough, coat=.3):
-        m = bpy.data.materials.new(name); m.use_nodes = True
-        b = m.node_tree.nodes.get('Principled BSDF')
-        b.inputs['Base Color'].default_value = (*rgb, 1)
-        b.inputs['Roughness'].default_value = rough
-        for k, v in (('Coat Weight', coat), ('Subsurface Weight', .08 if color == 'w' else 0), ('Specular IOR Level', .5)):
-            if k in b.inputs: b.inputs[k].default_value = v
-        return m
     if color == 'w':
-        return mat('body', (0.80, 0.70, 0.54), .42), mat('eye', (0.08, 0.06, 0.1), .2)
-    return mat('body', (0.022, 0.024, 0.06), .32, .6), mat('eye', (0.95, 0.9, 0.8), .2)
+        return toon('body', ('c2b29a', 'ebe1cd', 'fffcf4')), toon('eye', ('1b1830', '1b1830', '2d2a3e'))
+    return toon('body', ('15172b', '2b2e4f', '4b5080')), toon('eye', ('f4ecdc', 'f4ecdc', 'ffffff'))
 
 def scene():
     sc = bpy.context.scene
-    sc.render.engine = 'CYCLES'; sc.cycles.samples = 96; sc.cycles.use_denoising = True
+    sc.render.engine = 'BLENDER_EEVEE'
+    sc.render.use_freestyle = True; sc.render.line_thickness_mode = 'ABSOLUTE'; sc.render.line_thickness = LINE
+    vl = sc.view_layers[0]; vl.use_freestyle = True; fs = vl.freestyle_settings; fs.crease_angle = math.radians(128)
+    ls = fs.linesets[0] if fs.linesets else fs.linesets.new('L')
+    ls.select_by_visibility = True; ls.select_by_edge_types = True
+    ls.select_silhouette = True; ls.select_border = True; ls.select_crease = True; ls.select_external_contour = True
+    if ls.linestyle is None: ls.linestyle = bpy.data.linestyles.new('LS')
+    ls.linestyle.color = LINECOL; ls.linestyle.thickness = LINE
     sc.render.film_transparent = True
     sc.render.resolution_x, sc.render.resolution_y = W, H
     sc.view_settings.view_transform = 'Standard'
@@ -132,14 +151,9 @@ def scene():
     zt = 0.245/math.cos(ELEV); d = 10
     co.location = (0, -d*math.cos(ELEV), zt + d*math.sin(ELEV))
     co.rotation_euler = (math.pi/2 - ELEV, 0, 0)
-    def light(name, typ, energy, loc, size=1.0, color=(1, 1, 1)):
-        L = bpy.data.lights.new(name, typ); L.energy = energy; L.color = color
-        if typ == 'AREA': L.size = size
-        o = bpy.data.objects.new(name, L); sc.collection.objects.link(o); o.location = loc
-        o.rotation_euler = (Vector((0, 0, .45)) - Vector(loc)).to_track_quat('-Z', 'Y').to_euler()
-    light('key', 'AREA', 200, (-2.2, -2.6, 3.0), 2.2, (1, .97, .92))
-    light('fill', 'AREA', 45, (2.6, -2.2, 1.4), 2.5, (.85, .9, 1))
-    light('rim', 'AREA', 220, (1.2, 2.6, 2.2), 1.5, (1, 1, 1))
+    sun = bpy.data.lights.new('sun', 'SUN'); sun.energy = 3.0; sun.angle = math.radians(3)
+    so = bpy.data.objects.new('sun', sun); sc.collection.objects.link(so); so.rotation_euler = (math.radians(50), math.radians(-28), math.radians(-35))
+    bg.inputs[1].default_value = 0.25
 
 for t in 'pnbrqk':
     if ONLY and t not in ONLY: continue
@@ -159,7 +173,8 @@ for t in 'pnbrqk':
         for ob in parts:
             if ob.type == 'MESH':
                 ob.data.materials.clear(); ob.data.materials.append(eye if ob.get('eye') else body)
-        bpy.context.scene.view_settings.exposure = -0.35 if c == 'w' else 0.0
+        ls = bpy.context.scene.view_layers[0].freestyle_settings.linesets[0].linestyle
+        ls.color = srgb('2d2a3e') if c == 'w' else srgb('07080f')
         bpy.context.scene.render.filepath = os.path.join(OUT, f'{c}{t}.png')
         bpy.ops.render.render(write_still=True)
         print('done', c, t, round(top, 3))
