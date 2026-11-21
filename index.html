@@ -2,7 +2,15 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- 홈 화면에 추가하면 주소창·탭·닫기 버튼 없이 앱처럼 전체 화면으로 열려요 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="체스 첫걸음">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#ff7a3d">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
 <title>체스 첫걸음 — 초보자 트레이너</title>
 <style>
   :root{
@@ -10,7 +18,7 @@
     --accent:#ff7a3d; --accent-d:#e5602a; --accent2:#fff0e6;
     --ok:#2fa968; --ok2:#e6f8ee; --warn:#e2453c; --warn2:#ffecea; --blue:#4a8cff;
     --light:#fdf3dc; --dark:#8bbf73;
-    --bs:max(250px,min(94vw,540px,calc(100svh - 300px)));
+    --bs:max(250px,min(calc(100vw - 16px),560px,calc(100svh - 290px)));
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0}
@@ -32,15 +40,18 @@
   nav button[data-tab=road]{--tab:#8a6cff} nav button[data-tab=lesson]{--tab:#2fb6a3}
   nav button[data-tab=puzzle]{--tab:#ff7a3d} nav button[data-tab=opening]{--tab:#4a8cff} nav button[data-tab=play]{--tab:#e2453c}
   main{max-width:1060px;margin:0 auto;padding:12px 14px 40px}
+  @media (max-width:600px){ main{padding-left:8px;padding-right:8px} }
+  /* 홈 화면 앱(전체 화면)일 때 노치·홈 막대 피하기 */
+  body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
   .view{display:none}.view.on{display:block;animation:fade .25s}
   @keyframes fade{from{opacity:0;transform:translateY(4px)}}
 
   /* play layout: board column (board + message + buttons) + side panel */
   .play{display:flex;gap:20px;align-items:flex-start;justify-content:center;flex-wrap:wrap}
   .boardcol{width:var(--bs);display:flex;flex-direction:column;gap:8px}
-  #lPlay{--bs:max(240px,min(94vw,540px,calc(100svh - 370px)))}
-  #oPlay{--bs:max(240px,min(94vw,540px,calc(100svh - 320px)))}
-  #v-play{--bs:max(240px,min(94vw,540px,calc(100svh - 360px)))}
+  #lPlay{--bs:max(240px,min(calc(100vw - 16px),560px,calc(100svh - 360px)))}
+  #oPlay{--bs:max(240px,min(calc(100vw - 16px),560px,calc(100svh - 310px)))}
+  #v-play{--bs:max(240px,min(calc(100vw - 16px),560px,calc(100svh - 345px)))}
   .bhead{display:flex;align-items:center;gap:8px;min-height:36px}
   .bhead .ttl{font-weight:800;font-size:17px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .panel{flex:1;min-width:280px;max-width:480px;background:var(--card);border-radius:22px;padding:16px 18px;box-shadow:0 4px 0 var(--line),0 8px 24px rgba(80,60,140,.06)}
@@ -215,17 +226,18 @@
   }
   /* 아이패드·태블릿 세로: 판을 더 크게 */
   @media (orientation:portrait) and (min-width:700px){
-    :root,#lPlay,#oPlay,#v-play{--bs:min(94vw,760px,calc(100svh - 330px))}
+    :root,#lPlay,#oPlay,#v-play{--bs:min(calc(100vw - 32px),900px,calc(100svh - 310px))}
   }
   /* 가로 화면(아이패드·노트북): 왼쪽은 화면 높이에 꽉 찬 체스판, 오른쪽에 안내·버튼·패널 */
   @media (orientation:landscape) and (min-width:900px) and (min-height:600px){
-    :root,#lPlay,#oPlay,#v-play{--bs:min(calc(100svh - 136px),calc(100vw - 400px))}
-    .top{padding-top:6px;max-width:none}
-    nav{max-width:760px;margin:6px auto 0;gap:6px}
+    :root,#lPlay,#oPlay,#v-play{--bs:min(calc(100svh - 98px - env(safe-area-inset-top) - env(safe-area-inset-bottom)),calc(100vw - 350px))}
+    #lPlay{--bs:min(calc(100svh - 114px - env(safe-area-inset-top) - env(safe-area-inset-bottom)),calc(100vw - 350px))}
+    .top{padding-top:8px;max-width:none;position:relative}
+    nav{position:absolute;top:calc(8px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);width:min(620px,calc(100vw - 420px));margin:0;padding:0;gap:6px}
     nav button{flex-direction:row;justify-content:center;gap:5px;padding:6px 4px;font-size:14px}
     nav button .ic{font-size:18px}
     main{max-width:none;padding:10px 16px 10px}
-    .play{display:grid;grid-template-columns:var(--bs) minmax(300px,440px);grid-template-rows:repeat(12,auto) 1fr;gap:8px 22px;justify-content:center;align-items:start}
+    .play{display:grid;grid-template-columns:var(--bs) minmax(270px,440px);grid-template-rows:repeat(12,auto) 1fr;gap:8px 22px;justify-content:center;align-items:start}
     .play>.boardcol{display:contents}
     .play .board{grid-column:1;grid-row:1/-1}
     .play>.panel,.play>.boardcol>*:not(.board){grid-column:2;min-width:0}
