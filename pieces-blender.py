@@ -5,15 +5,16 @@ OUT = sys.argv[sys.argv.index('--')+1]
 ONLY = sys.argv[sys.argv.index('--')+2] if len(sys.argv) > sys.argv.index('--')+2 else ''
 os.makedirs(OUT, exist_ok=True)
 ELEV = math.radians(24)
-KING_H = 0.92
+KING_H = 0.80
 LINE = 1.0
 LINECOL = (0.03, 0.03, 0.05)
 # FIDE 장비 규정의 스탠턴 기물 키(cm): 킹 9.5 · 퀸 8.5 · 비숍 7 · 나이트 6 · 룩 5.5 · 폰 5
-TARGET = {'p': 5.0, 'n': 6.0, 'b': 7.0, 'r': 5.5, 'q': 8.5, 'k': 9.5}
+# 칸 밖으로 솟지 않게 키 차이는 줄이고(순서는 FIDE 그대로) 대신 폭·부피로 구분
+TARGET = {'p': 5.0, 'n': 6.4, 'b': 6.8, 'r': 5.8, 'q': 7.4, 'k': 8.0}
 # 받침 지름(칸 너비 대비): 아이 눈에 잘 보이게 조금 통통하게, 룩은 낮고 넓은 성탑
-BASE_D = {'p': .50, 'n': .54, 'b': .54, 'r': .56, 'q': .58, 'k': .60}
+BASE_D = {'p': .50, 'n': .58, 'b': .56, 'r': .62, 'q': .64, 'k': .66}
 BASE_R = {'p': .30, 'n': .33, 'b': .31, 'r': .33, 'q': .34, 'k': .35}
-W, H = 288, 360
+W, H = 288, 288
 
 def reset():
     bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -71,7 +72,7 @@ def build(t):
         prof = base(.33) + [(.21, .15), (.18, .20), (.165, .66), (.185, .70), (.225, .73), (.225, .905), (.165, .905), (.165, .86), (0, .86)]
         ob = lathe('rook', prof); parts.append(ob)
         for i, a in enumerate((0, 60, 120)):
-            cut(ob, box(f'c{i}', (.7, .065, .2), (0, 0, .96), (0, 0, math.radians(a))))
+            cut(ob, box(f'c{i}', (.7, .065, .2), (0, 0, .98), (0, 0, math.radians(a))))
     elif t == 'b':
         prof = base(.31) + [(.175, .15), (.12, .41), (.20, .445), (.205, .47), (.13, .49), (.10, .51), (.13, .54), (.165, .60), (.17, .65), (.15, .70), (.11, .75), (.06, .785), (.03, .795)] + arc(.82, .03, -60, 90, 8)
         ob = lathe('bishop', prof); parts.append(ob)
@@ -132,8 +133,8 @@ def toon(name, cols, stops=(0.0, 0.30, 0.62)):
 
 def materials(color):
     if color == 'w':
-        return toon('body', ('c2b29a', 'ebe1cd', 'fffcf4')), toon('eye', ('1b1830', '1b1830', '2d2a3e'))
-    return toon('body', ('15172b', '2b2e4f', '4b5080')), toon('eye', ('f4ecdc', 'f4ecdc', 'ffffff'))
+        return toon('body', ('b4b6b1', 'e2e3df', 'fbfbf8')), toon('eye', ('202022', '202022', '2a2a2c'))
+    return toon('body', ('141416', '27272b', '46464c')), toon('eye', ('f2f2ee', 'f2f2ee', 'ffffff'))
 
 def scene():
     sc = bpy.context.scene
@@ -150,9 +151,9 @@ def scene():
     sc.view_settings.view_transform = 'Standard'
     sc.world = bpy.data.worlds.new('w'); sc.world.use_nodes = True
     bg = sc.world.node_tree.nodes['Background']; bg.inputs[0].default_value = (0.75, 0.8, 0.9, 1); bg.inputs[1].default_value = 0.55
-    cam = bpy.data.cameras.new('cam'); cam.type = 'ORTHO'; cam.ortho_scale = 1.25
+    cam = bpy.data.cameras.new('cam'); cam.type = 'ORTHO'; cam.ortho_scale = 1.0
     co = bpy.data.objects.new('cam', cam); sc.collection.objects.link(co); sc.camera = co
-    zt = 0.245/math.cos(ELEV); d = 10
+    zt = 0.28/math.cos(ELEV); d = 10
     co.location = (0, -d*math.cos(ELEV), zt + d*math.sin(ELEV))
     co.rotation_euler = (math.pi/2 - ELEV, 0, 0)
     sun = bpy.data.lights.new('sun', 'SUN'); sun.energy = 3.0; sun.angle = math.radians(3)
@@ -178,7 +179,7 @@ for t in 'pnbrqk':
             if ob.type == 'MESH':
                 ob.data.materials.clear(); ob.data.materials.append(eye if ob.get('eye') else body)
         ls = bpy.context.scene.view_layers[0].freestyle_settings.linesets[0].linestyle
-        ls.color = srgb('2d2a3e') if c == 'w' else srgb('07080f')
+        ls.color = srgb('55575a') if c == 'w' else srgb('050506')
         bpy.context.scene.render.filepath = os.path.join(OUT, f'{c}{t}.png')
         bpy.ops.render.render(write_still=True)
         print('done', c, t, round(top, 3))
