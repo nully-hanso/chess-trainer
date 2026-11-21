@@ -843,7 +843,7 @@ function drawBoard(el,ctx){
 }
 // 기물 크기: 글꼴마다 기호 높이가 제각각이라(폰이 비숍만 하기도 해요) 기기에서 실제 잉크 크기를 재서
 // 점수 순서(폰 < 나이트·비숍 < 룩 < 퀸 < 킹)대로 칸 높이 대비 크기를 맞추고, 칸 가운데에 오게 해요.
-const PIECE_H={p:.44,n:.58,b:.61,r:.67,q:.74,k:.74};
+const PIECE_H={p:.44,n:.58,b:.61,r:.67,q:.70,k:.74};
 function pieceSizes(){
   const probe=document.createElement('span'); probe.className='pc b'; probe.style.cssText='position:absolute;visibility:hidden;font-size:100px';
   document.body.appendChild(probe); const font=getComputedStyle(probe).font; probe.remove();
