@@ -210,6 +210,25 @@
     .panel{max-width:none;width:100%}
     main{padding-top:10px}
   }
+  /* 아이패드·태블릿 세로: 판을 더 크게 */
+  @media (orientation:portrait) and (min-width:700px){
+    :root,#lPlay,#oPlay,#v-play{--bs:min(94vw,760px,calc(100svh - 330px))}
+  }
+  /* 가로 화면(아이패드·노트북): 왼쪽은 화면 높이에 꽉 찬 체스판, 오른쪽에 안내·버튼·패널 */
+  @media (orientation:landscape) and (min-width:900px) and (min-height:600px){
+    :root,#lPlay,#oPlay,#v-play{--bs:min(calc(100svh - 136px),calc(100vw - 400px))}
+    .top{padding-top:6px;max-width:none}
+    nav{max-width:760px;margin:6px auto 0;gap:6px}
+    nav button{flex-direction:row;justify-content:center;gap:5px;padding:6px 4px;font-size:14px}
+    nav button .ic{font-size:18px}
+    main{max-width:none;padding:10px 16px 10px}
+    .play{display:grid;grid-template-columns:var(--bs) minmax(300px,440px);grid-template-rows:repeat(12,auto) 1fr;gap:8px 22px;justify-content:center;align-items:start}
+    .play>.boardcol{display:contents}
+    .play .board{grid-column:1;grid-row:1/-1}
+    .play>.panel,.play>.boardcol>*:not(.board){grid-column:2;min-width:0}
+    .play>.panel{max-width:none;width:auto}
+    .msg{max-height:none}
+  }
 </style>
 </head>
 <body>
@@ -352,13 +371,23 @@
       </div>
       <div class="panel">
         <div id="gSetup">
-          <h2>🤖 봇과 한 판!</h2>
-          <div class="muted">내 <b>대국 점수</b>에 맞춰 봇이 비슷한 실력으로 둬요. 이기면 점수가 오르고, 지면 내려가요.</div>
+          <h2>⚔️ 한 판 두기!</h2>
+          <h3>누구와 둘까요?</h3>
+          <div class="seg" id="gOpp"></div>
+          <div class="muted" id="gIntro"></div>
           <div class="stats" id="gStats"></div>
-          <h3>나는 어느 색?</h3>
+          <div id="gHumOpts">
+            <h3>상대는 누구?</h3>
+            <div class="seg" id="gFriend"></div>
+            <h3>판 보기</h3>
+            <div class="seg" id="gSpin"></div>
+          </div>
+          <h3 id="gColorTtl">나는 어느 색?</h3>
           <div class="seg" id="gColor"></div>
-          <h3>봇의 실력</h3>
-          <div class="seg" id="gLevel"></div>
+          <div id="gBotOpts">
+            <h3>봇의 실력</h3>
+            <div class="seg" id="gLevel"></div>
+          </div>
           <button class="btn primary" id="gStart" style="width:100%">⚔️ 대국 시작</button>
         </div>
         <div id="gInfo" style="display:none">
@@ -1300,18 +1329,31 @@ $('lNext').onclick=()=>{
 };
 $('lBack').onclick=()=>{ clearTimeout(L.timer); if(L.cg) clearInterval(L.cg.iv); $('lPlay').style.display='none'; $('lPick').style.display=''; renderLessonList(); };
 
-// ---------- 대국: 봇과 한 판 ----------
-// 대국 점수는 퍼즐 점수와 따로 관리(처음 한 번만 퍼즐 점수에서 시작)
+// ---------- 대국: 봇 또는 사람과 한 판 ----------
+// 대국 점수는 퍼즐 점수와 따로 관리(처음 한 번만 퍼즐 점수에서 시작). 사람끼리 둔 판은 점수에 넣지 않아요.
 const START_FEN='rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 const G={sel:-1,hint:null,busy:false,done:true,s:parseFEN(START_FEN),side:'w',flip:false,last:null,msg:'',tone:''};
 const gRating=()=>store.get('grating',null)??store.get('prating',800);
 const gStats=()=>store.get('gstats',{n:0,w:0,l:0,d:0});
-let gPrefs=store.get('gprefs',{color:'w',level:0});
+let gPrefs=Object.assign({color:'w',level:0,opp:'bot',friend:'guest',spin:true},store.get('gprefs',{}));
 const G_LEVELS=[[-200,'🌱 쉽게'],[0,'🎯 내 점수에 맞춤'],[200,'🔥 어렵게']];
+const CNAME={w:'백',b:'흑'};
 function gBotR(){ return Math.max(100,gRating()+(gPrefs.level||0)); }
+function gFriends(){ return PROFILES.filter(p=>p.id!==CUR).map(p=>[p.id,p.emoji+' '+p.name]).concat([['guest','🙂 친구']]); }
+function gFriendOf(id){ const p=PROFILES.find(x=>x.id===id&&x.id!==CUR); return p?{name:p.name,emoji:p.emoji}:{name:'친구',emoji:'🙂'}; }
+const gMe=()=>PROFILES.find(p=>p.id===CUR);
+// 색깔별 선수 정보
+function gPlayer(color){
+  const g=G.g, human=g?g.human:gPrefs.opp==='human', mine=color===(g?g.color:gMyColorPreview());
+  if(mine) return {emoji:gMe().emoji,name:gMe().name,r:human?null:gRating()};
+  if(human){ const f=g?{name:g.oppName,emoji:g.oppEmoji}:gFriendOf(gPrefs.friend); return {emoji:f.emoji,name:f.name,r:null}; }
+  return {emoji:'🤖',name:'봇',r:g?g.botR:gBotR()};
+}
+function gMyColorPreview(){ return gPrefs.color==='b'?'b':'w'; }
+const josaName=n=>josa(n,'이','가');
 function gStatsHTML(){
   const r=gRating(),st=gStats();
-  return `<div class="muted" style="font-weight:800">내 대국 점수</div><div class="big-r">${r}</div>`+
+  return `<div class="muted" style="font-weight:800">내 대국 점수 (봇과 둔 판)</div><div class="big-r">${r}</div>`+
     (st.n?`${st.n}판 · <b>${st.w}</b>승 ${st.l}패 ${st.d}무`:`아직 대국 기록이 없어요. 첫 점수는 퍼즐 점수에서 시작해요.`);
 }
 function gRebuild(){ // 저장된 수순으로 현재 국면 다시 만들기
@@ -1320,7 +1362,14 @@ function gRebuild(){ // 저장된 수순으로 현재 국면 다시 만들기
   for(const u of g.moves){ const m=findMove(s,u); if(!m) break; G.hist.push(san(s,m));
     G.half=(s.b[m.to]||m.ep||s.b[m.from].toLowerCase()==='p')?0:G.half+1; s=make(s,m); last=m;
     const k=posKey(s); G.reps[k]=(G.reps[k]||0)+1; }
-  G.s=s; G.last=last;
+  G.s=s; G.last=last; gSetSide();
+}
+// 누가 판을 만질 수 있는지, 판을 어느 쪽에서 볼지
+function gSetSide(){
+  const g=G.g;
+  if(!g){ G.side=gMyColorPreview(); G.flip=G.side==='b'; return; }
+  if(g.human){ G.side=G.s.turn; G.flip=g.spin?G.s.turn==='b':g.color==='b'; }
+  else { G.side=g.color; G.flip=g.color==='b'; }
 }
 function gCaptured(){ // 잡은 기물(시작 배치와 비교)
   const init={p:8,n:2,b:2,r:2,q:1}, cnt={w:{},b:{}};
@@ -1329,65 +1378,84 @@ function gCaptured(){ // 잡은 기물(시작 배치와 비교)
   const mat=c=>Object.entries(cnt[c]).reduce((x,[t,n])=>x+VAL[t]*n,0);
   return {w:took('w'),b:took('b'),diff:mat('w')-mat('b')};
 }
-function gSideHTML(who,color){
-  const cap=gCaptured(), list=cap[color], adv=color==='w'?cap.diff:-cap.diff, o=other(color);
-  const me=PROFILES.find(p=>p.id===CUR), isMe=who==='me', on=!G.done&&G.s.turn===color;
-  const av=isMe?me.emoji:'🤖', nm=isMe?me.name:'봇', r=isMe?gRating():G.g?G.g.botR:gBotR();
-  return `<span class="av">${av}</span><span class="nm">${nm}</span><span class="r">${color==='w'?'백':'흑'} · ${r}점</span>`+
+function gSideHTML(color){
+  const cap=gCaptured(), list=cap[color], adv=color==='w'?cap.diff:-cap.diff, o=other(color), pl=gPlayer(color);
+  return `<span class="av">${pl.emoji}</span><span class="nm">${pl.name}</span><span class="r">${CNAME[color]}${pl.r!=null?` · ${pl.r}점`:''}</span>`+
     `<span class="caps">${list.map(t=>`<span class="pc ${o}" style="font-size:20px">${GLYPH[t]}</span>`).join('')}${adv>0?`<b>+${adv}</b>`:''}</span>`;
 }
 G.render=()=>{
-  const playing=G.g&&!G.done;
-  if(!G.g) G.side=gPrefs.color==='b'?'b':'w'; // 대국 전에는 고른 색 쪽에서 보기
-  G.flip=G.side==='b'; drawBoard($('gBoard'),G);
-  const botC=other(G.side);
-  $('gTop').innerHTML=gSideHTML('bot',botC); $('gTop').classList.toggle('turnon',!G.done&&G.s.turn===botC);
-  $('gBot').innerHTML=gSideHTML('me',G.side); $('gBot').classList.toggle('turnon',!G.done&&G.s.turn===G.side);
+  const g=G.g, playing=g&&!G.done, human=gPrefs.opp==='human';
+  gSetSide(); drawBoard($('gBoard'),G);
+  const topC=G.flip?'w':'b', botC=other(topC);
+  for(const [id,c] of [['gTop',topC],['gBot',botC]]){ $(id).innerHTML=gSideHTML(c); $(id).classList.toggle('turnon',!!playing&&G.s.turn===c); }
   $('gMsg').textContent=G.msg; $('gMsg').className='msg '+(G.tone||'');
-  $('gActs').style.display=playing?'':'none'; $('gNewActs').style.display=G.g&&G.done?'':'none';
-  $('gUndo').disabled=G.busy||!G.g||G.g.moves.length<(G.side==='w'?1:2);
+  $('gActs').style.display=playing?'':'none'; $('gNewActs').style.display=g&&G.done?'':'none';
+  $('gUndo').disabled=G.busy||!g||(g.human?g.moves.length<1:g.moves.length<(g.color==='w'?1:2));
   $('gHint').disabled=G.busy;
-  $('gSetup').style.display=G.g?'none':''; $('gInfo').style.display=G.g?'':'none';
-  segButtons($('gColor'),[['w','⬜ 백 (먼저)'],['b','⬛ 흑'],['r','🎲 랜덤']],gPrefs.color,k=>{gPrefs.color=k; store.set('gprefs',gPrefs); G.render();});
-  segButtons($('gLevel'),G_LEVELS.map(([d,n])=>[d,`${n} (${Math.max(100,gRating()+d)})`]),gPrefs.level||0,k=>{gPrefs.level=k; store.set('gprefs',gPrefs); G.render();});
-  $('gStats').innerHTML=gStatsHTML(); $('gStats2').innerHTML=gStatsHTML();
-  if(G.g){
+  $('gSetup').style.display=g?'none':''; $('gInfo').style.display=g?'':'none';
+  segButtons($('gOpp'),[['bot','🤖 봇과'],['human','👫 사람과']],gPrefs.opp,k=>{gPrefs.opp=k; gSavePrefs();});
+  $('gBotOpts').style.display=human?'none':''; $('gHumOpts').style.display=human?'':'none';
+  $('gColorTtl').textContent=human?`${gMe().name}${hasJong(gMe().name)?'은':'는'} 어느 색?`:'나는 어느 색?';
+  segButtons($('gColor'),[['w','⬜ 백 (먼저)'],['b','⬛ 흑'],['r','🎲 랜덤']],gPrefs.color,k=>{gPrefs.color=k; gSavePrefs();});
+  segButtons($('gLevel'),G_LEVELS.map(([d,n])=>[d,`${n} (${Math.max(100,gRating()+d)})`]),gPrefs.level||0,k=>{gPrefs.level=k; gSavePrefs();});
+  if(!gFriends().some(f=>f[0]===gPrefs.friend)) gPrefs.friend='guest';
+  segButtons($('gFriend'),gFriends(),gPrefs.friend,k=>{gPrefs.friend=k; gSavePrefs();});
+  segButtons($('gSpin'),[[true,'🔄 차례마다 판 돌리기'],[false,'📌 판 고정']],gPrefs.spin,k=>{gPrefs.spin=k; gSavePrefs();});
+  $('gStats').innerHTML=gStatsHTML(); $('gStats').style.display=human?'none':'';
+  $('gStats2').innerHTML=gStatsHTML(); $('gStats2').style.display=g&&!g.human?'':'none';
+  $('gIntro').innerHTML=human?'한 기기로 둘이서 번갈아 둬요. 내 차례가 되면 판이 내 쪽으로 돌아와요. <b>점수에는 들어가지 않아요.</b>'
+    :'내 <b>대국 점수</b>에 맞춰 봇이 비슷한 실력으로 둬요. 이기면 점수가 오르고, 지면 내려가요.';
+  if(g){
     $('gMoves').innerHTML=G.hist.length?G.hist.map((x,i)=>(i%2===0?`<b>${i/2+1}.</b> `:'')+`<span${i===G.hist.length-1?' class="cur"':''}>${x}</span>`).join(' '):'<span class="todo">아직 둔 수가 없어요</span>';
-    $('gNote').innerHTML=G.g.rated?'점수가 걸린 대국이에요. 💡힌트나 ↶무르기를 쓰면 <b>연습 대국</b>(점수 변화 없음)으로 바뀌어요.':'🧸 <b>연습 대국</b>이에요. 점수는 바뀌지 않아요.';
+    $('gNote').innerHTML=g.human?'👫 사람끼리 두는 판이에요. 점수는 바뀌지 않아요.':g.rated?'점수가 걸린 대국이에요. 💡힌트나 ↶무르기를 쓰면 <b>연습 대국</b>(점수 변화 없음)으로 바뀌어요.':'🧸 <b>연습 대국</b>이에요. 점수는 바뀌지 않아요.';
   }
   $('gResult').innerHTML=G.res||'';
 };
+function gSavePrefs(){ store.set('gprefs',gPrefs); G.render(); }
 function gSave(){ store.set('ggame',G.done?null:G.g); }
+function gTurnMsg(){ const pl=gPlayer(G.s.turn), chk=inCheck(G.s,G.s.turn);
+  return `${pl.emoji} ${pl.name} 차례 (${CNAME[G.s.turn]})`+(chk?' — 체크! 킹을 지켜요!':''); }
 function gStart(){
-  const color=gPrefs.color==='r'?(Math.random()<.5?'w':'b'):gPrefs.color;
-  G.g={color,botR:gBotR(),myR:gRating(),moves:[],rated:true}; G.side=color; G.done=false; G.res=''; G.sel=-1; G.hint=null;
-  gRebuild(); G.msg=color==='w'?'백이 먼저 둬요. 첫 수를 두세요! (가운데를 차지하면 좋아요)':'봇이 먼저 둬요…'; G.tone='';
+  const color=gPrefs.color==='r'?(Math.random()<.5?'w':'b'):gPrefs.color, human=gPrefs.opp==='human';
+  G.g={color,moves:[],human};
+  if(human){ const f=gFriendOf(gPrefs.friend); Object.assign(G.g,{oppName:f.name,oppEmoji:f.emoji,spin:gPrefs.spin,rated:false}); }
+  else Object.assign(G.g,{botR:gBotR(),myR:gRating(),rated:true});
+  G.done=false; G.res=''; G.sel=-1; G.hint=null; gRebuild();
+  if(human){ G.msg=gTurnMsg()+'. 백이 먼저 둬요!'; G.tone=''; gSave(); G.render(); return; }
+  G.msg=color==='w'?'백이 먼저 둬요. 첫 수를 두세요! (가운데를 차지하면 좋아요)':'봇이 먼저 둬요…'; G.tone='';
   gSave(); G.render(); if(color==='b') gBotTurn();
 }
 function gEnd(){ // 게임이 끝났는지 확인하고 결과 처리. 끝났으면 true
-  const s=G.s, ms=legal(s); let res=null,why='';
-  if(!ms.length){ if(inCheck(s,s.turn)){ res=s.turn===G.side?'l':'w'; why='체크메이트'; } else { res='d'; why='스테일메이트'; } }
-  else if(insufficient(s)){ res='d'; why='메이트할 기물이 부족해서'; }
-  else if((G.reps[posKey(s)]||0)>=3){ res='d'; why='같은 자리가 세 번 나와서'; }
-  else if(G.half>=100){ res='d'; why='50수 동안 잡기·폰 이동이 없어서'; }
-  if(!res) return false;
-  gFinish(res,why); return true;
+  const s=G.s, ms=legal(s); let win=null,why='';
+  if(!ms.length){ if(inCheck(s,s.turn)){ win=other(s.turn); why='체크메이트'; } else { win='d'; why='스테일메이트'; } }
+  else if(insufficient(s)){ win='d'; why='메이트할 기물이 부족해서'; }
+  else if((G.reps[posKey(s)]||0)>=3){ win='d'; why='같은 자리가 세 번 나와서'; }
+  else if(G.half>=100){ win='d'; why='50수 동안 잡기·폰 이동이 없어서'; }
+  if(!win) return false;
+  gFinish(win,why); return true;
 }
-function gFinish(res,why){
+function gFinish(win,why){ // win: 'w' | 'b' | 'd'
   G.done=true; G.busy=false; G.hint=null; G.sel=-1;
-  const g=G.g, st=gStats(); let delta=null;
-  if(g.rated){
-    const my=gRating(), exp=1/(1+10**((g.botR-my)/400)), K=st.n<20?40:24, sc=res==='w'?1:res==='d'?.5:0;
+  const g=G.g, res=win==='d'?'d':win===g.color?'w':'l'; let delta=null;
+  if(g.rated&&!g.human){
+    const st=gStats(), my=gRating(), exp=1/(1+10**((g.botR-my)/400)), K=st.n<20?40:24, sc=res==='w'?1:res==='d'?.5:0;
     const nr=Math.max(100,Math.round(my+K*(sc-exp))); delta=nr-my; store.set('grating',nr);
     st.n++; st[res]++; store.set('gstats',st);
   }
-  const em={w:'🏆',l:'😢',d:'🤝'}[res], t={w:'이겼어요!',l:'졌어요',d:'무승부'}[res];
-  const dl=delta==null?'<div class="muted">연습 대국이라 점수는 그대로예요.</div>':
-    `<div>대국 점수 <span class="${delta>=0?'delta-up':'delta-down'}">${delta>=0?'+':''}${delta}</span></div>`;
-  G.res=`<div class="result"><div class="em">${em}</div><b>${t}</b><div class="muted">${why}</div>${dl}</div>`;
-  G.msg=res==='w'?`🎉 ${why}! 멋져요!`:res==='l'?`${why}… 괜찮아요, 진 판에서 가장 많이 배워요. 기보를 보며 어디서 기물을 잃었는지 찾아봐요.`:`🤝 ${why} 무승부예요.`;
-  G.tone=res==='w'?'ok':res==='l'?'bad':'';
-  if(res==='w') celebrate(40);
+  if(g.human){
+    const pl=win==='d'?null:gPlayer(win);
+    G.res=`<div class="result"><div class="em">${pl?'🏆':'🤝'}</div><b>${pl?`${pl.emoji} ${josaName(pl.name)} 이겼어요!`:'무승부'}</b><div class="muted">${why}</div></div>`;
+    G.msg=pl?`🎉 ${why}! ${pl.name} 승리! 둘 다 잘 뒀어요. 악수! 🤝`:`🤝 ${why} 무승부예요.`; G.tone=pl?'ok':'';
+    if(pl) celebrate(40);
+  } else {
+    const em={w:'🏆',l:'😢',d:'🤝'}[res], t={w:'이겼어요!',l:'졌어요',d:'무승부'}[res];
+    const dl=delta==null?'<div class="muted">연습 대국이라 점수는 그대로예요.</div>':
+      `<div>대국 점수 <span class="${delta>=0?'delta-up':'delta-down'}">${delta>=0?'+':''}${delta}</span></div>`;
+    G.res=`<div class="result"><div class="em">${em}</div><b>${t}</b><div class="muted">${why}</div>${dl}</div>`;
+    G.msg=res==='w'?`🎉 ${why}! 멋져요!`:res==='l'?`${why}… 괜찮아요, 진 판에서 가장 많이 배워요. 기보를 보며 어디서 기물을 잃었는지 찾아봐요.`:`🤝 ${why} 무승부예요.`;
+    G.tone=res==='w'?'ok':res==='l'?'bad':'';
+    if(res==='w') celebrate(40);
+  }
   gSave(); G.render();
 }
 function gApply(m){
@@ -1410,8 +1478,9 @@ function gBotTurn(){
 }
 G.onMove=m=>{
   if(G.done||G.busy) return;
-  G.hint=null; gApply(m);
+  G.hint=null; const mv=san(G.s,m); gApply(m);
   if(gEnd()) return;
+  if(G.g.human){ G.msg=`${mv} → `+gTurnMsg(); G.tone=inCheck(G.s,G.s.turn)?'bad':''; G.render(); return; }
   G.msg='봇이 생각하고 있어요… 🤔'; G.tone=''; gBotTurn();
 };
 function gUnrate(why){ if(G.g.rated){ G.g.rated=false; gSave(); return ` (${why}를 써서 이번 판은 연습 대국이 됐어요)`; } return ''; }
@@ -1426,16 +1495,20 @@ $('gHint').onclick=()=>{
 };
 $('gUndo').onclick=()=>{
   if(G.done||G.busy) return;
-  const note=gUnrate('무르기'), n=G.s.turn===G.side?2:1;
+  const note=gUnrate('무르기'), n=G.g.human?1:(G.s.turn===G.g.color?2:1);
   G.g.moves.splice(-n,n); gRebuild(); G.hint=null; G.sel=-1;
-  G.msg='↶ 한 수 물렀어요. 다시 생각해 봐요!'+note; G.tone=''; gSave(); G.render();
+  G.msg='↶ 한 수 물렀어요. '+(G.g.human?gTurnMsg():'다시 생각해 봐요!')+note; G.tone=''; gSave(); G.render();
 };
-$('gResign').onclick=()=>{ if(!G.done&&!G.busy&&confirm('정말 기권할까요? 지는 걸로 기록돼요.')) gFinish('l','기권'); };
+$('gResign').onclick=()=>{
+  if(G.done||G.busy) return;
+  const c=G.g.human?G.s.turn:G.g.color, pl=gPlayer(c);
+  if(confirm(G.g.human?`${pl.name}, 정말 기권할까요?`:'정말 기권할까요? 지는 걸로 기록돼요.')) gFinish(other(c),G.g.human?`${pl.name} 기권`:'기권');
+};
 $('gStart').onclick=gStart;
 $('gAgain').onclick=()=>{ G.g=null; G.res=''; G.s=parseFEN(START_FEN); G.last=null; G.msg=''; G.render(); };
 (function gInit(){ // 하던 대국 이어하기
   const g=store.get('ggame',null);
-  if(g&&g.moves){ G.g=g; G.side=g.color; G.done=false; gRebuild(); G.msg='하던 대국을 이어서 해요.'; if(!gEnd()){ G.render(); if(G.s.turn!==G.side) gBotTurn(); } }
+  if(g&&g.moves){ G.g=g; G.done=false; gRebuild(); G.msg='하던 대국을 이어서 해요. '+(g.human?gTurnMsg():''); if(!gEnd()){ G.render(); if(!g.human&&G.s.turn!==g.color) gBotTurn(); } }
   else G.render();
 })();
 
