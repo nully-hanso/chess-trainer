@@ -91,7 +91,7 @@ disc:{title:'디스커버드 어택',scenes:[
 const S={id:null,i:0,tl:null,voice:LS.get('chess.voice',true)};
 const el=document.createElement('div'); el.className='story'; el.id='story'; el.hidden=true;
 el.innerHTML=`<div class="st-card" role="dialog" aria-modal="true">
-  <div class="st-top"><span class="st-ttl" id="stTitle"></span><button class="st-ic" id="stVoice" hidden></button><button class="st-ic" id="stReplay" title="다시 보기">↻</button><button class="st-ic" id="stClose" title="닫기"></button></div>
+  <div class="st-top"><span class="st-ttl" id="stTitle"></span><button class="st-ic" id="stVoice" hidden></button><button class="st-ic" id="stReplay" title="다시 보기" aria-label="다시 보기">${IC('replay')}</button><button class="st-ic" id="stClose" title="닫기" aria-label="닫기">${IC('x')}</button></div>
   <div class="st-body"><div class="st-stage" id="stStage"></div>
     <div class="st-side"><div class="st-say" id="stSay"></div>
       <div class="st-nav"><button class="btn" id="stPrev" aria-label="이전">${IC('back')}</button><div class="st-dots" id="stDots"></div><button class="btn primary" id="stNext">다음</button></div></div></div></div>`;
@@ -108,7 +108,7 @@ function speak(i){
   a.addEventListener('canplay',()=>{ $s('stVoice').hidden=false; },{once:true});
   a.play().catch(()=>{});
 }
-function voiceBtn(){ $s('stVoice').textContent=S.voice?'':''; $s('stVoice').title=S.voice?'읽어 주기 끄기':'읽어 주기 켜기'; }
+function voiceBtn(){ $s('stVoice').innerHTML=IC(S.voice?'sound':'mute'); $s('stVoice').title=S.voice?'읽어 주기 끄기':'읽어 주기 켜기'; }
 
 function buildBoard(stage,fen){
   const s=parseFEN(fen), wrap=document.createElement('div'); wrap.className='stb';
