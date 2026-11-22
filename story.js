@@ -98,17 +98,19 @@ el.innerHTML=`<div class="st-card" role="dialog" aria-modal="true">
 document.body.appendChild(el);
 const $s=id=>document.getElementById(id);
 
-// 목소리: 기계 음성(TTS)은 쓰지 않아요. 직접 녹음한 파일이 voice/<이야기>-<장면번호>.m4a 로 있으면 그것만 재생
-// (예: voice/intro-01.m4a). 파일이 없으면 조용히 넘어가요. 녹음이 하나라도 재생되면 버튼이 나타나요.
-let audio=null;
+// 목소리: 기계 음성(TTS)은 쓰지 않아요. 직접 녹음한 파일 voice/<이야기>-<장면번호>.m4a 만 재생해요(예: voice/intro-01.m4a).
+// 어떤 파일이 있는지는 voice/index.json 목록으로 알아요(node tools/voice-script.js 가 만들어 줘요).
+// 목록에 없는 장면은 파일을 요청하지 않고 조용히 넘어가요. 녹음이 하나라도 있으면 소리 버튼이 나타나요.
+let audio=null, VOICES=new Set();
+fetch('voice/index.json').then(r=>r.ok?r.json():[]).then(l=>{ VOICES=new Set(l); if(S.id) voiceBtn(); }).catch(()=>{});
 const stopAudio=()=>{ if(audio){ audio.pause(); audio=null; } };
+const hasVoice=id=>[...VOICES].some(v=>v.startsWith(id+'-'));
 function speak(i){
-  stopAudio(); if(!S.voice) return;
-  const a=new Audio(`voice/${S.id}-${String(i+1).padStart(2,'0')}.m4a`); audio=a;
-  a.addEventListener('canplay',()=>{ $s('stVoice').hidden=false; },{once:true});
-  a.play().catch(()=>{});
+  stopAudio(); const name=`${S.id}-${String(i+1).padStart(2,'0')}`;
+  if(!S.voice||!VOICES.has(name)) return;
+  audio=new Audio(`voice/${name}.m4a`); audio.play().catch(()=>{});
 }
-function voiceBtn(){ $s('stVoice').innerHTML=IC(S.voice?'sound':'mute'); $s('stVoice').title=S.voice?'읽어 주기 끄기':'읽어 주기 켜기'; }
+function voiceBtn(){ $s('stVoice').hidden=!hasVoice(S.id); $s('stVoice').innerHTML=IC(S.voice?'sound':'mute'); $s('stVoice').title=S.voice?'읽어 주기 끄기':'읽어 주기 켜기'; }
 
 function buildBoard(stage,fen){
   const s=parseFEN(fen), wrap=document.createElement('div'); wrap.className='stb';

@@ -3,7 +3,8 @@
 # - 몸통은 왼쪽이 밝고 오른쪽이 살짝 어두운 그라데이션(staunty풍), 하이라이트는 밝은 색
 # - 색·선 굵기를 도형마다 속성(fill/stroke/stroke-width)으로 직접 써서 피그마·일러스트레이터에서 바로 편집돼요
 # - id에 기물 이름을 붙여(wk-g, wk-a…) 여러 기물을 한 파일에 모아도 겹치지 않아요
-# 사용: python3 tools/pieces-svg.py <california svg 폴더> <출력 폴더>
+# 사용: python3 tools/pieces-svg.py            (원본 design/source/california → pieces/ 와 design/pieces-svg/)
+#       python3 tools/pieces-svg.py <원본 폴더> <출력 폴더>
 import re, sys, os
 
 LINE_W = 10          # 원본 외곽선 굵기(30)의 1/3
@@ -51,13 +52,15 @@ def convert(s, c, code):
     return vb, f'<defs>{grad}{defs}</defs>', inner
 
 if __name__ == '__main__':
-    SRC, OUT = sys.argv[1], sys.argv[2]
-    os.makedirs(OUT, exist_ok=True)
+    ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if len(sys.argv) >= 3: SRC, OUTS = sys.argv[1], [sys.argv[2]]
+    else: SRC, OUTS = os.path.join(ROOT, 'design', 'source', 'california'), [os.path.join(ROOT, 'pieces'), os.path.join(ROOT, 'design', 'pieces-svg')]
+    for OUT in OUTS: os.makedirs(OUT, exist_ok=True)
     for f in sorted(os.listdir(SRC)):
         if not f.endswith('.svg'): continue
         code = f[0] + f[1].lower()
         vb, defs, inner = convert(open(os.path.join(SRC, f)).read(), f[0], code)
         svg = (f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="{vb}" width="100" height="100">'
                f'{defs}<g id="{code}">{inner}</g></svg>\n')
-        open(os.path.join(OUT, code + '.svg'), 'w').write(svg)
+        for OUT in OUTS: open(os.path.join(OUT, code + '.svg'), 'w').write(svg)
         print('ok', code)

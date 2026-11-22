@@ -6,3 +6,8 @@
 
 - 원작: california © Jerry S. — [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 - 이 수정본(`pieces/`, `design/`)도 같은 **CC BY-NC-SA 4.0**(저작자 표시 · 비영리 · 동일조건 변경허락)으로 배포합니다.
+
+## 원본 파일
+
+`design/source/california/*.svg`는 수정 전 원본 california 그림 12개예요(CC BY-NC-SA 4.0, © Jerry S.).
+`python3 tools/pieces-svg.py`를 실행하면 이 원본에서 `pieces/`와 `design/pieces-svg/`를 다시 만들어요.
