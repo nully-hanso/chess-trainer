@@ -966,6 +966,86 @@ function insufficient(s){
   if(!ps.every(([p])=>p==='b'||p==='B')) return false;
   const c=ps.map(([,i])=>((i>>3)+(i&7))%2); return c.every(x=>x===c[0]);
 }
+// ----- 킹+폰 대 킹 정답표(tablebase) -----
+// 모든 자리(킹 2개·폰 1개·차례)를 거꾸로 계산해서 "이기는 자리인지, 이기려면 몇 수(반수) 걸리는지"를 알아내요.
+// 폰이 안전하게 승진하면(바로 잡히지 않으면) 이긴 것으로 봐요. 흑 폰 자리는 위아래를 뒤집어 백 폰처럼 다뤄요.
+let KPK=null;
+function kpkBuild(){
+  if(KPK) return KPK;
+  const N=2*64*64*64, res=new Int8Array(N), dep=new Int16Array(N); // res: 0 모름 · 1 이김 · 2 비김(확정)
+  const id=(stm,wk,bk,p)=>((stm*64+wk)*64+bk)*64+p;
+  const adj=(a,b)=>Math.max(Math.abs((a>>3)-(b>>3)),Math.abs((a&7)-(b&7)))<=1;
+  const KM=[]; for(let q=0;q<64;q++){ KM[q]=[]; for(let dr=-1;dr<=1;dr++) for(let df=-1;df<=1;df++){ if(!dr&&!df) continue; const r=(q>>3)+dr,f=(q&7)+df; if(r>=0&&r<8&&f>=0&&f<8) KM[q].push(r*8+f); } }
+  const patt=(p,q)=>(q>>3)===(p>>3)-1&&Math.abs((q&7)-(p&7))===1; // 폰(p)이 q를 공격?
+  const legalPos=(stm,wk,bk,p)=>wk!==bk&&wk!==p&&bk!==p&&!adj(wk,bk)&&(p>>3)>=1&&(p>>3)<=6&&!(stm===0&&patt(p,bk));
+  const wMoves=(wk,bk,p)=>{ const out=[]; // [자식 id 또는 -1(안전 승진=이김)]
+    for(const q of KM[wk]) if(q!==p&&!adj(q,bk)) out.push(id(1,q,bk,p));
+    const f=p-8;
+    if(f!==bk&&f!==wk){ if((f>>3)===0){ if(!adj(bk,f)||adj(wk,f)) out.push(-1); }
+      else { out.push(id(1,wk,bk,f)); if((p>>3)===6&&f-8!==bk&&f-8!==wk) out.push(id(1,wk,bk,f-8)); } }
+    return out; };
+  const bMoves=(wk,bk,p)=>{ const out=[]; let cap=false;
+    for(const q of KM[bk]){ if(adj(q,wk)||patt(p,q)) continue; if(q===p){ cap=true; continue; } out.push(id(0,wk,q,p)); }
+    return {out,cap}; };
+  const W=[],B=[];
+  for(let wk=0;wk<64;wk++) for(let bk=0;bk<64;bk++) for(let p=8;p<56;p++){
+    if(legalPos(0,wk,bk,p)) W.push([wk,bk,p]); else res[id(0,wk,bk,p)]=-1;
+    if(legalPos(1,wk,bk,p)){ const i=id(1,wk,bk,p), {out,cap}=bMoves(wk,bk,p);
+      if(cap) res[i]=2; else if(!out.length){ res[i]=patt(p,bk)?1:2; } else B.push([wk,bk,p]); }
+    else res[id(1,wk,bk,p)]=-1; }
+  let changed=true, pass=0;
+  while(changed){ changed=false; pass++;
+    for(const [wk,bk,p] of W){ const i=id(0,wk,bk,p); if(res[i]) continue; let best=1e9;
+      for(const c of wMoves(wk,bk,p)){ if(c<0){ best=0; break; } if(res[c]===1&&dep[c]<best) best=dep[c]; }
+      if(best<1e9){ res[i]=1; dep[i]=best+1; changed=true; } }
+    for(const [wk,bk,p] of B){ const i=id(1,wk,bk,p); if(res[i]) continue; let worst=-1, all=true;
+      for(const c of bMoves(wk,bk,p).out){ if(res[c]!==1){ all=false; break; } if(dep[c]>worst) worst=dep[c]; }
+      if(all){ res[i]=1; dep[i]=worst+1; changed=true; } }
+  }
+  for(let i=0;i<N;i++) if(res[i]===0) res[i]=2;
+  return KPK={res,dep,id,pass};
+}
+// 킹+폰 대 킹 자리인가? 맞으면 {white:폰이 백인가, wk,bk,p,stm} (흑 폰이면 뒤집어서)
+function kpkOf(s){
+  let K=-1,k=-1,P=-1,n=0,pc=null;
+  for(let i=0;i<64;i++){ const x=s.b[i]; if(!x) continue; n++; if(x==='K') K=i; else if(x==='k') k=i; else if(x==='P'||x==='p'){ P=i; pc=x; } }
+  if(n!==3||P<0) return null;
+  const fl=q=>(7-(q>>3))*8+(q&7);
+  return pc==='P'?{white:true,wk:K,bk:k,p:P,stm:s.turn==='w'?0:1}:{white:false,wk:fl(k),bk:fl(K),p:fl(P),stm:s.turn==='b'?0:1};
+}
+// 결과: {win: 폰 쪽이 이기나, d: 승진까지 남은 반수} — 킹+폰 대 킹이 아니면 null
+function kpkProbe(s){
+  const o=kpkOf(s); if(!o) return null;
+  const T=kpkBuild(), i=T.id(o.stm,o.wk,o.bk,o.p), r=T.res[i];
+  if(r<0) return null;
+  return {win:r===1,d:T.dep[i],pawnWhite:o.white};
+}
+// 정답표로 가장 좋은 수: 이기는 쪽은 가장 빨리, 지는 쪽은 가장 오래 버티거나 비기는 수
+function kpkBest(s){
+  const me=s.turn, ms=legal(s); let best=null,bv=-1e9;
+  for(const m of ms){
+    const s2=make(s,m); let v;
+    if(m.promo){ if(m.promo!=='q') continue; const caught=legal(s2).some(x=>x.to===m.to); v=caught?-500:1000; }
+    else { const r=kpkProbe(s2);
+      if(!r) v=s.b.some(x=>x===(me==='w'?'P':'p'))?-200:200; // 폰이 잡혀 킹끼리 남음 = 비김(잡은 쪽엔 가장 좋은 수)
+      else { const pawnSide=r.pawnWhite?'w':'b', mineIsPawn=pawnSide===me;
+        if(r.win) v=mineIsPawn?500-r.d:-500+r.d; else v=mineIsPawn?-100:100; } }
+    if(v>bv){ bv=v; best=m; }
+  }
+  return best;
+}
+// 비기는 자리에서 공격하는 봇: 지키는 쪽이 실수하기 쉬운 수(비기는 응수가 적은 수)를 골라요
+function kpkTrick(s){
+  const me=s.turn, P=me==='w'?'P':'p'; let best=null,bv=-1e9;
+  for(const m of legal(s)){ if(m.promo&&m.promo!=='q') continue; const s2=make(s,m);
+    if(m.promo){ const v=legal(s2).some(x=>x.to===m.to)?-50:1000; if(v>bv){ bv=v; best=m; } continue; }
+    const r=kpkProbe(s2); if(!r) continue; if(r.win) return m;
+    const reps=legal(s2), hold=reps.filter(x=>{ const q=kpkProbe(make(s2,x)); return !q||!q.win; }).length;
+    const lose=reps.some(x=>s2.b[x.to]===P), adv=me==='w'?7-(m.to>>3):(m.to>>3);
+    const v=-hold*10-(lose?100:0)+(s.b[m.from]===P?adv:0)+Math.random();
+    if(v>bv){ bv=v; best=m; } }
+  return best||legal(s)[0];
+}
 /*DATA*/
 // ----- 봇 계산은 웹 워커(화면과 따로 도는 계산 공간)에서 해요: 봇이 생각하는 동안에도 화면이 멈추지 않아요 -----
 // 위 /*ENGINE*/ … /*DATA*/ 사이 코드를 그대로 워커에 넣어요. 워커를 못 쓰는 환경이면 예전처럼 화면에서 계산해요.
@@ -1057,7 +1137,7 @@ const ROADMAP=[
   {k:'plan',t:'중반 전략 & 실전 복기',d:'좋은/나쁜 기물, 약한 칸, 폰 구조, 계획 세우기. 15분 이상 대국을 두고 지면 꼭 복기하기.',go:['play']},
 ];
 
-const LESSON_GROUPS=[['move','① 기물 이동 (별 모으기)'],['coord','② 좌표 찾기 게임'],['rule','③ 특수 규칙'],['check','④ 체크·체크메이트·스테일메이트'],['game','⑤ 실전 미니게임']];
+const LESSON_GROUPS=[['move','① 기물 이동 (별 모으기)'],['coord','② 좌표 찾기 게임'],['rule','③ 특수 규칙'],['check','④ 체크·체크메이트·스테일메이트'],['game','⑤ 실전 미니게임'],['end','⑥ 엔드게임: 킹과 폰']];
 const LESSONS=[
   {id:'rook',g:'move',title:'룩 ♜',intro:'룩은 가로·세로로 원하는 만큼 직진해요. 다른 기물을 뛰어넘을 수는 없어요. 가치 5점.',steps:[
     {k:'stars',fen:'8/8/8/8/8/8/8/R7 w - - 0 1',stars:['a5','e5','e8']},
@@ -1110,6 +1190,23 @@ const LESSONS=[
     {k:'vsking',fen:'8/8/8/4k3/8/8/8/3QK3 w - - 0 1',text:'흑 킹을 체크메이트하세요.'}]},
   {id:'kr',g:'game',title:'룩으로 메이트하기',intro:'킹+룩 대 킹. 룩 하나로는 부족해서 킹의 도움이 꼭 필요해요. 요령: 룩으로 줄을 막아 상자를 만들고, 내 킹을 다가가게 해서 킹끼리 마주 볼 때 룩으로 체크.',steps:[
     {k:'vsking',fen:'8/8/8/4k3/8/8/8/R3K3 w - - 0 1',text:'흑 킹을 체크메이트하세요. (조금 어려워요!)'}]},
+  {id:'kpsq',g:'end',title:'폰 따라잡기',intro:'폰이 혼자 달려갈 때 킹이 따라잡을 수 있을까요? 폰에서 끝 줄까지 정사각형을 그려 보세요. 내 차례에 킹이 그 정사각형 안으로 들어갈 수 있으면 따라잡아요. 폰이 처음 자리에 있으면 두 칸 갈 수 있으니 한 칸 앞에서부터 그려요. 요령: 폰 쪽으로 대각선으로 다가가요.',steps:[
+    {k:'tb',goal:'draw',bot:'run',fen:'8/8/8/8/7k/8/2P4K/8 b - - 0 1',text:'흑 킹으로 백 폰을 따라잡아 승진을 막으세요.'},
+    {k:'tb',goal:'draw',bot:'run',fen:'8/K7/6k1/8/8/8/3P4/8 b - - 0 1',text:'흑 킹으로 폰을 따라잡으세요. 정사각형 안으로!'}]},
+  {id:'kpfront',g:'end',title:'킹이 앞장서요',intro:'킹+폰 대 킹에서 폰만 밀면 상대 킹에게 막혀요. 내 킹이 폰보다 앞에 서서 길을 열어 줘야 해요. 폰보다 두 칸 앞의 칸들(키 스퀘어)에 내 킹이 도착하면 이겨요. 요령: 폰은 나중에, 킹 먼저!',steps:[
+    {k:'tb',goal:'win',fen:'8/8/8/8/4k3/2K5/3P4/8 w - - 0 1',text:'백으로 폰을 퀸으로 승진시키세요.'},
+    {k:'tb',goal:'win',fen:'8/2k5/8/4K3/3P4/8/8/8 w - - 0 1',text:'백으로 이기세요. 킹을 폰 앞으로!'}]},
+  {id:'kpopp',g:'end',title:'오포지션(마주 보기)',intro:'킹 두 개가 한 칸을 사이에 두고 마주 보면, 먼저 움직여야 하는 쪽이 길을 비켜 줘야 해요. 이걸 오포지션이라고 해요. 마주 선 다음 상대에게 차례를 넘기는 쪽이 이겨요. 요령: 상대 킹과 같은 줄에서 한 칸 띄워 마주 서요.',steps:[
+    {k:'tb',goal:'win',fen:'8/8/4k3/8/8/4KP2/8/8 w - - 0 1',text:'백으로 이기세요. 먼저 흑 킹과 마주 서요.'},
+    {k:'tb',goal:'win',fen:'8/5k2/8/4K3/8/5P2/8/8 w - - 0 1',text:'백으로 이기세요.'},
+    {k:'tb',goal:'win',fen:'8/3k4/8/2K5/8/4P3/8/8 w - - 0 1',text:'백으로 이기세요. (조금 어려워요!)'}]},
+  {id:'kpdef',g:'end',title:'지키는 쪽',intro:'이번엔 폰이 없는 쪽이에요. 폰 앞을 막고 오포지션을 지키면 비길 수 있어요. 폰을 잡을 수 있으면 잡아요! 10수를 버티면 성공. 요령: 폰 바로 앞 칸으로 돌아가고, 백 킹이 다가오면 마주 서요.',steps:[
+    {k:'tb',goal:'draw',fen:'8/8/4k3/2KP4/8/8/8/8 b - - 0 1',text:'흑으로 비기세요. 폰 앞을 지켜요.'},
+    {k:'tb',goal:'draw',fen:'8/6k1/8/5PK1/8/8/8/8 b - - 0 1',text:'흑으로 비기세요.'},
+    {k:'tb',goal:'draw',fen:'8/8/8/4P3/2k5/4K3/8/8 b - - 0 1',text:'흑으로 비기세요. 폰을 노려 볼까요?'}]},
+  {id:'kprook',g:'end',title:'가장자리 폰',intro:'a줄·h줄 폰은 특별해요. 지키는 킹이 폰이 승진할 구석 칸에 들어가면, 상대는 킹을 몰아낼 수 없어서 무승부가 돼요. 요령: 구석으로 달려가요!',steps:[
+    {k:'tb',goal:'draw',fen:'3k4/8/2K5/8/P7/8/8/8 b - - 0 1',text:'흑으로 비기세요. 구석으로!'},
+    {k:'tb',goal:'draw',fen:'8/8/P7/3k4/1K6/8/8/8 b - - 0 1',text:'흑으로 비기세요.'}]},
 ];
 
 // minimal moves to collect all stars (BFS)
@@ -1869,7 +1966,7 @@ function renderLessonList(){
     const grid=document.createElement('div'); grid.className='oplist';
     LESSONS.filter(x=>x.g===g).forEach(les=>{
       const b=document.createElement('button'); b.className='opcard';
-      const pk={rook:'wr',bishop:'wb',queen:'wq',knight:'wn',king:'wk',pawn:'wp',coords:'bp',castle:'wk',ep:'bp',promo:'wq',escape:'wk',mates:'bk',free:'wn',kq:'wq',kr:'wr'}[les.id];
+      const pk={rook:'wr',bishop:'wb',queen:'wq',knight:'wn',king:'wk',pawn:'wp',coords:'bp',castle:'wk',ep:'bp',promo:'wq',escape:'wk',mates:'bk',free:'wn',kq:'wq',kr:'wr',kpsq:'wp',kpfront:'wk',kpopp:'wk',kpdef:'bk',kprook:'wp'}[les.id];
       b.className='opcard row'; b.innerHTML=(pk?`<span class="big pcico" style="--img:url(pieces/${pk}.svg)"></span>`:'<span class="big"></span>')+`<span class="txt"><b>${les.title.replace(/ []$/,'')}</b><span class="muted">${done[les.id]?'<span class="tag done">완료</span>':les.steps.length+'단계'}</span></span>`;
       b.onclick=()=>openLesson(les); grid.appendChild(b);
     });
@@ -1895,6 +1992,7 @@ function loadStep(i){
     L.mode='learn'; L.noCheck=true; L.text=(L.s.turn==='w'?'백':'흑')+' 차례예요. 지금 상황은?'; L.msg='';
     [['mate','체크메이트'],['stale','스테일메이트'],['play','둘 수 있음']].forEach(([k,n])=>{ const b=document.createElement('button'); b.className='btn'; b.textContent=n; b.onclick=()=>answerQuiz(k); $('lQuiz').appendChild(b); });
   } else if(st.k==='vsking'){ L.text=st.text; L.msg='수: 0'; }
+  else if(st.k==='tb'){ kpkBuild(); L.text=st.text; L.msg=st.goal==='win'?'이기는 길에서 벗어나면 바로 알려 줘요. 막히면 힌트!':'비기는 길에서 벗어나면 바로 알려 줘요. 막히면 힌트!'; }
   else if(st.k==='coord'){ coordSetup(); return; }
   L.render();
 }
@@ -2008,6 +2106,31 @@ L.onMove=m=>{
     const how=checkers.includes(m.to)?'③ 잡기':m.from===ks?'① 피하기':'② 막기';
     return stepDone(`${san(prev,m)} — ${how}로 체크를 풀었어요!`);
   }
+  if(st.k==='tb'){
+    const win=st.goal==='win', back=()=>{ L.s=prev; L.last=prevLast; L.ghost={from:m.from,to:m.to,p:prev.b[m.from]}; };
+    L.ghost=null;
+    if(win&&m.promo){ L.s=s2; L.last=m; L.moves++;
+      if(legal(s2).some(x=>x.to===m.to)) return stepFail('새 퀸을 흑 킹이 바로 잡을 수 있어요. 내 킹이 승진 칸을 지켜 줘야 해요.',back);
+      return stepDone(`승진 성공! ${L.moves}수 만에 퀸을 만들었어요. 이제 퀸으로 메이트하면 이겨요.`); }
+    const qsq=prev.b.findIndex(x=>x==='Q'||x==='q');
+    if(!win&&qsq>=0){ L.s=s2; L.last=m; return m.to===qsq?stepDone('승진한 퀸을 바로 잡았어요! 킹끼리만 남아서 무승부예요.'):stepFail('방금 승진한 퀸을 잡을 수 있었어요!',back); }
+    const r=kpkProbe(s2);
+    if(!win&&!r){ L.s=s2; L.last=m; return stepDone('폰을 잡았어요! 킹끼리만 남아서 무승부예요. 잘 지켰어요.'); }
+    if(isStalemate(s2)){ L.s=s2; L.last=m; return win?stepFail('스테일메이트! 흑 킹이 갈 곳이 없어서 무승부가 됐어요. 상대 킹에게 숨 쉴 칸을 남겨 줘요.',back):stepDone('스테일메이트로 비겼어요!'); }
+    if(win&&!(r&&r.win)){ L.s=s2; L.last=m; return stepFail('이 수로는 흑이 비길 수 있게 돼요. '+(prev.b[m.from]==='P'?'폰을 너무 일찍 밀었어요. 킹을 먼저 앞으로!':'흑 킹과의 마주 보기(오포지션)를 생각해 봐요.')+' 힌트를 눌러 봐요.',back); }
+    if(!win&&r.win){ L.s=s2; L.last=m; return stepFail('이 수로는 백이 이기게 돼요. 폰 앞 칸을 지키고, 백 킹과 마주 서 봐요. 힌트를 눌러 봐요.',back); }
+    L.s=s2; L.last=m; L.moves++;
+    if(!win&&L.moves>=10) return stepDone('10수를 버텼어요! 비기는 자리를 끝까지 지켰어요.');
+    L.busy=true; L.msg=`${L.moves}수째 · 좋아요! 상대가 생각 중…`; L.tone='ok'; L.render();
+    L.timer=setTimeout(()=>{ // run: '폰 따라잡기'에서는 봇이 폰을 계속 달리게 해요
+      const s1=L.s, run=st.bot==='run'&&legal(s1).find(x=>s1.b[x.from]==='P'&&(!x.promo||x.promo==='q')), b=win?kpkBest(s1):run||kpkTrick(s1), s3=make(s1,b); L.s=s3; L.last=b; L.busy=false;
+      if(!win&&b.promo){ if(!legal(s3).some(x=>x.to===b.to)) return stepFail('앗, 승진을 허락했어요. 다시 해 봐요.'); L.msg='폰이 승진했어요. 그런데 새 퀸을 잡을 수 있어요!'; L.tone=''; return L.render(); }
+      if(isStalemate(s3)) return win?stepFail('스테일메이트로 비겼어요… 다시 해 봐요.'):stepDone('스테일메이트! 무승부로 지켜냈어요.');
+      if(win&&!kpkProbe(s3)){ L.done=true; return stepFail('폰을 잡혔어요. 다시 해 봐요.'); }
+      L.msg=`${L.moves}수째 · 상대는 ${sanTxt(san(s1,b))}. 이제 내 차례!`; L.tone=''; L.render();
+    },550);
+    return;
+  }
   if(st.k==='vsking'){
     L.s=s2; L.last=m; L.moves++;
     if(isMate(s2)) return stepDone(`체크메이트! ${L.moves}수 만에 성공.`+(L.moves<=(L.les.id==='kq'?10:16)?' 아주 훌륭해요!':' 다시 해서 더 빨리 해 보세요.'));
@@ -2035,6 +2158,7 @@ $('lHint').onclick=()=>{
   else if(st.k==='move'){ m=st.accept==='mate'?legal(L.s).find(x=>isMate(make(L.s,x))):findMove(L.s,st.accept[0]); L.msg=''+(st.hint||'빛나는 칸을 보세요.'); }
   else if(st.k==='escape'){ L.msg='피하기 → 막기 → 잡기 순서로 확인해 보세요. 킹을 클릭하면 피할 칸이 있는지 보여요.'; }
   else if(st.k==='vsking'){ L.msg=''+L.les.intro.split('요령: ')[1]; }
+  else if(st.k==='tb'){ m=kpkBest(L.s); L.msg='빛나는 칸을 보세요. '+L.les.intro.split('요령: ')[1]; }
   else if(st.k==='coord'&&L.cg&&L.cg.target>=0){ const t=L.cg.target,f=t&7,r=t>>3;
     L.hint=[...Array(8).keys()].flatMap(i=>[r*8+i,i*8+f]); L.msg=`${FILES[f]} 세로줄과 ${8-r} 가로줄이 만나는 칸이에요.`; }
   if(m) L.hint=[m.from,m.to]; L.tone=''; L.render();
