@@ -1,3 +1,4 @@
 _compare/
 *.png
 !icon-*.png
+!img/**/*.png

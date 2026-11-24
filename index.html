@@ -8,7 +8,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="체스 첫걸음">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#e7ecdc">
+<meta name="theme-color" content="#85D1F2">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -431,7 +431,7 @@
   .trail>svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
   .trail path{fill:none;stroke:var(--line);stroke-width:7;stroke-linecap:round;stroke-dasharray:1 15}
   .trail path.on{stroke:var(--olive);stroke-dasharray:none;opacity:.35}
-  .pn-row{position:relative;display:flex;flex-direction:column;align-items:center;width:120px;margin-left:calc(50% - 60px + var(--x));padding-bottom:10px}
+  .pn-row{position:relative;display:flex;flex-direction:column;align-items:center;width:120px;margin-left:calc(50% - 60px + var(--x) * var(--xs,1));padding-bottom:10px}
   .pn{position:relative;width:72px;height:72px;border-radius:50%;border:0;cursor:pointer;display:grid;place-items:center;background:var(--paper2);box-shadow:0 5px 0 #cfc8b3;transition:transform .1s;color:var(--muted)}
   .pn:active{transform:translateY(3px);box-shadow:0 2px 0 #cfc8b3}
   .pn .pi{width:48px;height:48px;background:var(--img) center/contain no-repeat}
@@ -450,6 +450,14 @@
   .pn-tip{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);white-space:nowrap;font-family:var(--display);font-size:16px;color:var(--olive-d);background:var(--card);border-radius:var(--r-s);padding:5px 12px;box-shadow:var(--sh);animation:bob 1.6s ease-in-out infinite}
   .pn-tip::after{content:"";position:absolute;top:100%;left:50%;margin-left:-7px;border:7px solid transparent;border-top-color:var(--card)}
   @media (prefers-reduced-motion:reduce){.pn-tip{animation:none}}
+  /* 넓은 화면(아이패드): 왼쪽은 오늘 할 일(따라 내려옴), 오른쪽은 길 */
+  @media (min-width:700px){
+    #v-road.on{display:grid;grid-template-columns:minmax(300px,380px) 1fr;grid-template-rows:auto auto 1fr;column-gap:22px;align-items:start}
+    #v-road .today{grid-column:1;grid-row:1;position:sticky;top:12px;z-index:2}
+    #v-road .road-acts{grid-column:1;grid-row:2}
+    #v-road>.fold{grid-column:1;grid-row:3}
+    #v-road .path{grid-column:2;grid-row:1/4;margin-top:0;--xs:1.7}
+  }
   .sect.rev{padding:8px}.sect.rev .item{width:100%}
   .pt-tip{background:var(--paper2);border-radius:var(--r-s);padding:10px 12px;text-align:left;font-size:15px;line-height:1.55;color:var(--ink)}
 
@@ -521,6 +529,56 @@
     .play>.panel{grid-column:2;min-width:0;max-width:none;width:auto}.play>.boardcol>*:not(.board){grid-column:2;min-width:0}.play>.boardcol>.bwrap{grid-column:1;grid-row:1/-1}
     .msg{max-height:none}
   }
+  /* ===== 캐주얼 테마 (design/CASUAL.md) =====
+     파란 하늘 바탕 · 크림 패널에 황갈색 테두리 · 아래로 두툼한 '장난감' 턱 · 민트/크림 판과 나무 테두리
+     색은 Flow 스타일 가이드에서: 하늘 #85D1F2 · 크림 #FDF3E1 · 황갈 #C08F61 · 민트 #7FC6A8 · 판 크림 #FFF5DC · 나무 #9E653A
+     · 초록 #7DC354 · 주황 #F29C38 · 파랑 #56A2DF · 별 #FFD359 · 남색 #2F3A53 (버튼 색은 흰 글자가 읽히게 조금 진하게) */
+  :root{--paper:#85D1F2;--paper2:#FFF5DC;--card:#FDF3E1;--line:#E6CFA9;--ledge:#D8B98A;--tan:#C08F61;--ink:#2F3A53;--muted:#59647D;
+    --olive:#55A834;--olive-d:#3C7F22;--olive2:#E2F3D0;--ok:#3E8E2A;--ok2:#E2F3D0;
+    --amber:#FFD359;--amber-d:#D9961A;--amber2:#FFF0C4;--orange:#F29C38;--orange-d:#C46F14;--blue:#3F8FD2;--blue-d:#2A6AA3;--blue2:#DDF0FB;
+    --light:#FFF5DC;--dark:#7FC6A8;--wood:#9E653A;--wood-d:#6B4222;--wood-l:#A86F3F;
+    --r:18px;--r-s:14px;--sh:0 0 0 2px var(--line),0 4px 0 var(--ledge);--sh-press:0 0 0 2px var(--line),0 1px 0 var(--ledge)}
+  body{background:radial-gradient(120% 60% at 15% -10%,#B5E5F8 0,transparent 60%),radial-gradient(90% 50% at 100% 0,#A3DCF5 0,transparent 55%),#85D1F2 fixed}
+  .lead,.pmini{color:#33405B}.pg-ttl{color:var(--ink)}
+  .btn,.seg button,nav button,.sect,.today,.unit>summary,.panel,.note,.road-hero,.fold,.sheet,.opcard,.who,.snd{box-shadow:var(--sh)}
+  .btn:active,nav button:active,.opcard:active{transform:translateY(3px);box-shadow:var(--sh-press)}
+  .btn.primary{background:var(--olive);color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.22);box-shadow:inset 0 0 0 2px rgba(255,255,255,.5),0 4px 0 var(--olive-d)}
+  .btn.primary:active{box-shadow:inset 0 0 0 2px rgba(255,255,255,.5),0 1px 0 var(--olive-d)}
+  nav button.on{background:var(--blue);color:#fff;box-shadow:inset 0 0 0 2px rgba(255,255,255,.5),0 4px 0 var(--blue-d)}
+  .seg button.on{background:var(--blue);color:#fff;box-shadow:0 3px 0 var(--blue-d)}
+  .item.next{background:var(--olive2)}
+  .board{box-shadow:inset 0 0 0 1px rgba(0,0,0,.2),0 0 0 2px var(--wood-d),0 7px 0 var(--wood-d),0 16px 30px rgba(40,70,100,.25)}
+  .sq.dark .coord{color:#fff}
+  .msg{border:2px solid var(--line)}
+  /* 동물 얼굴(이모지 대신 그림) */
+  .av.img{background:var(--img) center/cover no-repeat!important;font-size:0!important;color:transparent}
+  .emojis button{background:var(--img) center/cover no-repeat,#fff;font-size:0}
+  .emojis button.on{box-shadow:0 0 0 3px var(--blue)}
+  /* 길: 보물상자·트로피·자물쇠는 그림으로 */
+  .pn .pimg{width:58px;height:58px;background:var(--img) center/contain no-repeat}
+  .pn.ev{background:var(--amber2);box-shadow:0 5px 0 #E8C77E}
+  .pn.ev.cur{background:var(--amber);box-shadow:0 5px 0 var(--amber-d),0 0 0 7px var(--card),0 0 0 11px var(--amber2)}
+  .pn.ev.done{background:#FFE7A0;box-shadow:0 5px 0 var(--amber-d)}
+  .pn.ev.lock .pimg{opacity:.45;filter:grayscale(.6)}
+  .trail path{stroke:#FFF5DC}
+  .trail path.on{stroke:var(--olive);opacity:.45}
+  .streak .fl{width:20px;height:20px;background:url(img/ui/flame.png) center/contain no-repeat;filter:grayscale(1);opacity:.6}
+  .streak.on .fl{filter:none;opacity:1}
+  /* 길잡이 곰: 지금 할 일을 말해 줘요 */
+  .coach{display:flex;align-items:flex-end;gap:10px;margin:12px 0 4px}
+  .coach img{width:88px;height:auto;flex:none}
+  .coach p{position:relative;margin:0 0 18px;background:var(--card);border-radius:var(--r);padding:10px 14px;font-family:var(--display);font-size:17px;line-height:1.4;color:var(--ink);box-shadow:var(--sh)}
+  .coach p::before{content:"";position:absolute;left:-9px;bottom:14px;border:9px solid transparent;border-left:0;border-right-color:var(--card)}
+  @media (min-width:700px){
+    #v-road .coach{grid-column:1;grid-row:2;flex-direction:column;align-items:center;margin-top:16px}
+    #v-road .coach img{width:190px}
+    #v-road .coach p{margin:0;order:-1}
+    #v-road .coach p::before{left:50%;bottom:-9px;margin-left:-9px;border:9px solid transparent;border-bottom:0;border-top-color:var(--card)}
+    #v-road .road-acts{grid-row:3}
+    #v-road>.fold{grid-row:4}
+    #v-road.on{grid-template-rows:auto auto auto 1fr}
+    #v-road .path{grid-row:1/5}
+  }
 </style>
 </head>
 <body>
@@ -581,6 +639,7 @@
   <!-- 길잡이: 오늘 할 것 하나만 크게, 나머지는 접어 두기 -->
   <section class="view on" id="v-road">
     <div class="today" id="today"></div>
+    <div class="coach" id="coach"></div>
     <div class="path" id="path"></div>
     <div class="road-acts" id="roadActs"></div>
     <details class="fold"><summary>어른을 위한 안내</summary>
@@ -1302,6 +1361,8 @@ const LPZ_RAW="mate1|0FxWD|2r2rk1/pp1b1pp1/5q1p/3pp3/1Pn5/P2QPP2/1PB1N1PP/2R2RK1
 const LS={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 const DATA_KEYS=['lrec','path','pathprefs','pathopen','streak','road','solved','openings','lessons','pzprefs','pzrec','prating','pzstats','grating','gstats','ggame','gprefs','gsaves','pzdone','ghist','stories'];
 const PROF_EMOJI=['🦁','🐰','🐻','🐼','🦊','🐸','🐯','🐧','🦄','🐶','🐱','🐵'];
+const AV_IMG=Object.fromEntries(PROF_EMOJI.map((e,i)=>[e,'img/av/'+['lion','rabbit','bear','panda','fox','frog','tiger','penguin','unicorn','puppy','kitten','monkey'][i]+'.png']));
+const avHTML=(e,cls='av')=>AV_IMG[e]?`<span class="${cls} img" style="--img:url(${AV_IMG[e]})" role="img" aria-label="${e}"></span>`:`<span class="${cls}">${esc(e||'')}</span>`;
 let PROFILES=LS.get('chess.profiles',[]);
 if(!PROFILES.length){ // 첫 실행: 기존 진도를 첫 프로필로 옮김
   PROFILES=[{id:'p1',name:'나',emoji:''}];
@@ -1651,11 +1712,14 @@ function renderPath(){
   if(lDue||pDue){ go=reviewAll; goTxt='복습부터 하기'; }
   else if(curN){ go=()=>openNode(curN.id); goTxt=curN.t==='c'?'보물상자 열기':`${curN.name} ${curN.t==='p'?'퍼즐 풀기':'배우러 가기'}`; if(nt>=goal&&curN.t!=='c') goTxt='한 칸 더: '+goTxt; }
   else { go=()=>showTab('play'); goTxt='대국 두러 가기'; }
-  $('today').innerHTML=`<div class="today-h"><h2>오늘 할 일</h2><span class="streak${sk?' on':''}">${IC('flame')}${sk?`${sk}일째`:'오늘 시작!'}</span></div>`+
+  $('today').innerHTML=`<div class="today-h"><h2>오늘 할 일</h2><span class="streak${sk?' on':''}"><span class="fl"></span>${sk?`${sk}일째`:'오늘 시작!'}</span></div>`+
     `<div class="quest${lDue||pDue?'':' ok'}"><span class="qi">${IC(lDue||pDue?'history':'check')}</span><span><b>${lDue||pDue?'복습':'복습 끝'}</b><small>${revTxt||'잊어버릴 때쯤 다시 나와요'}</small></span></div>`+
     `<div class="quest${nt>=goal?' ok':''}"><span class="qi">${IC(nt>=goal?'check':'star')}</span><span><b>새 진도 ${Math.min(nt,goal)}/${goal}</b><small>${nt>=goal?'오늘 목표 완료!':'길에서 새 칸을 지나가요'}</small></span><span class="qbar"><i style="--p:${Math.min(1,nt/goal)*100}%"></i></span></div>`+
     `<button class="btn primary big" id="pathGo">${esc(goTxt)}${IC('next')}</button>`;
   $('pathGo').onclick=go;
+  // 길잡이 곰이 지금 할 일을 말해 줘요
+  const [pose,say]=lDue||pDue?['think','잊어버리기 전에 복습부터 해 볼까?']:!curN?['cheer','길을 다 지나왔어! 이제 대국으로 실력을 뽐내 보자!']:nt>=goal?['cheer',`오늘 목표 완료! ${sk>1?sk+'일째 연속, ':''}정말 잘했어!`]:curN.t==='c'?['point','단원 끝 보물상자야! 열어 보자!']:nt?['point',`좋아! ${goal-nt}칸만 더 가 보자.`]:['wave',`안녕! 오늘은 ${esc(curN.name)}부터 시작해 볼까?`];
+  $('coach').innerHTML=`<img src="img/ui/bear-${pose}.png" alt="" width="180" height="260"><p>${say}</p>`;
   // 길
   const open=store.get('pathopen',{}); let k=0;
   $('path').innerHTML=PATH_UNITS.map(([name,ns],u)=>{
@@ -1663,7 +1727,7 @@ function renderPath(){
     const n=arr.filter(x=>x.done).length, pass=arr[arr.length-1].done, hasCur=cur>=base&&cur<base+arr.length, lock=cur>=0&&base>cur;
     const isOpen=u in open?open[u]:(hasCur||(cur<0&&u===PATH_UNITS.length-1));
     const rows=arr.map((x,i)=>{ const gi=base+i, st=x.done?'done':gi===cur?'cur':gi>cur&&cur>=0?'lock':'';
-      const icon=x.t==='c'?IC(x.done?'trophy':st==='lock'?'lock':'chest'):`<span class="pi" style="--img:url(pieces/${st==='lock'||st===''?x.pc:x.pc.replace(/^b/,'w')}.svg)"></span>`;
+      const icon=x.t==='c'?`<span class="pimg" style="--img:url(img/ui/${x.done?'chest-open':'chest'}.png)"></span>`:`<span class="pi" style="--img:url(pieces/${st==='lock'||st===''?x.pc:x.pc.replace(/^b/,'w')}.svg)"></span>`;
       return `<div class="pn-row ${st}" style="--x:${PATH_X[gi%8]}px">${st==='cur'?`<span class="pn-tip">${x.t==='c'?'열어 봐요!':x.done?'다시':'시작!'}</span>`:''}`+
         `<button class="pn ${st}${x.t==='c'?' ev':''}" data-node="${x.id}" aria-label="${esc(x.name)} ${x.done?'끝냄':st==='lock'?'잠김':''}">${icon}${x.done&&x.due?'<span class="due">복습</span>':''}</button>`+
         `<span class="pn-lbl">${esc(x.name)}<small>${x.kind}</small></span></div>`; }).join('');
@@ -2683,7 +2747,7 @@ function gCaptured(){ // 잡은 기물(시작 배치와 비교)
 }
 function gSideHTML(color){
   const cap=gCaptured(), list=cap[color], adv=color==='w'?cap.diff:-cap.diff, o=other(color), pl=gPlayer(color);
-  return (pl.emoji?`<span class="av">${esc(pl.emoji)}</span>`:`<span class="av pc-av" style="--img:url(pieces/${color}k.svg)"></span>`)+`<span class="nm">${esc(pl.name)}</span><span class="r">${CNAME[color]}${pl.r!=null?` · ${pl.r}점`:''}</span>`+
+  return (pl.emoji?avHTML(pl.emoji):`<span class="av pc-av" style="--img:url(pieces/${color}k.svg)"></span>`)+`<span class="nm">${esc(pl.name)}</span><span class="r">${CNAME[color]}${pl.r!=null?` · ${pl.r}점`:''}</span>`+
     `<span class="caps">${list.map(t=>pcHTML(t,o)).join('')}${adv>0?`<b>+${adv}</b>`:''}</span>`;
 }
 G.render=()=>{
@@ -2932,14 +2996,14 @@ function gAgain(){ G.rev=null; G.g=null; G.res=''; G.s=parseFEN(START_FEN); G.la
 
 // ----- 프로필 고르기 화면 -----
 let newEmoji=PROF_EMOJI[0];
-function renderWho(){ const me=PROFILES.find(p=>p.id===CUR); $('whoAv').textContent=me.emoji; $('whoName').textContent=me.name; }
+function renderWho(){ const me=PROFILES.find(p=>p.id===CUR); const a=$('whoAv'); a.textContent=AV_IMG[me.emoji]?'':me.emoji; a.classList.toggle('img',!!AV_IMG[me.emoji]); a.style.setProperty('--img',AV_IMG[me.emoji]?`url(${AV_IMG[me.emoji]})`:''); $('whoName').textContent=me.name; }
 function renderProfiles(){
   const box=$('plist'); box.innerHTML='';
   PROFILES.forEach(pr=>{
     const les=Object.keys(peek(pr.id,'lessons',{})).length, st=peek(pr.id,'pzstats',{ok:0});
     const b=document.createElement('button'); b.className='pcard'+(pr.id===CUR?' cur':'');
     const gr=peek(pr.id,'grating',null);
-    b.innerHTML=`<span class="av">${esc(pr.emoji)}</span>${esc(pr.name)}<small>레슨 ${les}개 · 퍼즐 ${st.ok||0}개${gr!=null?` · 대국 ${gr}점`:''}</small>`+`<span class="edit" title="이름·얼굴 바꾸기">${IC('edit')}</span>`+(PROFILES.length>1?`<span class="del" title="지우기">${IC('x')}</span>`:'');
+    b.innerHTML=`${avHTML(pr.emoji)}${esc(pr.name)}<small>레슨 ${les}개 · 퍼즐 ${st.ok||0}개${gr!=null?` · 대국 ${gr}점`:''}</small>`+`<span class="edit" title="이름·얼굴 바꾸기">${IC('edit')}</span>`+(PROFILES.length>1?`<span class="del" title="지우기">${IC('x')}</span>`:'');
     b.onclick=e=>{
       if(e.target.closest('.edit')){ showForm(true,pr); return; }
       if(e.target.closest('.del')){
@@ -2960,11 +3024,11 @@ let editing=null;
 function showForm(on,pr){
   editing=on&&pr?pr.id:null;
   $('pform').style.display=on?'':'none'; $('pfoot').style.display=on?'none':'';
-  if(on){ $('pname').value=pr?pr.name:''; newEmoji=pr?pr.emoji:newEmoji; [...$('pemojis').children].forEach(x=>x.classList.toggle('on',x.textContent===newEmoji));
+  if(on){ $('pname').value=pr?pr.name:''; newEmoji=pr?pr.emoji:newEmoji; [...$('pemojis').children].forEach(x=>x.classList.toggle('on',x.dataset.e===newEmoji));
     $('psave').textContent=pr?'바꾸기':'추가하기'; $('pname').focus(); }
 }
-$('pemojis').innerHTML=''; PROF_EMOJI.forEach(e=>{ const b=document.createElement('button'); b.textContent=e; b.className=e===newEmoji?'on':'';
-  b.onclick=()=>{ newEmoji=e; [...$('pemojis').children].forEach(x=>x.classList.toggle('on',x.textContent===e)); }; $('pemojis').appendChild(b); });
+$('pemojis').innerHTML=''; PROF_EMOJI.forEach(e=>{ const b=document.createElement('button'); b.textContent=e; b.dataset.e=e; b.setAttribute('aria-label',e); b.style.setProperty('--img',`url(${AV_IMG[e]})`); b.className=e===newEmoji?'on':'';
+  b.onclick=()=>{ newEmoji=e; [...$('pemojis').children].forEach(x=>x.classList.toggle('on',x.dataset.e===e)); }; $('pemojis').appendChild(b); });
 $('padd').onclick=()=>showForm(true);
 $('pcancel').onclick=()=>showForm(false);
 $('psave').onclick=()=>{
