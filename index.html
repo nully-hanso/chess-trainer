@@ -447,6 +447,7 @@
   .pn-lbl{margin-top:9px;text-align:center;font-weight:800;font-size:14px;line-height:1.25;color:var(--ink)}
   .pn-lbl small{display:block;font-weight:600;font-size:12px;color:var(--muted)}
   .pn-row.lock .pn-lbl{color:var(--muted)}
+  .pn-row.cur{margin-top:26px}
   .pn-tip{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);white-space:nowrap;font-family:var(--display);font-size:16px;color:var(--olive-d);background:var(--card);border-radius:var(--r-s);padding:5px 12px;box-shadow:var(--sh);animation:bob 1.6s ease-in-out infinite}
   .pn-tip::after{content:"";position:absolute;top:100%;left:50%;margin-left:-7px;border:7px solid transparent;border-top-color:var(--card)}
   @media (prefers-reduced-motion:reduce){.pn-tip{animation:none}}
@@ -604,6 +605,20 @@
   .bover-card{box-shadow:0 0 0 3px var(--line),0 6px 0 var(--ledge),0 18px 40px rgba(20,40,70,.3)}
   .bover-card h2{color:var(--ink)}
   .btn[hidden]{display:none}
+  /* 레슨·퍼즐 여정: 패턴은 둘레 고리로 단계 진도를 보여 줘요 */
+  .pn.ring::after{content:"";position:absolute;inset:-7px;border-radius:50%;pointer-events:none;background:conic-gradient(var(--olive) calc(var(--p)*1%),rgba(255,255,255,.85) 0);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 5px));mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 5px))}
+  .jr-side .sect.rev{margin-top:10px}
+  .jr>.path{margin-top:12px}
+  .jr .goals{margin-top:6px}
+  @media (min-width:700px){
+    .jr{display:grid;grid-template-columns:minmax(280px,360px) 1fr;column-gap:22px;align-items:start}
+    .jr-side{position:sticky;top:12px}
+    .jr>.path{margin-top:6px;--xs:1.7}
+    .jr-side .coach{flex-direction:column;align-items:center;margin-top:16px}
+    .jr-side .coach img{width:170px}
+    .jr-side .coach p{margin:0;order:-1}
+    .jr-side .coach p::before{left:50%;bottom:-9px;margin-left:-9px;border:9px solid transparent;border-bottom:0;border-top-color:var(--card)}
+  }
   .bover-card[data-bear]{position:relative;margin-top:54px;padding-top:50px}
   .bover-card[data-bear]::before{content:"";position:absolute;left:50%;top:-62px;width:100px;height:108px;transform:translateX(-50%);background:var(--bear) center bottom/contain no-repeat}
   @media (max-width:480px){ .bover-card[data-bear]{margin-top:40px;padding-top:36px} .bover-card[data-bear]::before{top:-46px;width:76px;height:82px} .bover-card{padding:16px 16px} .bover-card h2{font-size:24px} .bover-card[data-bear]:has(.pt-tip){margin-top:0;padding-top:16px} .bover-card[data-bear]:has(.pt-tip)::before{display:none} .bover-card .pt-tip{font-size:14px;padding:8px 10px} }
@@ -689,9 +704,13 @@
 
   <!-- LESSON -->
   <section class="view" id="v-lesson">
-    <div id="lPick">
-      <h2 class="pg-ttl">레슨</h2>
-      <div id="lList" class="sects"></div>
+    <div id="lPick" class="jr">
+      <div class="jr-side">
+        <h2 class="pg-ttl">레슨</h2>
+        <p class="lead">기물 움직임부터 엔드게임까지, 길을 따라 하나씩 배워요. 어느 칸이든 눌러서 시작할 수 있어요.</p>
+        <div id="lSide"></div>
+      </div>
+      <div id="lList" class="path"></div>
     </div>
     <div id="lPlay" style="display:none">
       <div class="play">
@@ -724,11 +743,14 @@
 
   <!-- PUZZLE: 목록(목표 고르기) → 풀기 -->
   <section class="view" id="v-puzzle">
-    <div id="pList">
-      <h2 class="pg-ttl">패턴 익히기</h2>
-      <p class="lead">패턴을 하나씩 익혀요. 동그라미 하나가 한 단계예요.</p>
-      <div class="pmini" id="pMini"></div>
-      <div id="pPatterns" class="sects"></div>
+    <div id="pList" class="jr">
+      <div class="jr-side">
+        <h2 class="pg-ttl">패턴 익히기</h2>
+        <p class="lead">길을 따라 패턴을 하나씩 익혀요. 동그라미 둘레가 다 차면 그 패턴을 끝낸 거예요.</p>
+        <div class="pmini" id="pMini"></div>
+        <div id="pSide"></div>
+      </div>
+      <div id="pPatterns" class="path"></div>
     </div>
     <div id="pPlay" style="display:none">
     <div class="play">
@@ -1397,7 +1419,7 @@ const LPZ_RAW="mate1|0FxWD|2r2rk1/pp1b1pp1/5q1p/3pp3/1Pn5/P2QPP2/1PB1N1PP/2R2RK1
 // ================= UI =================
 // ----- 사용자 프로필: 사람마다 진도를 따로 저장 -----
 const LS={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const DATA_KEYS=['lrec','path','pathprefs','pathopen','streak','road','solved','openings','lessons','pzprefs','pzrec','prating','pzstats','grating','gstats','ggame','gprefs','gsaves','pzdone','ghist','stories'];
+const DATA_KEYS=['lrec','path','pathprefs','pathopen','lopen','popen','streak','road','solved','openings','lessons','pzprefs','pzrec','prating','pzstats','grating','gstats','ggame','gprefs','gsaves','pzdone','ghist','stories'];
 const PROF_EMOJI=['🦁','🐰','🐻','🐼','🦊','🐸','🐯','🐧','🦄','🐶','🐱','🐵'];
 const AV_IMG=Object.fromEntries(PROF_EMOJI.map((e,i)=>[e,'img/av/'+['lion','rabbit','bear','panda','fox','frog','tiger','penguin','unicorn','puppy','kitten','monkey'][i]+'.png']));
 const avHTML=(e,cls='av')=>AV_IMG[e]?`<span class="${cls} img" style="--img:url(${AV_IMG[e]})" role="img" aria-label="${e}"></span>`:`<span class="${cls}">${esc(e||'')}</span>`;
@@ -1740,6 +1762,24 @@ function startCheckpoint(u){
 }
 
 const PATH_X=[0,46,70,46,0,-46,-70,-46];
+// 여정 한 단원(길잡이·레슨·퍼즐이 같이 써요). arr: 칸들, base: 전체에서 몇 번째부터, cur: 지금 칸 번호
+// lockAhead: 지금 칸 뒤를 잠글지(길잡이만), attr: 칸 버튼에 붙일 속성
+function unitHTML({u,label,name,arr,base,cur,lockAhead,isOpen,attr}){
+  const n=arr.filter(x=>x.done).length, pass=n===arr.length, lock=lockAhead&&cur>=0&&base>cur;
+  const rows=arr.map((x,i)=>{ const gi=base+i, st=x.done?'done':gi===cur?'cur':lockAhead&&cur>=0&&gi>cur?'lock':'';
+    const icon=x.t==='c'?`<span class="pimg" style="--img:url(img/ui/${x.done?'chest-open':'chest'}.png)"></span>`:`<span class="pi" style="--img:url(pieces/${st==='lock'||st===''?x.pc:x.pc.replace(/^b/,'w')}.svg)"></span>`;
+    const ring=!x.done&&x.prog>0;
+    return `<div class="pn-row ${st}" style="--x:${PATH_X[gi%8]}px">${st==='cur'?`<span class="pn-tip">${x.tip||(x.t==='c'?'열어 봐요!':'시작!')}</span>`:''}`+
+      `<button class="pn ${st}${x.t==='c'?' ev':''}${ring?' ring':''}"${ring?` style="--p:${Math.round(x.prog*100)}"`:''} ${attr(x)} aria-label="${esc(x.name)} ${x.done?'끝냄':st==='lock'?'잠김':''}">${icon}${x.done&&x.due?'<span class="due">복습</span>':''}</button>`+
+      `<span class="pn-lbl">${esc(x.name)}<small>${x.kind}</small></span></div>`; }).join('');
+  return `<details class="unit${pass?' pass':lock?' lock':''}" data-u="${u}"${isOpen?' open':''}><summary><span class="un">${label}</span><b>${esc(name)}</b><span class="prog${pass?' full':''}"><i style="--p:${n/arr.length*100}%"></i>${pass?'통과':`${n}/${arr.length}`}</span></summary><div class="trail"><svg aria-hidden="true"></svg>${rows}</div></details>`;
+}
+// 단원을 접고 펼친 걸 기억해요(사용자가 직접 바꿀 때만)
+function bindUnits(box,key){
+  box.querySelectorAll('details.unit').forEach(d=>{ d._s=d.open; d.addEventListener('toggle',()=>{ if(d.open===d._s) return; d._s=d.open; const o=store.get(key,{}); o[d.dataset.u]=d.open; store.set(key,o); drawTrails(); }); });
+  requestAnimationFrame(drawTrails);
+}
+const coachHTML=(pose,say)=>`<div class="coach"><img src="img/ui/bear-${pose}.png" alt="" width="170" height="245"><p>${say}</p></div>`;
 function renderPath(){
   const nodes=pathNodes().map(nodeInfo), cur=nodes.findIndex(n=>!n.done);
   const lDue=lessonDue().length, pDue=dueList().length, goal=dailyGoal(), nt=newToday(), sk=streakN();
@@ -1762,24 +1802,18 @@ function renderPath(){
   const open=store.get('pathopen',{}); let k=0;
   $('path').innerHTML=PATH_UNITS.map(([name,ns],u)=>{
     const arr=nodes.slice(k,k+ns.length+1), base=k; k+=ns.length+1;
-    const n=arr.filter(x=>x.done).length, pass=arr[arr.length-1].done, hasCur=cur>=base&&cur<base+arr.length, lock=cur>=0&&base>cur;
-    const isOpen=u in open?open[u]:(hasCur||(cur<0&&u===PATH_UNITS.length-1));
-    const rows=arr.map((x,i)=>{ const gi=base+i, st=x.done?'done':gi===cur?'cur':gi>cur&&cur>=0?'lock':'';
-      const icon=x.t==='c'?`<span class="pimg" style="--img:url(img/ui/${x.done?'chest-open':'chest'}.png)"></span>`:`<span class="pi" style="--img:url(pieces/${st==='lock'||st===''?x.pc:x.pc.replace(/^b/,'w')}.svg)"></span>`;
-      return `<div class="pn-row ${st}" style="--x:${PATH_X[gi%8]}px">${st==='cur'?`<span class="pn-tip">${x.t==='c'?'열어 봐요!':x.done?'다시':'시작!'}</span>`:''}`+
-        `<button class="pn ${st}${x.t==='c'?' ev':''}" data-node="${x.id}" aria-label="${esc(x.name)} ${x.done?'끝냄':st==='lock'?'잠김':''}">${icon}${x.done&&x.due?'<span class="due">복습</span>':''}</button>`+
-        `<span class="pn-lbl">${esc(x.name)}<small>${x.kind}</small></span></div>`; }).join('');
-    return `<details class="unit${pass?' pass':lock?' lock':''}" data-u="${u}"${isOpen?' open':''}><summary><span class="un">${u+1}단원</span><b>${esc(name)}</b><span class="prog${pass?' full':''}"><i style="--p:${n/arr.length*100}%"></i>${pass?'통과':`${n}/${arr.length}`}</span></summary><div class="trail"><svg aria-hidden="true"></svg>${rows}</div></details>`;
+    const hasCur=cur>=base&&cur<base+arr.length;
+    return unitHTML({u,label:`${u+1}단원`,name,arr,base,cur,lockAhead:true,isOpen:u in open?open[u]:(hasCur||(cur<0&&u===PATH_UNITS.length-1)),attr:x=>`data-node="${x.id}"`});
   }).join('');
   $('path').querySelectorAll('[data-node]').forEach(b=>b.onclick=()=>{
     if(b.classList.contains('lock')) return toast('앞 칸을 먼저 지나가요!'); openNode(b.dataset.node); });
-  $('path').querySelectorAll('details.unit').forEach(d=>{ d._s=d.open; d.addEventListener('toggle',()=>{ if(d.open===d._s) return; d._s=d.open; const o=store.get('pathopen',{}); o[d.dataset.u]=d.open; store.set('pathopen',o); drawTrails(); }); });
+  bindUnits($('path'),'pathopen');
   segButtons($('pathDaily'),[[1,'1칸'],[2,'2칸'],[3,'3칸'],[5,'5칸']],goal,v=>{ store.set('pathprefs',{daily:v}); renderPath(); },'small');
   requestAnimationFrame(drawTrails);
 }
 // 칸과 칸을 구불구불한 길로 이어요(지나온 길은 진하게)
 function drawTrails(){
-  document.querySelectorAll('#path .trail').forEach(tr=>{
+  document.querySelectorAll('.trail').forEach(tr=>{
     if(!tr.offsetParent) return;
     const r0=tr.getBoundingClientRect(), pts=[...tr.querySelectorAll('.pn')].map(b=>{ const r=b.getBoundingClientRect(); return [r.left+r.width/2-r0.left,r.top+r.height/2-r0.top,b.classList.contains('done')]; });
     let d='', on='';
@@ -1787,7 +1821,7 @@ function drawTrails(){
     tr.querySelector(":scope>svg").innerHTML=(d?`<path d="${d}"/>`:'')+(on?`<path class="on" d="${on}"/>`:'');
   });
 }
-addEventListener('resize',()=>{ if($('v-road').classList.contains('on')) drawTrails(); });
+addEventListener('resize',()=>drawTrails());
 function scrollToCur(){ const c=document.querySelector('#path .pn.cur'); if(c) c.scrollIntoView({block:'center',behavior:'smooth'}); else scrollTo(0,0); }
 const renderRoad=renderPath;
 
@@ -2194,31 +2228,31 @@ function ptDots(k){
 }
 function renderPuzzleList(){
   const due=dueList(), revOn=due.length>0;
-  let nextSet=false, def=null;
-  const secs=PT_SECS.map(([sec,t,d])=>{
-    const ks=Object.keys(PT).filter(k=>PT[k][1]===sec); let n=0,tot=0;
-    const items=ks.map(k=>{ const v=PT[k], dt=ptDots(k), full=dt.all>=dt.tot; n+=dt.all; tot+=dt.tot;
-      const next=!full&&!nextSet; if(next){ nextSet=true; def='pt-'+sec; }
-      return itemHTML({attr:`data-goal="pt:${k}"`,pc:v[4],t:v[0],small:v[2],meta:dt.html,full,next:next&&!revOn,go:ptProg(k)[0]?'이어하기':'시작'}); }).join('');
-    return {key:'pt-'+sec,t,n,tot,d,items};
-  });
+  const flat=PT_SECS.flatMap(([sec])=>Object.keys(PT).filter(k=>PT[k][1]===sec)).map(k=>{ const dt=ptDots(k), full=dt.all>=dt.tot;
+    return {k,t:'p',name:PT[k][0],pc:PT[k][4],done:full,prog:dt.all/dt.tot,kind:full?'완료':dt.all?`${dt.all}/${dt.tot}단계`:PT[k][2],tip:ptProg(k)[0]?'이어하기':'시작!'}; });
+  const cur=flat.findIndex(x=>!x.done), open=store.get('popen',{}); let k=0;
+  const units=PT_SECS.map(([sec,t],u)=>{
+    const arr=flat.filter(x=>PT[x.k][1]===sec), base=k; k+=arr.length;
+    return unitHTML({u:sec,label:`${u+1}장`,name:t,arr,base,cur,lockAhead:false,isOpen:sec in open?open[sec]:(cur>=base&&cur<k)||(cur<0&&u===0),attr:x=>`data-goal="pt:${x.k}"`});
+  }).join('');
+  // 문제 모음(1수·2수 메이트, 기물 얻기, 섞어서)은 길 아래 카드로
   const goals=GOAL_CARDS.map(([g,t,d,pc])=>{
     if(g==='mix') return itemHTML({attr:`data-goal="${g}"`,pc,t,meta:d});
     const [n,tot]=goalProg(g); return itemHTML({attr:`data-goal="${g}"`,pc,t,meta:`${n}/${tot}문제`,full:n>=tot});
   }).join('');
-  // 문제 모음 묶음은 1수·2수 메이트, 기물 얻기를 합쳐 세요
   let gn=0,gt=0; ['m1','m2','mat'].forEach(g=>{ const [a,b]=goalProg(g); gn+=a; gt+=b; });
-  secs.push({key:'pz-goals',t:'문제 모음',n:gn,tot:gt,d:'종류별로 쉬운 문제부터, 또는 섞어서 풀어요.',items:goals});
-  const open=pickOpen(secs.map(x=>x.key),def);
   const box=$('pPatterns');
-  // 복습할 문제가 있으면 새 패턴보다 먼저: 맨 위 카드가 '다음 할 것'
-  let rev='';
-  if(revOn){ const names=[...new Set(due.map(pzCatName))];
-    rev=`<div class="sect rev">${itemHTML({attr:'data-rev',pc:'wk',t:`오늘의 복습 ${Math.min(REV_N,due.length)}문제`,small:names.slice(0,3).join(' · ')+(names.length>3?` 외 ${names.length-3}개`:''),meta:due.length>REV_N?`복습할 문제 모두 ${due.length}개`:'잊기 전에 한 번 더',next:true,go:'복습'})}</div>`; }
-  box.innerHTML=rev+secs.map(x=>sectHTML(x.key,x.t,x.n,x.tot,x.d,x.items,x.key===open)).join('');
+  box.innerHTML=units+`<div class="sects goals">${sectHTML('pz-goals','문제 모음',gn,gt,'종류별로 쉬운 문제부터, 또는 섞어서 풀어요.',goals,pickOpen(['pz-goals'],null)==='pz-goals')}</div>`;
   box.querySelectorAll('[data-goal]').forEach(b=>b.onclick=()=>setGoal(b.dataset.goal));
-  const rb=box.querySelector('[data-rev]'); if(rb) rb.onclick=startReview;
-  bindSects(box);
+  bindUnits(box,'popen'); bindSects(box.querySelector('.goals'));
+  // 옆: 복습 카드와 길잡이 곰
+  const c=flat[cur];
+  let side='';
+  if(revOn){ const names=[...new Set(due.map(pzCatName))];
+    side=`<div class="sect rev">${itemHTML({attr:'data-rev',pc:'wk',t:`오늘의 복습 ${Math.min(REV_N,due.length)}문제`,small:names.slice(0,3).join(' · ')+(names.length>3?` 외 ${names.length-3}개`:''),meta:due.length>REV_N?`복습할 문제 모두 ${due.length}개`:'잊기 전에 한 번 더',next:true,go:'복습'})}</div>`; }
+  side+=revOn?coachHTML('think','전에 푼 패턴, 아직 기억나? 복습부터 해 보자!'):c?coachHTML('point',`다음 패턴은 <b>${esc(c.name)}</b>! ${esc(PT[c.k][2])}.`):coachHTML('cheer','패턴을 모두 익혔어! 문제 모음에서 실력을 뽐내 봐!');
+  $('pSide').innerHTML=side;
+  const rb=$('pSide').querySelector('[data-rev]'); if(rb) rb.onclick=startReview;
   const {rating}=infStats(), nd=revOn?'':nextDueTxt(); $('pMini').innerHTML=`내 퍼즐 점수 <b>${rating}</b>`+(nd?` · 다음 복습 <b>${nd}</b>`:'');
 }
 function showPuzzlePlay(){ if(P.view==='play') return; P.view='play'; $('pList').style.display='none'; $('pPlay').style.display=''; scrollTo(0,0); }
@@ -2333,20 +2367,21 @@ document.addEventListener('keydown',e=>{
 // ---------- lessons ----------
 const L={sel:-1,hint:null,busy:false,done:false};
 function renderLessonList(){
-  const done=store.get('lessons',{}); const box=$('lList'); let nextSet=false, def=null;
-  const PK=LES_PC;
-  const secs=LESSON_GROUPS.map(([g,name])=>{
-    const ls=LESSONS.filter(x=>x.g===g), n=ls.filter(x=>done[x.id]).length;
-    const items=ls.map(les=>{ const full=!!done[les.id], next=!full&&!nextSet; if(next){ nextSet=true; def='l-'+g; }
-      return itemHTML({attr:`data-les="${les.id}"`,pc:PK[les.id]||'wp',t:les.title.replace(/\s*[♔-♟]︎?$/,''),small:(les.intro.match(/^[^.!?]*[.!?]?/)||[''])[0],meta:full?'완료':les.steps.length+'단계',full,next,go:'시작'}); }).join('');
-    return {key:'l-'+g,t:name,n,tot:ls.length,items};
-  });
-  const open=pickOpen(secs.map(x=>x.key),def);
-  const ld=lessonDue();
-  box.innerHTML=(ld.length?`<div class="sect rev">${itemHTML({attr:'data-lrev',pc:'wk',t:`레슨 복습 ${Math.min(LREV_N,ld.length)}개`,small:ld.slice(0,3).map(id=>lesTitle(LESSONS.find(x=>x.id===id))).join(' · ')+(ld.length>3?` 외 ${ld.length-3}개`:''),meta:'잊기 전에 한 번 더',next:true,go:'복습'})}</div>`:'')+secs.map(x=>sectHTML(x.key,x.t,x.n,x.tot,'',x.items,x.key===open)).join('');
-  const lr=box.querySelector('[data-lrev]'); if(lr) lr.onclick=()=>lessonReview();
-  box.querySelectorAll('[data-les]').forEach(b=>b.onclick=()=>openLesson(LESSONS.find(x=>x.id===b.dataset.les)));
-  bindSects(box);
+  const done=store.get('lessons',{}), lr=store.get('lrec',{}), now=Date.now();
+  const flat=LESSON_GROUPS.flatMap(([g])=>LESSONS.filter(x=>x.g===g)).map(les=>({les,t:'l',name:lesTitle(les),pc:LES_PC[les.id]||'wp',
+    done:!!done[les.id],kind:done[les.id]?'완료':les.steps.length+'단계',due:!!(lr[les.id]&&lr[les.id].due<=now)}));
+  const cur=flat.findIndex(x=>!x.done), open=store.get('lopen',{}); let k=0;
+  $('lList').innerHTML=LESSON_GROUPS.map(([g,name],u)=>{
+    const arr=flat.filter(x=>x.les.g===g), base=k; k+=arr.length;
+    return unitHTML({u:g,label:`${u+1}장`,name:name.replace(/^[①-⑳]\s*/,''),arr,base,cur,lockAhead:false,isOpen:g in open?open[g]:(cur>=base&&cur<k)||(cur<0&&u===0),attr:x=>`data-les="${x.les.id}"`});
+  }).join('');
+  $('lList').querySelectorAll('[data-les]').forEach(b=>b.onclick=()=>openLesson(LESSONS.find(x=>x.id===b.dataset.les)));
+  bindUnits($('lList'),'lopen');
+  // 옆: 레슨 복습 카드와 길잡이 곰
+  const ld=lessonDue(), c=flat[cur];
+  $('lSide').innerHTML=(ld.length?`<div class="sect rev">${itemHTML({attr:'data-lrev',pc:'wk',t:`레슨 복습 ${Math.min(LREV_N,ld.length)}개`,small:ld.slice(0,3).map(id=>lesTitle(LESSONS.find(x=>x.id===id))).join(' · ')+(ld.length>3?` 외 ${ld.length-3}개`:''),meta:'잊기 전에 한 번 더',next:true,go:'복습'})}</div>`:'')+
+    (ld.length?coachHTML('think','배운 걸 잊기 전에 복습부터 해 볼까?'):c?coachHTML('point',`다음은 <b>${esc(c.name)}</b>! 길에서 눌러 봐.`):coachHTML('cheer','레슨을 다 끝냈어! 정말 대단해!'));
+  const lrb=$('lSide').querySelector('[data-lrev]'); if(lrb) lrb.onclick=()=>lessonReview();
 }
 function openLesson(les){ scrollTo(0,0); L.les=les; $('lPick').style.display='none'; $('lPlay').style.display=''; $('lTitle').textContent=les.title.replace(/\s*[\u2654-\u265F]\uFE0E?$/,''); $('lIntro').textContent=les.intro; loadStep(0); }
 const lstep=()=>L.les.steps[L.si];
@@ -3093,7 +3128,7 @@ function updateBack(){
   if(fn&&fromPath){ fn=backToPath; lbl='길'; }
   const b=$('backBtn'); b.hidden=!fn; $('backLbl').textContent=lbl; b.onclick=fn;
 }
-{ const _st=showTab; showTab=t=>{ _st(t); if(t==='road') renderPath(); updateBack(); }; document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{ fromPath=false; showTab(b.dataset.tab); });
+{ const _st=showTab; showTab=t=>{ _st(t); if(t==='road') renderPath(); updateBack(); requestAnimationFrame(drawTrails); }; document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{ fromPath=false; showTab(b.dataset.tab); });
   const mo=new MutationObserver(updateBack); ['lPlay','oPlay','pPlay'].forEach(id=>mo.observe($(id),{attributes:true,attributeFilter:['style']})); }
 
 renderRoad(); renderOpList(); renderLessonList(); renderPuzzleList(); updateBack();
