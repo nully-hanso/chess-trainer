@@ -368,26 +368,39 @@
   .fold-txt{margin:0;color:var(--muted)}
 
   .tools{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
-  /* 접는 목록(레슨·패턴): 묶음 제목 줄을 누르면 펼쳐져요. 상자 대신 가는 줄로만 나눠요 */
-  .sect{border-bottom:1px solid var(--line)}
-  .sect:first-child{border-top:1px solid var(--line)}
-  .sect>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;padding:15px 4px;font-family:var(--display);font-size:19px}
+  /* 접는 목록(레슨·패턴): 묶음 하나가 카드 하나. 한 번에 한 묶음만 펼치고, 다음에 할 것 하나를 강조해요 */
+  .sects{display:grid;gap:10px}
+  .sect{background:var(--card);border-radius:var(--r);box-shadow:var(--sh)}
+  .sect>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;min-height:60px;padding:10px 16px;font-family:var(--display);font-size:19px}
   .sect>summary::-webkit-details-marker{display:none}
-  .sect>summary .cnt{margin-left:auto;font-family:inherit;font-size:14px;color:var(--muted);font-weight:700}
-  .sect>summary .cnt.full{color:var(--ok)}
-  .sect>summary::after{content:"";flex:none;width:8px;height:8px;border-right:2.5px solid var(--muted);border-bottom:2.5px solid var(--muted);transform:translateY(-2px) rotate(45deg);transition:transform .2s;margin:0 4px}
-  .sect[open]>summary::after{transform:translateY(2px) rotate(-135deg)}
-  .sect .sub{margin:-8px 4px 6px;color:var(--muted);font-size:14px}
-  .items{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));column-gap:20px;padding:0 0 12px}
-  .item{border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;display:flex;align-items:center;gap:12px;padding:8px 6px;border-radius:var(--r-s);min-width:0}
-  .item:hover{background:var(--paper2)}.item:active{background:var(--olive2)}
-  .item .ico{flex:none;width:34px;height:34px;background:var(--img) center/contain no-repeat}
-  .item .t{flex:1;display:flex;flex-direction:column;min-width:0;line-height:1.3}
-  .item b{font-size:16px;font-weight:700}
-  .item small{color:var(--muted);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .item .st{flex:none;font-size:13px;color:var(--muted);font-weight:700}
-  .item .st.full{color:var(--ok)}
-  @media (max-width:600px){ .items{grid-template-columns:1fr} }
+  .sect>summary::before{content:"";flex:none;width:9px;height:9px;border-right:2.5px solid var(--muted);border-bottom:2.5px solid var(--muted);transform:rotate(-45deg);transition:transform .2s;margin-right:4px}
+  .sect[open]>summary::before{transform:rotate(45deg)}
+  .prog{margin-left:auto;display:flex;align-items:center;gap:8px;font:700 14px/1 system-ui,sans-serif;color:var(--muted);font-variant-numeric:tabular-nums}
+  .prog i{width:56px;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+  .prog i::after{content:"";display:block;height:100%;width:var(--p);background:var(--olive);border-radius:3px}
+  .prog.full{color:var(--olive-d)}
+  .sect .sub{margin:-4px 16px 6px 39px;color:var(--muted);font-size:14px}
+  .items{display:flex;flex-direction:column;padding:0 8px 8px}
+  .item{border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;display:flex;align-items:center;gap:14px;min-height:60px;padding:8px 10px;border-radius:var(--r-s);position:relative}
+  .item+.item::before{content:"";position:absolute;top:0;left:68px;right:10px;height:1px;background:var(--line)}
+  .item.next::before,.item.next+.item::before{display:none}
+  .item:active{background:var(--olive2)}
+  .item .ico{flex:none;position:relative;width:44px;height:44px;border-radius:50%;background:var(--paper2) var(--img) center/82% no-repeat}
+  .item.full .ico::before{content:"";position:absolute;right:-3px;bottom:-3px;width:19px;height:19px;border-radius:50%;background:var(--olive);box-shadow:0 0 0 2px var(--card)}
+  .item.full .ico::after{content:"";position:absolute;right:4px;bottom:3px;width:4px;height:8px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
+  .item .t{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0}
+  .item b{font-size:17px;font-weight:700;line-height:1.25}
+  .item.full b{color:var(--olive-d)}
+  .item small{color:var(--muted);font-size:13.5px;line-height:1.35}
+  .item .meta{font-size:13px;font-weight:700;color:var(--muted)}
+  .item.full .meta{color:var(--olive-d)}
+  .dots{display:flex;gap:6px;align-items:center;margin-top:2px}
+  .dots i{width:11px;height:11px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--line)}
+  .dots i.half{background:linear-gradient(90deg,var(--olive) 50%,transparent 50%);box-shadow:inset 0 0 0 2px var(--olive)}
+  .dots i.on{background:var(--olive);box-shadow:none}
+  .item.next{background:var(--olive2)}
+  @media (max-width:480px){ .prog i{width:28px} .sect>summary{font-size:18px;padding:10px 14px} }
+  .item .go{flex:none;background:var(--olive);color:#fff;border-radius:99px;padding:8px 14px;font-weight:800;font-size:14px}
   .pt-tip{background:var(--paper2);border-radius:var(--r-s);padding:10px 12px;text-align:left;font-size:15px;line-height:1.55;color:var(--ink)}
 
   /* 시트(목록·설정을 화면 위로) */
@@ -528,7 +541,7 @@
   <section class="view" id="v-lesson">
     <div id="lPick">
       <h2 class="pg-ttl">레슨</h2>
-      <div id="lList"></div>
+      <div id="lList" class="sects"></div>
     </div>
     <div id="lPlay" style="display:none">
       <div class="play">
@@ -563,9 +576,9 @@
   <section class="view" id="v-puzzle">
     <div id="pList">
       <h2 class="pg-ttl">패턴 익히기</h2>
-      <p class="lead">패턴을 하나씩 익혀요. 입문 6문제로 모양을 보고, 단계마다 10문제씩 연습해요.</p>
+      <p class="lead">패턴을 하나씩 익혀요. 동그라미 하나가 한 단계예요.</p>
       <div class="pmini" id="pMini"></div>
-      <div id="pPatterns"></div>
+      <div id="pPatterns" class="sects"></div>
     </div>
     <div id="pPlay" style="display:none">
     <div class="play">
@@ -1844,29 +1857,47 @@ function ptIntroCard(){ // 입문 문제를 시작할 때는 패턴 설명을 �
   return `<p class="pt-tip">${PT[ptKey(P.goal)][3]}</p>`;
 }
 function ptProg(k){ const done=pzDone(), pool=LPT.filter(p=>p.cat===k); return [pool.filter(p=>done[p.id]).length,pool.length]; }
-// 접는 묶음: 처음엔 아직 안 끝낸 첫 묶음만 펼쳐 두고, 그 뒤엔 아이가 펼치고 접은 대로 기억해요
-function sectHTML(key,title,cnt,full,sub,items,openDef){
-  const o=store.get('sects',{}), open=key in o?o[key]:openDef;
-  return `<details class="sect" data-sect="${key}"${open?' open':''}><summary>${title}<span class="cnt${full?' full':''}">${cnt}</span></summary>${sub?`<p class="sub">${sub}</p>`:''}<div class="items">${items}</div></details>`;
+// 접는 묶음: 한 번에 한 묶음만 펼쳐요. 처음엔 아직 안 끝낸 첫 묶음, 그 뒤엔 마지막으로 펼친 묶음(모두 접었으면 접힌 채로)
+function pickOpen(keys,def){ const o=store.get('sects',{}); const k=keys.find(k=>o[k]===true); if(k) return k; return keys.some(k=>k in o)?null:def; }
+function sectHTML(key,title,n,tot,sub,items,open){
+  return `<details class="sect" data-sect="${key}"${open?' open':''}><summary>${title}<span class="prog${n>=tot?' full':''}"><i style="--p:${tot?n/tot*100:0}%"></i>${n}/${tot}</span></summary>${sub?`<p class="sub">${sub}</p>`:''}<div class="items">${items}</div></details>`;
 }
 function bindSects(box){
-  box.querySelectorAll('details[data-sect]').forEach(d=>d.addEventListener('toggle',()=>{ const o=store.get('sects',{}); o[d.dataset.sect]=d.open; store.set('sects',o); }));
+  const ds=[...box.querySelectorAll('details[data-sect]')];
+  ds.forEach(d=>d.addEventListener('toggle',()=>{
+    const o=store.get('sects',{});
+    if(d.open) ds.forEach(x=>{ if(x!==d){ x.open=false; o[x.dataset.sect]=false; } });
+    o[d.dataset.sect]=d.open; store.set('sects',o);
+    if(d.open) d.scrollIntoView({block:'nearest',behavior:'smooth'});
+  }));
 }
-const itemHTML=(attr,pc,t,small,st,full)=>`<button class="item" ${attr}><span class="ico" style="--img:url(pieces/${pc}.svg)"></span><span class="t"><b>${t}</b>${small?`<small>${small}</small>`:''}</span><span class="st${full?' full':''}">${st}</span></button>`;
+// 항목 한 줄: 그림, 이름, 진행(meta), 다음 할 것이면 설명과 "시작" 버튼 모양
+const itemHTML=({attr,pc,t,small,meta,full,next,go})=>`<button class="item${full?' full':''}${next?' next':''}" ${attr}><span class="ico" style="--img:url(pieces/${pc}.svg)"></span><span class="t"><b>${t}</b>${next&&small?`<small>${small}</small>`:''}<span class="meta">${meta}</span></span>${next?`<span class="go">${go} ›</span>`:''}</button>`;
+// 패턴 하나의 단계별 진행: 점 하나가 한 단계(입문, 1, 2, 3)
+function ptDots(k){
+  const done=pzDone(); let all=0;
+  const dots=stages('pt:'+k).map(st=>{ const n=st.items.filter(x=>done[x.lp.id]).length; if(n===st.items.length) all++; return `<i class="${n===st.items.length?'on':n?'half':''}"></i>`; }).join('');
+  return {html:`<span class="dots" aria-label="${all}단계 끝">${dots}</span>`,all,tot:stages('pt:'+k).length};
+}
 function renderPuzzleList(){
-  let first=true;
+  let nextSet=false, def=null;
   const secs=PT_SECS.map(([sec,t,d])=>{
     const ks=Object.keys(PT).filter(k=>PT[k][1]===sec); let n=0,tot=0;
-    const items=ks.map(k=>{ const v=PT[k], [a,b]=ptProg(k); n+=a; tot+=b; return itemHTML(`data-goal="pt:${k}"`,v[4],v[0],v[2],a>=b?'✓':`${a}/${b}`,a>=b); }).join('');
-    const full=n>=tot, def=first&&!full; if(def) first=false;
-    return sectHTML('pt-'+sec,t,full?'✓':n?`${Math.max(1,Math.floor(n/tot*100))}%`:`${ks.length}개`,full,d,items,def);
-  }).join('');
+    const items=ks.map(k=>{ const v=PT[k], dt=ptDots(k), full=dt.all>=dt.tot; n+=dt.all; tot+=dt.tot;
+      const next=!full&&!nextSet; if(next){ nextSet=true; def='pt-'+sec; }
+      return itemHTML({attr:`data-goal="pt:${k}"`,pc:v[4],t:v[0],small:v[2],meta:dt.html,full,next,go:ptProg(k)[0]?'이어하기':'시작'}); }).join('');
+    return {key:'pt-'+sec,t,n,tot,d,items};
+  });
   const goals=GOAL_CARDS.map(([g,t,d,pc])=>{
-    if(g==='mix'){ const {dueNow}=infStats(); return itemHTML(`data-goal="${g}"`,pc,t,dueNow?`복습할 문제 ${dueNow}개`:d,'',false); }
-    const [n,tot]=goalProg(g); return itemHTML(`data-goal="${g}"`,pc,t,d,`${n}/${tot}`,n>=tot);
+    if(g==='mix'){ const {dueNow}=infStats(); return itemHTML({attr:`data-goal="${g}"`,pc,t,meta:dueNow?`복습할 문제 ${dueNow}개`:d}); }
+    const [n,tot]=goalProg(g); return itemHTML({attr:`data-goal="${g}"`,pc,t,meta:`${n}/${tot}문제`,full:n>=tot});
   }).join('');
+  // 문제 모음 묶음은 1수·2수 메이트, 기물 얻기를 합쳐 세요
+  let gn=0,gt=0; ['m1','m2','mat'].forEach(g=>{ const [a,b]=goalProg(g); gn+=a; gt+=b; });
+  secs.push({key:'pz-goals',t:'문제 모음',n:gn,tot:gt,d:'종류별로 쉬운 문제부터, 또는 섞어서 풀어요.',items:goals});
+  const open=pickOpen(secs.map(x=>x.key),def);
   const box=$('pPatterns');
-  box.innerHTML=secs+sectHTML('pz-goals','문제 모음',`${GOAL_CARDS.length}개`,false,'종류별로 쉬운 문제부터, 또는 섞어서 풀어요.',goals,false);
+  box.innerHTML=secs.map(x=>sectHTML(x.key,x.t,x.n,x.tot,x.d,x.items,x.key===open)).join('');
   box.querySelectorAll('[data-goal]').forEach(b=>b.onclick=()=>setGoal(b.dataset.goal));
   bindSects(box);
   const {rating}=infStats(); $('pMini').innerHTML=`내 퍼즐 점수 <b>${rating}</b>`;
@@ -1980,13 +2011,16 @@ document.addEventListener('keydown',e=>{
 // ---------- lessons ----------
 const L={sel:-1,hint:null,busy:false,done:false};
 function renderLessonList(){
-  const done=store.get('lessons',{}); const box=$('lList'); let first=true;
+  const done=store.get('lessons',{}); const box=$('lList'); let nextSet=false, def=null;
   const PK={rook:'wr',bishop:'wb',queen:'wq',knight:'wn',king:'wk',pawn:'wp',coords:'bp',castle:'wk',ep:'bp',promo:'wq',escape:'wk',mates:'bk',free:'wn',kq:'wq',kr:'wr',kpsq:'wp',kpfront:'wk',kpopp:'wk',kpdef:'bk',kprook:'wp',rlucena:'wr',rphili:'br'};
-  box.innerHTML=LESSON_GROUPS.map(([g,name])=>{
-    const ls=LESSONS.filter(x=>x.g===g), n=ls.filter(x=>done[x.id]).length, full=n===ls.length, def=first&&!full; if(def) first=false;
-    const items=ls.map(les=>itemHTML(`data-les="${les.id}"`,PK[les.id]||'wp',les.title.replace(/\s*[\u2654-\u265F]\uFE0E?$/,''),'',done[les.id]?'✓':les.steps.length+'단계',!!done[les.id])).join('');
-    return sectHTML('l-'+g,name,`${n}/${ls.length}`,full,'',items,def);
-  }).join('');
+  const secs=LESSON_GROUPS.map(([g,name])=>{
+    const ls=LESSONS.filter(x=>x.g===g), n=ls.filter(x=>done[x.id]).length;
+    const items=ls.map(les=>{ const full=!!done[les.id], next=!full&&!nextSet; if(next){ nextSet=true; def='l-'+g; }
+      return itemHTML({attr:`data-les="${les.id}"`,pc:PK[les.id]||'wp',t:les.title.replace(/\s*[♔-♟]︎?$/,''),small:(les.intro.match(/^[^.!?]*[.!?]?/)||[''])[0],meta:full?'완료':les.steps.length+'단계',full,next,go:'시작'}); }).join('');
+    return {key:'l-'+g,t:name,n,tot:ls.length,items};
+  });
+  const open=pickOpen(secs.map(x=>x.key),def);
+  box.innerHTML=secs.map(x=>sectHTML(x.key,x.t,x.n,x.tot,'',x.items,x.key===open)).join('');
   box.querySelectorAll('[data-les]').forEach(b=>b.onclick=()=>openLesson(LESSONS.find(x=>x.id===b.dataset.les)));
   bindSects(box);
 }
