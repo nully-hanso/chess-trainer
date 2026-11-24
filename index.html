@@ -537,6 +537,13 @@
         <div class="panel">
           <div class="lead" id="lIntro"></div>
           <div class="dots" id="lDots"></div>
+          <div id="lCoordOpts" hidden>
+            <h3>무엇을 할까요?</h3><div class="seg" id="cgMode"></div>
+            <h3>시간</h3><div class="seg" id="cgTime"></div>
+            <h3>판 방향</h3><div class="seg" id="cgSide"></div>
+            <h3>판의 좌표 글씨</h3><div class="seg" id="cgShow"></div>
+            <div class="stats" id="cgBest"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -1058,12 +1065,8 @@ const LESSONS=[
     {k:'stars',fen:'8/8/8/8/8/8/4P3/8 w - - 0 1',stars:['e4','e5','e6'],note:'별은 폰이 걸어갈 길이에요. 폰은 앞으로 걸어가고, 첫 수는 두 칸도 갈 수 있어요. (잡는 건 다음 단계에서!)'},
     {k:'stars',fen:'8/8/8/8/4p3/3p4/4P3/8 w - - 0 1',stars:['d3','e4'],note:'노란 점선 동그라미는 잡아야 할 기물. 폰은 대각선으로 잡아요.'}]},
 
-  {id:'coords',g:'coord',title:'좌표 찾기',intro:'칸마다 이름이 있어요. 세로줄은 왼쪽부터 a~h, 가로줄은 아래부터 1~8(백 쪽에서 볼 때). 둘을 합치면 칸 이름 — 예: e4는 e줄과 4줄이 만나는 칸. 기보를 읽고 머릿속으로 수를 따라가려면 꼭 필요해요. 하루 1~2분씩!',steps:[
-    {k:'coord',mode:'find',side:'w',count:10,fen:'8/8/8/8/8/8/8/8 w - - 0 1'},
-    {k:'coord',mode:'find',side:'w',secs:30,fen:'8/8/8/8/8/8/8/8 w - - 0 1'},
-    {k:'coord',mode:'name',side:'w',secs:30,fen:'8/8/8/8/8/8/8/8 w - - 0 1'},
-    {k:'coord',mode:'find',side:'b',secs:30,fen:'8/8/8/8/8/8/8/8 w - - 0 1'},
-    {k:'coord',mode:'find',side:'w',secs:30,noCoords:true,fen:'8/8/8/8/8/8/8/8 w - - 0 1'}]},
+  {id:'coords',g:'coord',title:'좌표 찾기',intro:'칸마다 이름이 있어요. 세로줄은 왼쪽부터 a~h, 가로줄은 아래부터 1~8(백 쪽에서 볼 때). 둘을 합치면 칸 이름 — 예: e4는 e줄과 4줄이 만나는 칸. 기보를 읽고 머릿속으로 수를 따라가려면 꼭 필요해요. 오른쪽에서 게임 방식을 골라요. 하루 1~2분씩!',steps:[
+    {k:'coord',fen:'8/8/8/8/8/8/8/8 w - - 0 1'}]},
   {id:'castle',g:'rule',title:'캐슬링',intro:'킹과 룩이 한 번에 움직이는 특수한 수. 킹을 룩 쪽으로 두 칸 옮기면 룩이 킹을 넘어 옆에 붙어요. 조건: ① 킹과 그 룩이 한 번도 움직이지 않았고 ② 사이에 기물이 없고 ③ 지금 체크가 아니며 ④ 킹이 지나가거나 도착하는 칸이 공격받지 않을 것.',steps:[
     {k:'move',fen:'4k3/8/8/8/8/8/8/R3K2R w KQ - 0 1',accept:['e1g1'],text:'킹 쪽 캐슬링(O-O)을 하세요. 킹을 g1로 두 칸 옮기면 돼요.',ok:'O-O! 킹은 g1, 룩은 f1. 킹이 구석으로 숨고 룩은 중앙으로 나와요.'},
     {k:'move',fen:'4k3/8/8/8/8/8/8/R3K2R w KQ - 0 1',accept:['e1c1'],text:'이번엔 퀸 쪽 캐슬링(O-O-O). 킹을 c1로 두 칸.',ok:'O-O-O! 킹은 c1, 룩은 d1로 갔어요.'},
@@ -1822,7 +1825,7 @@ function loadStep(i){
     L.mode='learn'; L.noCheck=true; L.text=(L.s.turn==='w'?'백':'흑')+' 차례예요. 지금 상황은?'; L.msg='';
     [['mate','체크메이트'],['stale','스테일메이트'],['play','둘 수 있음']].forEach(([k,n])=>{ const b=document.createElement('button'); b.className='btn'; b.textContent=n; b.onclick=()=>answerQuiz(k); $('lQuiz').appendChild(b); });
   } else if(st.k==='vsking'){ L.text=st.text; L.msg='수: 0'; }
-  else if(st.k==='coord'){ coordSetup(st); return; }
+  else if(st.k==='coord'){ coordSetup(); return; }
   L.render();
 }
 L.render=()=>{
@@ -1832,55 +1835,75 @@ L.render=()=>{
   if(L.textHTML) $('lText').innerHTML=L.textHTML; else $('lText').textContent=L.text; $('lMsg').textContent=L.msg; $('lMsg').className='msg '+(L.tone||'');
   const last=L.si>=L.les.steps.length-1; const li=LESSONS.indexOf(L.les);
   $('lNext').innerHTML=(last?(li<LESSONS.length-1?'다음 레슨':'목록으로'):'다음')+IC('next');
-  const k=lstep().k; $('lHint').style.display=(k==='quiz'||(k==='coord'&&lstep().secs))?'none':'';
+  const k=lstep().k; $('lHint').style.display=(k==='quiz'||(k==='coord'&&(L.cg?.p.secs||!L.cg?.running)))?'none':'';
+  $('lCoordOpts').hidden=k!=='coord'; $('lDots').style.display=L.les.steps.length>1?'':'none';
 };
 // ----- 좌표 찾기 게임 -----
-function coordSetup(st){
-  const best=store.get('coordbest',{})[L.les.id+'-'+L.si]||0;
-  Object.assign(L,{flip:st.side==='b',side:'-',noCoords:!!st.noCoords,onSquare:coordClick,cg:{n:0,miss:0,target:-1,left:st.secs||0,running:!st.secs,iv:null}});
-  const view=(st.side==='b'?'흑 쪽에서 보기 (판이 뒤집혀요)':'백 쪽에서 보기')+(st.noCoords?' · 좌표 글씨 없이!':'');
-  if(st.secs){
-    L.text=`${st.mode==='find'?'나오는 칸을 눌러요':'빛나는 칸의 이름을 골라요'} — ${st.secs}초 동안 몇 개? · ${view}`;
-    L.msg=best?`최고 기록: ${best}개`:'시작을 누르면 시간이 흘러요!';
-    const b=document.createElement('button'); b.className='btn primary'; b.textContent='시작'; b.onclick=coordStart; $('lQuiz').appendChild(b);
-    L.render();
-  } else { L.msg=`맞힘 0/${st.count} · ${view}`; coordNext(); }
+// 고를 수 있는 것: 칸 찾기(이름 → 칸) / 이름 맞히기(칸 → 이름), 30초 / 무제한, 백 쪽 / 흑 쪽 / 번갈아, 좌표 글씨 보이기 / 가리기
+const cgPrefs=()=>({mode:'find',secs:30,side:'w',show:true,...store.get('coordprefs',{})});
+const cgKey=p=>`${p.mode}-${p.side}-${p.show?'c':'n'}`;
+const cgView=p=>({w:'백 쪽에서 보기',b:'흑 쪽에서 보기 (판이 뒤집혀요)',r:'판(번갈아)'}[p.side])+(p.show?'':' · 좌표 글씨 없이');
+function coordOpts(){
+  const p=cgPrefs(), set=(k,v)=>{ const n={...cgPrefs(),[k]:v}; store.set('coordprefs',n);
+    if(k==='show'){ L.noCoords=!v; if(L.cg) L.cg.p.show=v; coordOpts(); L.render(); } else coordSetup(); };
+  segButtons($('cgMode'),[['find','칸 찾기'],['name','이름 맞히기']],p.mode,v=>set('mode',v));
+  segButtons($('cgTime'),[[30,'30초 게임'],[0,'시간 없이 연습']],p.secs,v=>set('secs',v));
+  segButtons($('cgSide'),[['w','백 쪽'],['b','흑 쪽'],['r','번갈아']],p.side,v=>set('side',v));
+  segButtons($('cgShow'),[[true,'보이기'],[false,'가리기']],p.show,v=>set('show',v));
+  const best=store.get('coordbest2',{})[cgKey(p)];
+  $('cgBest').innerHTML=best?`이 설정 최고 기록: <b>30초에 ${best}개</b>`:'30초 게임에서 최고 기록이 남아요.';
+}
+function coordSetup(){
+  const p=cgPrefs(); clearTimeout(L.timer); if(L.cg) clearInterval(L.cg.iv);
+  Object.assign(L,{flip:p.side==='b'||(p.side==='r'&&Math.random()<.5),side:'-',noCoords:!p.show,onSquare:coordClick,hint:null,flash:null,busy:false,done:false,tone:'',textHTML:'',
+    cg:{p,n:0,miss:0,target:-1,left:p.secs,running:false,iv:null}});
+  $('lQuiz').innerHTML=''; $('lQuiz').classList.remove('four'); coordOpts();
+  L.text=(p.mode==='find'?'나오는 이름의 칸을 눌러요':'빛나는 칸의 이름을 골라요')+(p.secs?` — ${p.secs}초 동안 몇 개?`:' — 천천히 연습해요')+` · ${cgView(p)}`;
+  L.msg='시작을 누르면 '+(p.secs?'시간이 흘러요!':'문제가 나와요. 그만하고 싶을 때 “끝내기”를 눌러요.');
+  const b=document.createElement('button'); b.className='btn primary big'; b.innerHTML=IC('play')+'시작'; b.onclick=coordStart; $('lQuiz').appendChild(b);
+  L.render();
 }
 function coordStart(){
-  const cg=L.cg,st=lstep(); cg.running=true; $('lQuiz').innerHTML='';
-  cg.iv=setInterval(()=>{ cg.left--; if(cg.left<=0) return coordEnd(); L.msg=`${cg.left}초 · 맞힘 ${cg.n}`; $('lMsg').textContent=L.msg; },1000);
-  L.msg=`${cg.left}초 · 맞힘 0`; coordNext();
+  const cg=L.cg; cg.running=true; $('lQuiz').innerHTML='';
+  if(cg.p.secs) cg.iv=setInterval(()=>{ cg.left--; if(cg.left<=0) return coordEnd(); L.msg=coordScore(); $('lMsg').textContent=L.msg; },1000);
+  L.msg=coordScore(); coordNext();
 }
+const coordScore=()=>{ const cg=L.cg; return (cg.p.secs?`${cg.left}초 · `:'')+`맞힘 ${cg.n}`+(cg.miss?` · 틀림 ${cg.miss}`:''); };
 function coordNext(){
-  const st=lstep(),cg=L.cg; let t; do t=Math.floor(Math.random()*64); while(t===cg.target); cg.target=t;
-  if(st.mode==='find'){ L.hint=null; L.textHTML=`<span class="cbig">${sqName(t)}</span> 칸을 눌러요!`; }
+  const cg=L.cg; let t; do t=Math.floor(Math.random()*64); while(t===cg.target); cg.target=t;
+  $('lQuiz').innerHTML=''; $('lQuiz').classList.remove('four');
+  if(cg.p.mode==='find'){ L.hint=null; L.textHTML=`<span class="cbig">${sqName(t)}</span> 칸을 눌러요!`; }
   else{
     L.hint=[t]; L.textHTML='빛나는 칸의 이름은?';
     const near=[]; for(let i=0;i<64;i++) if(i!==t&&Math.abs((i&7)-(t&7))<=2&&Math.abs((i>>3)-(t>>3))<=2) near.push(i);
     near.sort(()=>Math.random()-.5); const opts=[t,...near.slice(0,3)].sort(()=>Math.random()-.5);
-    $('lQuiz').innerHTML=''; $('lQuiz').classList.add('four'); opts.forEach(o=>{ const b=document.createElement('button'); b.className='btn'; b.style.fontFamily='ui-monospace,Menlo,monospace'; b.style.fontSize='20px';
+    $('lQuiz').classList.add('four'); opts.forEach(o=>{ const b=document.createElement('button'); b.className='btn'; b.style.fontFamily='ui-monospace,Menlo,monospace'; b.style.fontSize='20px';
       b.textContent=sqName(o); b.onclick=()=>{ if(!L.busy&&cg.running&&!L.done) coordAnswer(o===t,o); }; $('lQuiz').appendChild(b); });
   }
+  if(!cg.p.secs){ const e=document.createElement('button'); e.className='btn ghostbtn'; e.textContent='끝내기'; e.onclick=coordEnd; $('lQuiz').appendChild(e); }
   L.render();
 }
-function coordClick(sq){ if(L.cg.running&&lstep().mode==='find') coordAnswer(sq===L.cg.target,sq); }
+function coordClick(sq){ if(L.cg.running&&L.cg.p.mode==='find') coordAnswer(sq===L.cg.target,sq); }
 function coordAnswer(ok,picked){
-  const st=lstep(),cg=L.cg;
+  const cg=L.cg;
   if(ok){ cg.n++; L.flash={sq:cg.target,cls:'good'}; }
-  else{ cg.miss++; L.flash={sq:st.mode==='find'?picked:cg.target,cls:'bad'}; L.hint=[cg.target]; }
-  const wrong=ok?'':` · 정답은 ${sqName(cg.target)}`+(st.mode==='find'?` (누른 칸: ${sqName(picked)})`:'');
-  L.msg=(st.secs?`${cg.left}초 · 맞힘 ${cg.n}`:`맞힘 ${cg.n}/${st.count}`)+wrong; L.tone=ok?'':'bad';
+  else{ cg.miss++; L.flash={sq:cg.p.mode==='find'?picked:cg.target,cls:'bad'}; L.hint=[cg.target]; }
+  L.msg=coordScore()+(ok?'':` · 정답은 ${sqName(cg.target)}`+(cg.p.mode==='find'?` (누른 칸: ${sqName(picked)})`:'')); L.tone=ok?'':'bad';
   L.busy=true; L.render();
-  L.timer=setTimeout(()=>{ L.busy=false; L.flash=null; L.tone='';
-    if(!st.secs&&cg.n>=st.count){ cg.running=false; L.hint=null; L.textHTML=''; L.text='다 찾았어요!'; return stepDone(`${st.count}개를 모두 찾았어요!`+(cg.miss?` (틀림 ${cg.miss}번)`:' 하나도 안 틀렸어요!')); }
-    if(cg.running) coordNext(); else L.render(); },ok?250:900);
+  L.timer=setTimeout(()=>{ L.busy=false; L.flash=null; L.tone=''; if(cg.running) coordNext(); else L.render(); },ok?250:900);
 }
 function coordEnd(){
-  const cg=L.cg,st=lstep(); clearInterval(cg.iv); clearTimeout(L.timer); cg.running=false; L.hint=null; L.flash=null; L.busy=false;
-  $('lQuiz').innerHTML=''; $('lQuiz').classList.remove('four'); L.textHTML=''; L.text='시간 끝!';
-  const key=L.les.id+'-'+L.si, bests=store.get('coordbest',{}), prev=bests[key]||0;
-  if(cg.n>prev){ bests[key]=cg.n; store.set('coordbest',bests); }
-  stepDone(`${st.secs}초에 ${cg.n}개 맞혔어요!`+(cg.n>prev?(prev?` 새 최고 기록! (이전 ${prev}개)`:''):` (최고 ${prev}개)`)+(cg.miss?` · 틀림 ${cg.miss}번`:''));
+  const cg=L.cg; clearInterval(cg.iv); clearTimeout(L.timer); cg.running=false; L.hint=null; L.flash=null; L.busy=false;
+  $('lQuiz').innerHTML=''; $('lQuiz').classList.remove('four'); L.textHTML='';
+  const again=document.createElement('button'); again.className='btn primary big'; again.innerHTML=IC('reset')+'한 번 더'; again.onclick=coordSetup; $('lQuiz').appendChild(again);
+  const tot=cg.n+cg.miss, acc=tot?Math.round(cg.n/tot*100):0;
+  if(cg.p.secs){
+    L.text='시간 끝!';
+    const k=cgKey(cg.p), bests=store.get('coordbest2',{}), prev=bests[k]||0;
+    if(cg.n>prev){ bests[k]=cg.n; store.set('coordbest2',bests); }
+    coordOpts();
+    stepDone(`${cg.p.secs}초에 ${cg.n}개 맞혔어요!`+(cg.n>prev?(prev?` 새 최고 기록! (이전 ${prev}개)`:''):` (최고 ${prev}개)`)+(cg.miss?` · 틀림 ${cg.miss}번`:''));
+  } else { L.text='연습 끝!'; stepDone(tot?`${tot}문제 중 ${cg.n}개 맞혔어요 (정확도 ${acc}%).`:'다음에 또 해요!'); }
 }
 function stepDone(msg){
   L.done=true; L.busy=false; L.msg=msg; L.tone='ok'; celebrate(L.si===L.les.steps.length-1?40:14);
