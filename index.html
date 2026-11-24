@@ -401,6 +401,55 @@
   .item.next{background:var(--olive2)}
   @media (max-width:480px){ .prog i{width:28px} .sect>summary{font-size:18px;padding:10px 14px} }
   .item .go{flex:none;background:var(--olive);color:#fff;border-radius:99px;padding:8px 14px;font-weight:800;font-size:14px}
+  /* 길: 오늘 할 일 + 한 칸씩 지나가는 길 */
+  .today{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:16px 16px 18px;margin-bottom:6px}
+  .today-h{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .today-h h2{margin:0;font-size:24px}
+  .streak{margin-left:auto;display:inline-flex;align-items:center;gap:4px;font:700 15px/1 system-ui;color:var(--muted);background:var(--paper2);border-radius:99px;padding:6px 11px 6px 8px}
+  .streak .ic{width:18px;height:18px;stroke-width:2}
+  .streak.on{color:#8a4b0c;background:var(--amber2)}.streak.on .ic{color:var(--amber-d);fill:var(--amber)}
+  .quest{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+  .quest .qi{width:40px;height:40px;flex:none;border-radius:50%;display:grid;place-items:center;background:var(--paper2);color:var(--muted)}
+  .quest .qi .ic{width:22px;height:22px}
+  .quest b{font-family:var(--display);font-weight:400;font-size:18px;display:block}
+  .quest small{display:block;color:var(--muted);font-size:14px;margin-top:1px}
+  .quest .qbar{margin-left:auto;width:72px;height:8px;border-radius:99px;background:var(--paper2);overflow:hidden;flex:none}
+  .quest .qbar i{display:block;height:100%;width:var(--p);background:var(--olive);border-radius:99px}
+  .quest.ok .qi{background:var(--olive);color:#fff}
+  .quest.ok b{color:var(--olive-d)}
+  .today .btn.big{width:100%;margin-top:12px}
+  .path{display:flex;flex-direction:column;gap:10px;margin:14px 0 12px}
+  .unit{background:none}
+  .unit>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:var(--r);background:var(--card);box-shadow:var(--sh);min-height:60px}
+  .unit>summary::-webkit-details-marker{display:none}
+  .unit>summary .un{font:700 13px/1 system-ui;color:#fff;background:var(--olive);border-radius:99px;padding:5px 9px;flex:none}
+  .unit>summary b{font-family:var(--display);font-weight:400;font-size:19px}
+  .unit>summary .prog{margin-left:auto}
+  .unit.lock>summary .un{background:var(--wood-l)}
+  .unit.pass>summary .un{background:var(--amber-d)}
+  .trail{position:relative;padding:48px 0 8px}
+  .trail>svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+  .trail path{fill:none;stroke:var(--line);stroke-width:7;stroke-linecap:round;stroke-dasharray:1 15}
+  .trail path.on{stroke:var(--olive);stroke-dasharray:none;opacity:.35}
+  .pn-row{position:relative;display:flex;flex-direction:column;align-items:center;width:120px;margin-left:calc(50% - 60px + var(--x));padding-bottom:10px}
+  .pn{position:relative;width:72px;height:72px;border-radius:50%;border:0;cursor:pointer;display:grid;place-items:center;background:var(--paper2);box-shadow:0 5px 0 #cfc8b3;transition:transform .1s;color:var(--muted)}
+  .pn:active{transform:translateY(3px);box-shadow:0 2px 0 #cfc8b3}
+  .pn .pi{width:48px;height:48px;background:var(--img) center/contain no-repeat}
+  .pn .ic{width:34px;height:34px;stroke-width:2}
+  .pn.done{background:var(--olive);box-shadow:0 5px 0 var(--olive-d)}
+  .pn.cur{background:var(--olive);box-shadow:0 5px 0 var(--olive-d),0 0 0 7px var(--card),0 0 0 11px var(--olive2);width:80px;height:80px}
+  .pn.lock{cursor:default}.pn.lock .pi{opacity:.35;filter:grayscale(1)}
+  .pn.ev{background:var(--amber2);color:var(--amber-d);box-shadow:0 5px 0 #e8cf9c}
+  .pn.ev.cur{background:var(--amber);color:#fff;box-shadow:0 5px 0 var(--amber-d),0 0 0 7px var(--card),0 0 0 11px var(--amber2)}
+  .pn.ev.done{background:var(--amber-d);color:#fff;box-shadow:0 5px 0 #9a6312}
+  .pn.ev.lock{background:var(--paper2);color:#b3aa95;box-shadow:0 5px 0 #cfc8b3}
+  .pn .due{position:absolute;top:-4px;right:-10px;font:800 11px/1 system-ui;color:#fff;background:var(--amber-d);border-radius:99px;padding:4px 6px;box-shadow:0 0 0 2px var(--card)}
+  .pn-lbl{margin-top:9px;text-align:center;font-weight:800;font-size:14px;line-height:1.25;color:var(--ink)}
+  .pn-lbl small{display:block;font-weight:600;font-size:12px;color:var(--muted)}
+  .pn-row.lock .pn-lbl{color:var(--muted)}
+  .pn-tip{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);white-space:nowrap;font-family:var(--display);font-size:16px;color:var(--olive-d);background:var(--card);border-radius:var(--r-s);padding:5px 12px;box-shadow:var(--sh);animation:bob 1.6s ease-in-out infinite}
+  .pn-tip::after{content:"";position:absolute;top:100%;left:50%;margin-left:-7px;border:7px solid transparent;border-top-color:var(--card)}
+  @media (prefers-reduced-motion:reduce){.pn-tip{animation:none}}
   .sect.rev{padding:8px}.sect.rev .item{width:100%}
   .pt-tip{background:var(--paper2);border-radius:var(--r-s);padding:10px 12px;text-align:left;font-size:15px;line-height:1.55;color:var(--ink)}
 
@@ -505,6 +554,10 @@
   <symbol id="i-replay" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></symbol>
   <symbol id="i-book" viewBox="0 0 24 24"><path d="M2 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H2z"/><path d="M22 4h-7a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h8z"/></symbol>
   <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-chest" viewBox="0 0 24 24"><path d="M3 11h18v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M3 11V9a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v2"/><path d="M10 11v3h4v-3"/></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4"/><path d="M17 6h3a3 3 0 0 1-3 4"/><path d="M12 14v4"/><path d="M8 21h8"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 22c4 0 7-2.7 7-6.6 0-3.4-2.3-5.6-4-7.4-.3 2-1.3 3.2-2.4 3.6C13 8.3 11.5 5 8.8 2.5 9 6.4 5 9 5 15.4 5 19.3 8 22 12 22z"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
   <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></symbol>
 </svg>
 
@@ -527,14 +580,13 @@
 <main>
   <!-- 길잡이: 오늘 할 것 하나만 크게, 나머지는 접어 두기 -->
   <section class="view on" id="v-road">
-    <div class="road-hero">
-      <div id="roadNext"></div>
-      <div class="road-prog"><div class="bar"><i id="roadBar"></i></div><span id="roadPct"></span></div>
-      <div class="road-acts" id="roadActs"></div>
-    </div>
-    <details class="fold"><summary>모든 단계 보기</summary><div class="road" id="road"></div></details>
+    <div class="today" id="today"></div>
+    <div class="path" id="path"></div>
+    <div class="road-acts" id="roadActs"></div>
     <details class="fold"><summary>어른을 위한 안내</summary>
-      <p class="fold-txt">체스는 보통 규칙, 기물 가치, 기본 메이트, 전술, 오프닝 원칙, 엔드게임, 전략 순서로 배워요(네덜란드 스텝 메소드, 여러 나라 학교 체스 프로그램이 같은 순서예요). 처음엔 오프닝 암기보다 퍼즐(수 읽기)을 많이 하는 게 좋아요.</p>
+      <p class="fold-txt">길은 체스를 배우는 보통 순서(규칙 → 기물 가치 → 기본 메이트 → 전술 → 오프닝 원칙 → 엔드게임)를 따라가요. 레슨과 퍼즐 패턴이 번갈아 나오고, 단원 끝의 보물상자는 그 단원을 섞어서 확인하는 체크포인트예요.</p>
+      <p class="fold-txt">끝낸 레슨과 퍼즐은 잊어버릴 때쯤 다시 나와요(간격 반복). 맞히면 간격이 1일 → 3일 → 8일 → 3주처럼 길어지고, 틀리면 다음 날 다시 나와요. 하루에 복습을 먼저, 새 진도는 조금씩 하는 게 오래 기억하는 비결이에요.</p>
+      <h3>하루 새 진도</h3><div class="seg small" id="pathDaily"></div>
     </details>
   </section>
 
@@ -1141,15 +1193,6 @@ const OPENINGS=[
    notes:['백 중앙 장악.','흑도 중앙.','비숍이 f7을 겨눕니다. 경고 신호!','자연스러운 전개(e5도 지켜요).','퀸+비숍이 동시에 f7을 노립니다! 다음 Qxf7# 위협.','g6로 퀸을 쫓으며 막기! (3...Nf6??는 Qxf7# 즉시 메이트)','퀸이 다시 f7을 노립니다.','나이트가 f-파일을 막으며 전개! 일찍 나온 퀸은 오히려 쫓기는 표적이 돼요. 흑이 편한 형세.']},
 ];
 
-const ROADMAP=[
-  {k:'rules',t:'규칙과 기물 이동',d:'각 기물의 움직임, 칸 이름(좌표) 읽기, 체크·체크메이트·스테일메이트, 특수 규칙(캐슬링, 앙파상, 폰 승진).',go:['lesson']},
-  {k:'value',t:'기물 가치와 교환',d:'폰 1 · 나이트 3 · 비숍 3 · 룩 5 · 퀸 9. 두기 전에 “내 기물이 공짜로 잡히지 않나?” 확인하는 습관.',go:null},
-  {k:'mate1',t:'기본 메이트 패턴',d:'백랭크, 퀸 키스, 질식 메이트 등 1수 메이트 그림을 눈에 익히기. K+Q 대 K, K+R 대 K 메이트 방법.',go:['puzzle','m1']},
-  {k:'tactics',t:'전술 = 수 읽기',d:'포크·핀·스큐어·디플렉션, 2수 메이트. 초보 실력 향상의 대부분이 여기서 나옵니다. 매일 10~20문제 추천.',go:['puzzle','m2']},
-  {k:'open',t:'오프닝 원칙',d:'중앙·전개·캐슬링. 백 1개, 흑 1~2개 오프닝의 “첫 5~6수와 그 이유”만 알면 충분해요.',go:['opening']},
-  {k:'end',t:'기초 엔드게임',d:'킹+폰 대 킹, 오포지션, 폰 승진 경주, 기초 룩 엔드게임. 이기던 판을 끝까지 이기는 힘.',go:null},
-  {k:'plan',t:'중반 전략 & 실전 복기',d:'좋은/나쁜 기물, 약한 칸, 폰 구조, 계획 세우기. 15분 이상 대국을 두고 지면 꼭 복기하기.',go:['play']},
-];
 
 const LESSON_GROUPS=[['move','① 기물 이동 (별 모으기)'],['coord','② 좌표 찾기 게임'],['rule','③ 특수 규칙'],['check','④ 체크·체크메이트·스테일메이트'],['game','⑤ 실전 미니게임'],['end','⑥ 엔드게임: 킹과 폰'],['rend','⑦ 엔드게임: 룩']];
 const LESSONS=[
@@ -1257,7 +1300,7 @@ const LPZ_RAW="mate1|0FxWD|2r2rk1/pp1b1pp1/5q1p/3pp3/1Pn5/P2QPP2/1PB1N1PP/2R2RK1
 // ================= UI =================
 // ----- 사용자 프로필: 사람마다 진도를 따로 저장 -----
 const LS={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const DATA_KEYS=['road','solved','openings','lessons','pzprefs','pzrec','prating','pzstats','grating','gstats','ggame','gprefs','gsaves','pzdone','ghist','stories'];
+const DATA_KEYS=['lrec','path','pathprefs','pathopen','streak','road','solved','openings','lessons','pzprefs','pzrec','prating','pzstats','grating','gstats','ggame','gprefs','gsaves','pzdone','ghist','stories'];
 const PROF_EMOJI=['🦁','🐰','🐻','🐼','🦊','🐸','🐯','🐧','🦄','🐶','🐱','🐵'];
 let PROFILES=LS.get('chess.profiles',[]);
 if(!PROFILES.length){ // 첫 실행: 기존 진도를 첫 프로필로 옮김
@@ -1501,25 +1544,150 @@ function showTab(t){
 }
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
 
-// ---------- roadmap ----------
-const ROAD_SHORT={rules:'기물이 어떻게 움직이는지 배워요',value:'기물마다 점수가 있어요',mate1:'한 수 만에 이기는 그림을 익혀요',tactics:'포크·핀 같은 기술로 이득 보기',open:'첫 몇 수를 잘 두는 법',end:'기물이 적을 때 이기는 법',plan:'계획 세우고 복기하기'};
-const ROAD_PC={rules:'wp',value:'wn',mate1:'wq',tactics:'wb',open:'wr',end:'wk',plan:'bk'};
-function renderRoad(){
-  const done=store.get('road',{}); const box=$('road'); box.innerHTML='';
-  ROADMAP.forEach((st,i)=>{
-    const el=document.createElement('label'); el.className='step'+(done[st.k]?' done':'');
-    el.innerHTML=`<input type="checkbox" ${done[st.k]?'checked':''} aria-label="${st.t} 다 했어요"><div><div><span class="n">${i+1}단계</span><b>${st.t}</b></div><p>${st.d}</p>${st.go?`<div class="go"><a>연습하러 가기</a></div>`:''}</div>`;
-    el.querySelector('input').onchange=e=>{done[st.k]=e.target.checked; store.set('road',done); renderRoad();};
-    if(st.go) el.querySelector('a').onclick=e=>{e.preventDefault(); showTab(st.go[0]); if(st.go[1]) selectCat(st.go[1]);};
-    box.appendChild(el);
-  });
-  const n=ROADMAP.filter(s=>done[s.k]).length, next=ROADMAP.find(s=>!done[s.k]);
-  $('roadBar').style.width=(n/ROADMAP.length*100)+'%'; $('roadPct').textContent=`${n} / ${ROADMAP.length}단계`;
-  $('roadNext').innerHTML=next?`<div class="road-next"><span class="pcbig" style="--img:url(pieces/${ROAD_PC[next.k]}.svg)"></span><div><h2>${next.t}</h2><p>${ROAD_SHORT[next.k]||''}</p>`+
-    `<button class="btn primary" id="roadGo">${next.go?'시작하기':'다 했어요'}${IC('next')}</button></div></div>`
-    :`<div class="road-next"><span class="pcbig" style="--img:url(pieces/wk.svg)"></span><div><h2>모든 단계를 끝냈어요!</h2><p>대국을 두며 실력을 키워요.</p><button class="btn primary" id="roadGo">대국 두러 가기${IC('next')}</button></div></div>`;
-  $('roadGo').onclick=()=>{ if(!next) return showTab('play'); if(next.go){ showTab(next.go[0]); if(next.go[1]) selectCat(next.go[1]); } else { done[next.k]=true; store.set('road',done); renderRoad(); } };
+// ---------- 길: 듀오링고처럼 한 칸씩 지나가고, 단원 끝엔 보물상자(체크포인트) ----------
+// 칸 종류: l:레슨 · p:퍼즐 패턴(입문 단계) · o:오프닝 · c:체크포인트
+const PATH_UNITS=[
+  ['기물 이동',['l:rook','l:bishop','l:queen','l:knight','l:king','l:pawn']],
+  ['칸 이름과 특수 규칙',['l:coords','l:castle','l:ep','l:promo']],
+  ['체크와 메이트',['l:escape','l:mates','p:backRankMate','p:smotheredMate']],
+  ['기물 얻기',['l:free','p:hangingPiece','p:fork','p:pin']],
+  ['메이트로 끝내기',['l:kq','l:kr','p:skewer','p:discoveredAttack']],
+  ['오프닝 맛보기',['o:scholar','o:italian','p:doubleCheck','p:trappedPiece']],
+  ['킹과 폰 엔드게임',['l:kpsq','l:kpfront','l:kpopp','l:kpdef','l:kprook','p:pawnEndgame']],
+  ['룩 엔드게임',['l:rlucena','l:rphili','p:rookEndgame','p:promotion']],
+];
+const LES_PC={rook:'wr',bishop:'wb',queen:'wq',knight:'wn',king:'wk',pawn:'wp',coords:'bp',castle:'wk',ep:'bp',promo:'wq',escape:'wk',mates:'bk',free:'wn',kq:'wq',kr:'wr',kpsq:'wp',kpfront:'wk',kpopp:'wk',kpdef:'bk',kprook:'wp',rlucena:'wr',rphili:'br'};
+const OP_PC={scholar:'bq',italian:'wb'};
+const lesTitle=les=>les.title.replace(/\s*[♔-♟]︎?$/,'');
+const dayStart=(t=Date.now())=>new Date(t).setHours(0,0,0,0);
+const dayKey=(t=Date.now())=>new Date(t).toDateString();
+let fromPath=false; // 길에서 들어갔으면 '뒤로'가 길로 돌아와요
+
+// 하루 기록: 연속 일수와 오늘 새로 끝낸 칸
+function markActive(){ const s=store.get('streak',{n:0,last:''}), t=dayKey(); if(s.last===t) return;
+  s.n=s.last===dayKey(Date.now()-DAY)?s.n+1:1; s.last=t; store.set('streak',s); }
+const streakN=()=>{ const s=store.get('streak',{n:0,last:''}); return s.last===dayKey()||s.last===dayKey(Date.now()-DAY)?s.n:0; };
+function pathMark(id){ const pa=store.get('path',{}); pa.log=pa.log||{}; if(!pa.log[id]){ pa.log[id]=Date.now(); store.set('path',pa); } markActive(); }
+const newToday=()=>{ const lg=store.get('path',{}).log||{}, d0=dayStart(); return Object.keys(lg).filter(k=>k[0]!=='c'&&lg[k]>=d0).length; };
+const dailyGoal=()=>store.get('pathprefs',{daily:2}).daily;
+
+// 레슨 복습(간격 반복): 끝낸 다음 날 → 3일 → 8일 → 3주 … 틀리면 다음 날 다시
+const LREV_N=5;
+function lessonDue(){
+  const r=store.get('lrec',{}), done=store.get('lessons',{}), now=Date.now(); let ch=false;
+  for(const id in done) if(done[id]&&!r[id]&&LESSONS.some(x=>x.id===id)){ r[id]={iv:1,n:0,due:dayStart()+DAY}; ch=true; } // 예전에 끝낸 레슨도 복습에 넣어요
+  if(ch) store.set('lrec',r);
+  return Object.keys(r).filter(id=>r[id].due<=now&&LESSONS.some(x=>x.id===id)).sort((a,b)=>r[a].due-r[b].due);
 }
+function lessonSched(id,ok){ const r=store.get('lrec',{}), x=r[id]||{iv:1,n:0};
+  x.n++; x.iv=ok?Math.min(120,Math.max(3,Math.round(x.iv*2.6))):1; x.due=dayStart()+x.iv*DAY; r[id]=x; store.set('lrec',r); return x.iv; }
+const pickStep=(les,n)=>les.steps[les.steps.length-1-((n||0)%les.steps.length)]; // 복습할 때마다 다른 단계(마지막 단계부터)
+// 레슨 단계 몇 개를 이어서 푸는 묶음(복습·체크포인트)
+function startLessonSet(o){
+  const les={id:'__set',rev:true,title:o.title,intro:o.sub,steps:o.items.map(x=>x.step),src:o.items.map(x=>x.les),res:o.items.map(()=>0),sched:o.sched,onDone:o.onDone};
+  showTab('lesson'); openLesson(les); updateBack();
+}
+function lessonReview(after){
+  const r=store.get('lrec',{}), ids=lessonDue().slice(0,LREV_N); if(!ids.length) return after&&after();
+  startLessonSet({title:'레슨 복습',sub:'전에 배운 레슨을 한 번 더 해 봐요.',sched:true,
+    items:ids.map(id=>{ const les=LESSONS.find(x=>x.id===id); return {les,step:pickStep(les,r[id].n)}; }),
+    onDone:()=>{ markActive(); after?after():(fromPath?backToPath():$('lBack').click()); }});
+}
+// 오늘의 복습: 레슨 먼저, 그다음 퍼즐
+function reviewAll(){
+  fromPath=true;
+  const puzzles=()=>{ if(dueList().length){ showTab('puzzle'); startReview(); updateBack(); } else backToPath(); };
+  if(lessonDue().length) lessonReview(puzzles); else puzzles();
+}
+
+function nodeInfo(id){
+  const [t,k]=id.split(':');
+  if(t==='l'){ const les=LESSONS.find(x=>x.id===k), r=store.get('lrec',{})[k];
+    return {id,t,name:lesTitle(les),kind:'레슨',pc:LES_PC[k]||'wp',done:!!store.get('lessons',{})[k],due:!!(r&&r.due<=Date.now())}; }
+  if(t==='p'){ const st=stages('pt:'+k)[0], done=pzDone();
+    return {id,t,name:PT[k][0],kind:'퍼즐',pc:PT[k][4],done:st.items.every(x=>done[x.lp.id])}; }
+  if(t==='o'){ const op=OPENINGS.find(x=>x.id===k); return {id,t,name:op.name,kind:'오프닝',pc:OP_PC[k]||'wn',done:!!store.get('openings',{})[k]}; }
+  const u=+k; return {id,t,name:'보물상자',kind:`${u+1}단원 체크포인트`,done:!!(store.get('path',{}).cp||{})[u]};
+}
+const pathNodes=()=>PATH_UNITS.flatMap(([,ns],u)=>[...ns,'c:'+u]);
+function openNode(id){
+  const [t,k]=id.split(':'); fromPath=true;
+  if(t==='l'){ showTab('lesson'); openLesson(LESSONS.find(x=>x.id===k)); }
+  else if(t==='p'){ showTab('puzzle'); setGoal('pt:'+k); }
+  else if(t==='o'){ showTab('opening'); openOp(OPENINGS.find(x=>x.id===k)); }
+  else startCheckpoint(+k);
+  updateBack();
+}
+function backToPath(){
+  fromPath=false; P.pathBack=false;
+  if($('lPlay').style.display!=='none') $('lBack').click();
+  if($('oPlay').style.display!=='none') $('oBack').click();
+  if(P.view==='play') showPuzzleList();
+  showTab('road'); scrollToCur();
+}
+// 체크포인트: 그 단원의 레슨 마지막 단계 하나씩 → 퍼즐 패턴 두 문제씩(섞어서)
+function startCheckpoint(u){
+  const [name,ns]=PATH_UNITS[u], ttl=`${u+1}단원 보물상자`;
+  const ls=ns.filter(x=>x[0]==='l').map(x=>LESSONS.find(l=>l.id===x.slice(2))), ps=ns.filter(x=>x[0]==='p').map(x=>x.slice(2));
+  const finish=()=>{ const pa=store.get('path',{}); pa.cp=pa.cp||{}; const first=!pa.cp[u]; if(first){ pa.cp[u]=Date.now(); store.set('path',pa); }
+    pathMark('c:'+u); backToPath(); celebrate(70); toast(first?`${u+1}단원 ${name} 통과! 보물상자를 열었어요.`:`${u+1}단원 체크포인트 다시 통과!`); };
+  const puzzles=()=>{
+    const per=ps.map(k=>{ const L=stages('pt:'+k), pool=(L[1]||L[0]).items.map(x=>x.lp).slice(); for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; } return pool.slice(0,2); });
+    const q=[]; for(let i=0;i<2;i++) per.forEach(l=>{ if(l[i]) q.push(l[i]); });
+    showTab('puzzle'); startPuzzleSet(q,{title:ttl,short:'보물상자',sub:`${name}에서 배운 패턴이 섞여 나와요. 어떤 패턴인지 알아맞혀 봐요!`,onDone:finish}); updateBack();
+  };
+  if(ls.length) startLessonSet({title:ttl,sub:`${name}에서 배운 것을 하나씩 확인해요.`,items:ls.map(les=>({les,step:les.steps[les.steps.length-1]})),onDone:()=>ps.length?puzzles():finish()});
+  else puzzles();
+}
+
+const PATH_X=[0,46,70,46,0,-46,-70,-46];
+function renderPath(){
+  const nodes=pathNodes().map(nodeInfo), cur=nodes.findIndex(n=>!n.done);
+  const lDue=lessonDue().length, pDue=dueList().length, goal=dailyGoal(), nt=newToday(), sk=streakN();
+  // 오늘 할 일
+  const revTxt=[lDue?`레슨 ${Math.min(LREV_N,lDue)}개`:'',pDue?`퍼즐 ${Math.min(REV_N,pDue)}문제`:''].filter(Boolean).join(' · ');
+  const curN=nodes[cur];
+  let go, goTxt;
+  if(lDue||pDue){ go=reviewAll; goTxt='복습부터 하기'; }
+  else if(curN){ go=()=>openNode(curN.id); goTxt=curN.t==='c'?'보물상자 열기':`${curN.name} ${curN.t==='p'?'퍼즐 풀기':'배우러 가기'}`; if(nt>=goal&&curN.t!=='c') goTxt='한 칸 더: '+goTxt; }
+  else { go=()=>showTab('play'); goTxt='대국 두러 가기'; }
+  $('today').innerHTML=`<div class="today-h"><h2>오늘 할 일</h2><span class="streak${sk?' on':''}">${IC('flame')}${sk?`${sk}일째`:'오늘 시작!'}</span></div>`+
+    `<div class="quest${lDue||pDue?'':' ok'}"><span class="qi">${IC(lDue||pDue?'history':'check')}</span><span><b>${lDue||pDue?'복습':'복습 끝'}</b><small>${revTxt||'잊어버릴 때쯤 다시 나와요'}</small></span></div>`+
+    `<div class="quest${nt>=goal?' ok':''}"><span class="qi">${IC(nt>=goal?'check':'star')}</span><span><b>새 진도 ${Math.min(nt,goal)}/${goal}</b><small>${nt>=goal?'오늘 목표 완료!':'길에서 새 칸을 지나가요'}</small></span><span class="qbar"><i style="--p:${Math.min(1,nt/goal)*100}%"></i></span></div>`+
+    `<button class="btn primary big" id="pathGo">${esc(goTxt)}${IC('next')}</button>`;
+  $('pathGo').onclick=go;
+  // 길
+  const open=store.get('pathopen',{}); let k=0;
+  $('path').innerHTML=PATH_UNITS.map(([name,ns],u)=>{
+    const arr=nodes.slice(k,k+ns.length+1), base=k; k+=ns.length+1;
+    const n=arr.filter(x=>x.done).length, pass=arr[arr.length-1].done, hasCur=cur>=base&&cur<base+arr.length, lock=cur>=0&&base>cur;
+    const isOpen=u in open?open[u]:(hasCur||(cur<0&&u===PATH_UNITS.length-1));
+    const rows=arr.map((x,i)=>{ const gi=base+i, st=x.done?'done':gi===cur?'cur':gi>cur&&cur>=0?'lock':'';
+      const icon=x.t==='c'?IC(x.done?'trophy':st==='lock'?'lock':'chest'):`<span class="pi" style="--img:url(pieces/${st==='lock'||st===''?x.pc:x.pc.replace(/^b/,'w')}.svg)"></span>`;
+      return `<div class="pn-row ${st}" style="--x:${PATH_X[gi%8]}px">${st==='cur'?`<span class="pn-tip">${x.t==='c'?'열어 봐요!':x.done?'다시':'시작!'}</span>`:''}`+
+        `<button class="pn ${st}${x.t==='c'?' ev':''}" data-node="${x.id}" aria-label="${esc(x.name)} ${x.done?'끝냄':st==='lock'?'잠김':''}">${icon}${x.done&&x.due?'<span class="due">복습</span>':''}</button>`+
+        `<span class="pn-lbl">${esc(x.name)}<small>${x.kind}</small></span></div>`; }).join('');
+    return `<details class="unit${pass?' pass':lock?' lock':''}" data-u="${u}"${isOpen?' open':''}><summary><span class="un">${u+1}단원</span><b>${esc(name)}</b><span class="prog${pass?' full':''}"><i style="--p:${n/arr.length*100}%"></i>${pass?'통과':`${n}/${arr.length}`}</span></summary><div class="trail"><svg aria-hidden="true"></svg>${rows}</div></details>`;
+  }).join('');
+  $('path').querySelectorAll('[data-node]').forEach(b=>b.onclick=()=>{
+    if(b.classList.contains('lock')) return toast('앞 칸을 먼저 지나가요!'); openNode(b.dataset.node); });
+  $('path').querySelectorAll('details.unit').forEach(d=>{ d._s=d.open; d.addEventListener('toggle',()=>{ if(d.open===d._s) return; d._s=d.open; const o=store.get('pathopen',{}); o[d.dataset.u]=d.open; store.set('pathopen',o); drawTrails(); }); });
+  segButtons($('pathDaily'),[[1,'1칸'],[2,'2칸'],[3,'3칸'],[5,'5칸']],goal,v=>{ store.set('pathprefs',{daily:v}); renderPath(); },'small');
+  requestAnimationFrame(drawTrails);
+}
+// 칸과 칸을 구불구불한 길로 이어요(지나온 길은 진하게)
+function drawTrails(){
+  document.querySelectorAll('#path .trail').forEach(tr=>{
+    if(!tr.offsetParent) return;
+    const r0=tr.getBoundingClientRect(), pts=[...tr.querySelectorAll('.pn')].map(b=>{ const r=b.getBoundingClientRect(); return [r.left+r.width/2-r0.left,r.top+r.height/2-r0.top,b.classList.contains('done')]; });
+    let d='', on='';
+    for(let i=1;i<pts.length;i++){ const [x0,y0]=pts[i-1],[x1,y1]=pts[i], my=(y0+y1)/2, seg=`M${x0} ${y0}C${x0} ${my} ${x1} ${my} ${x1} ${y1}`; if(pts[i-1][2]&&pts[i][2]) on+=seg; else d+=seg; }
+    tr.querySelector(":scope>svg").innerHTML=(d?`<path d="${d}"/>`:'')+(on?`<path class="on" d="${on}"/>`:'');
+  });
+}
+addEventListener('resize',()=>{ if($('v-road').classList.contains('on')) drawTrails(); });
+function scrollToCur(){ const c=document.querySelector('#path .pn.cur'); if(c) c.scrollIntoView({block:'center',behavior:'smooth'}); else scrollTo(0,0); }
+const renderRoad=renderPath;
 
 // ---------- puzzles ----------
 const LPZ_CATS=[['mix','섞어서'],['mate1','1수 메이트'],['mate2','2수 메이트'],['hanging','공짜 기물'],['fork','포크'],['pin','핀'],['skewer','스큐어'],['disc','디스커버드 어택']];
@@ -1693,11 +1861,11 @@ function startReview(){
   const by=new Map(); due.forEach(p=>{ if(!by.has(p.cat)) by.set(p.cat,[]); by.get(p.cat).push(p); });
   const lists=[...by.values()], q=[];
   while(q.length<REV_N&&lists.some(l=>l.length)) for(const l of lists){ if(l.length&&q.length<REV_N) q.push(l.shift()); }
-  P.rev={q,i:0,res:q.map(()=>0)};
-  showPuzzlePlay(); P.goal='rev'; P.src='rev'; P.gate=true; loadRevItem(0);
+  startPuzzleSet(q,{title:'오늘의 복습',short:'복습',sub:'전에 푼 패턴들이 섞여 나와요. 어떤 패턴인지 알아맞혀 봐요!'});
 }
+function startPuzzleSet(q,o){ P.rev={q,i:0,res:q.map(()=>0),...o}; showPuzzlePlay(); P.goal='rev'; P.src='rev'; P.gate=true; loadRevItem(0); }
 function loadRevItem(i){ P.rev.i=i; const z=toZ(P.rev.q[i],true); if(P.rev.res[i]) z.recorded=true; loadZ(z); } // 이미 푼 문제를 다시 열면 일정은 그대로
-function finishReview(){ const ok=P.rev.res.filter(v=>v===1).length; P.over={kind:'revdone',ok}; if(ok) celebrate(40); P.render(); }
+function finishReview(){ const ok=P.rev.res.filter(v=>v===1).length; if(!P.rev.onDone) markActive(); P.over={kind:'revdone',ok}; if(ok) celebrate(40); P.render(); }
 
 P.hist=[];
 function nextInf(){
@@ -1742,14 +1910,14 @@ P.render=()=>{
     $('pNext').innerHTML=(P.done?'다음 문제':'건너뛰기')+IC('next');
   } else if(P.src==='rev'){
     const R=P.rev, n=R.q.length;
-    $('pGoalTxt').textContent='잊어버릴 때쯤 다시 풀면 오래 기억해요. 맞히면 다음 복습이 더 멀어지고, 틀리면 곧 다시 나와요.';
-    $('pStageTtl').innerHTML=`오늘의 복습 · <span style="color:var(--ok)">${R.res.filter(Boolean).length}/${n}</span>`;
+    $('pGoalTxt').textContent=R.onDone?R.sub:'잊어버릴 때쯤 다시 풀면 오래 기억해요. 맞히면 다음 복습이 더 멀어지고, 틀리면 곧 다시 나와요.';
+    $('pStageTtl').innerHTML=`${R.title} · <span style="color:var(--ok)">${R.res.filter(Boolean).length}/${n}</span>`;
     $('pDots').innerHTML=''; R.q.forEach((x,i)=>{ const b=document.createElement('button'); b.textContent=i+1; const v=R.res[i];
       b.className=(v===1?'solved ':v===2?'retry ':'')+(i===R.i?'cur':''); b.onclick=()=>loadRevItem(i); $('pDots').appendChild(b); });
-    $('pTitle').textContent=`복습 ${R.i+1}/${n} · `+(P.done?pzCatName(z.lp):'어떤 패턴일까요?');
+    $('pTitle').textContent=`${R.short} ${R.i+1}/${n} · `+(P.done?pzCatName(z.lp):'어떤 패턴일까요?');
     $('pGoal').textContent=z.type==='mate'?`${z.n}수 만에 체크메이트하세요.`+(z.n>1?' 상대의 응수는 자동으로 둬요.':''):'가장 좋은 수를 찾으세요. 어떤 패턴인지는 풀고 나서 알려 줘요.';
     $('pLink').innerHTML=P.done?`<a href="https://lichess.org/training/${z.lp.id}" target="_blank" rel="noopener">lichess에서 이 퍼즐 보기 </a> · 퍼즐 출처: lichess.org (CC0)`:'';
-    $('pNext').innerHTML=(!P.done?'건너뛰기':R.i<n-1?'다음 문제':'복습 끝')+IC('next');
+    $('pNext').innerHTML=(!P.done?'건너뛰기':R.i<n-1?'다음 문제':'끝')+IC('next');
   } else {
     const L=stages(P.goal), st=L[P.stg], done=pzDone(), sv=store.get('solved',{}), rec=recStage(P.goal), it=st.items[P.idx];
     $('pGoalTxt').textContent=isPt(P.goal)?PT[ptKey(P.goal)][3]:GOAL_TXT[P.goal];
@@ -1786,16 +1954,15 @@ P.render=()=>{
   const ov=$('pOver');
   if(P.over&&P.view==='play'){ ov.hidden=false;
     ov.innerHTML=P.over.kind==='revdone'
-      ?`<div class="bover-card"><h2>오늘 복습 끝!</h2><p>${P.rev.q.length}문제 중 ${P.over.ok}문제를 한 번에 맞혔어요.${P.over.ok<P.rev.q.length?' 틀린 문제는 곧 다시 나와요.':' 다음 복습은 더 나중에 만나요.'}</p><button class="btn primary big" data-plist>목록으로${IC('next')}</button></div>`
+      ?`<div class="bover-card"><h2>${P.rev.onDone?P.rev.title+' 끝!':'오늘 복습 끝!'}</h2><p>${P.rev.q.length}문제 중 ${P.over.ok}문제를 한 번에 맞혔어요.${P.rev.onDone?'':P.over.ok<P.rev.q.length?' 틀린 문제는 곧 다시 나와요.':' 다음 복습은 더 나중에 만나요.'}</p><button class="btn primary big" data-plist>${P.rev.onDone||fromPath?'계속':'목록으로'}${IC('next')}</button></div>`
       :P.over.kind==='start'&&P.src==='rev'
-      ?`<div class="bover-card"><h2>오늘의 복습 ${P.rev.q.length}문제</h2><p>전에 푼 패턴들이 섞여 나와요. 어떤 패턴인지 알아맞혀 봐요!</p><button class="btn primary big" data-pstart>${IC('play')}복습 시작</button></div>`
+      ?`<div class="bover-card"><h2>${P.rev.title} ${P.rev.q.length}문제</h2><p>${P.rev.sub}</p><button class="btn primary big" data-pstart>${IC('play')}시작</button></div>`
       :P.over.kind==='start'
       ?`<div class="bover-card"><h2>${$('pTitle').textContent}</h2><p>${(z.type==='mate'?`${z.n}수 만에 체크메이트하기`:isPt(P.goal)?ptGoal(ptKey(P.goal)):'기물 점수를 더 많이 얻는 수 찾기')} · ${P.side==='w'?'백':'흑'} 차례</p>${ptIntroCard()}<button class="btn primary big" data-pstart>${IC('play')}문제 시작</button></div>`
-      :`<div class="bover-card"><h2>${P.failed?'완료!':'정답!'}</h2><p>${P.overNote||''}</p><button class="btn primary big" data-pnext>${P.src==='rev'&&P.rev.i>=P.rev.q.length-1?'복습 끝':'다음 문제'}${IC('next')}</button><button class="btn" data-phide>${IC('eye')}판 보기</button></div>`;
+      :`<div class="bover-card"><h2>${P.failed?'완료!':'정답!'}</h2><p>${P.overNote||''}</p><button class="btn primary big" data-pnext>${P.pathBack?'길로 가기':P.src==='rev'&&P.rev.i>=P.rev.q.length-1?'끝':'다음 문제'}${IC('next')}</button><button class="btn" data-phide>${IC('eye')}판 보기</button></div>`;
   } else ov.hidden=true;
   updateBack();
 };
-function selectCat(k){ setGoal({m1:'m1',m2:'m2',tac:'mat'}[k]||'m1'); } // 길잡이 링크용
 function playedSan(){ let t=P.s0; return P.played.map(m=>{ const x=san(t,m); t=make(t,m); return x; }).join(' '); }
 function solutionSan(){
   const z=P.z; let s=parseFEN(z.fen); if(z.pre) s=make(s,findMove(s,z.pre)); const out=[];
@@ -1848,6 +2015,7 @@ function puzzleMove(m){
         P.overNote=`${stName(st)} ${n}/${st.items.length}`+(full?` · ${stName(st)} 완료!`:'');
         P.msg=(P.failed?'완료! 다음엔 한 번에 풀어 봐요. ':'정답! ')+(isPt(P.goal)?`이게 바로 ${PT[ptKey(P.goal)][0]}! `:'')+`수순: ${playedSan()}`+(P.alt?' '+P.alt:mat)+` · ${stName(st)} ${n}/${st.items.length}`+(full?` ${stName(st)} 완료!`:'');
         if(full&&!P.failed) celebrate(40);
+        if(full&&isPt(P.goal)&&st.basic){ pathMark('p:'+ptKey(P.goal)); if(fromPath){ P.pathBack=true; P.overNote+=' · 길에서 다음 칸으로 가요'; } }
       } else if(P.src==='rev'){
         const R=P.rev, nm=pzCatName(z.lp); R.res[R.i]=P.failed?2:1;
         if(!P.failed&&pzDone()[z.lp.id]) markDone(z.lp.id,1);
@@ -1960,7 +2128,7 @@ $('pOver').addEventListener('click',e=>{
   if(e.target.closest('[data-pstart]')){ const z=P.over.z; P.over=null; _loadZ(z); }
   else if(e.target.closest('[data-pnext]')){ P.over=null; $('pNext').click(); }
   else if(e.target.closest('[data-phide]')){ P.over=null; P.render(); }
-  else if(e.target.closest('[data-plist]')){ P.over=null; showPuzzleList(); }
+  else if(e.target.closest('[data-plist]')){ P.over=null; if(P.rev&&P.rev.onDone) P.rev.onDone(); else if(fromPath) backToPath(); else showPuzzleList(); }
 });
 $('pStageBtn').onclick=()=>{ $('pStageSheet').querySelector('h2').textContent=P.src==='inf'?'테마·난이도 정하기':'진도 정하기'; openModal('pStageSheet'); };
 
@@ -1968,6 +2136,7 @@ $('pHint').onclick=puzzleHint;
 $('pGoalBtn').onclick=()=>{ P.showGoal=!P.showGoal; P.render(); };
 $('pReset').onclick=()=>loadZ(P.z);
 $('pNext').onclick=()=>{
+  if(P.pathBack&&P.done) return backToPath();
   if(P.src==='inf') return nextInf();
   if(P.src==='rev') return P.rev.i<P.rev.q.length-1?loadRevItem(P.rev.i+1):finishReview();
   const L=stages(P.goal), st=L[P.stg];
@@ -2030,7 +2199,7 @@ function autoReply(){
 function finishDrill(){
   O.done=true;
   O.msg=O.mistakes===0?'실수 없이 완주! 이 오프닝을 익혔어요.':`완주! 실수 ${O.mistakes}회 — 한 번 더 해서 실수 0회에 도전해 보세요.`; O.tone='ok';
-  if(O.mistakes===0){ celebrate(); const d=store.get('openings',{}); d[O.op.id]=true; store.set('openings',d); }
+  if(O.mistakes===0){ celebrate(); const d=store.get('openings',{}); d[O.op.id]=true; store.set('openings',d); pathMark('o:'+O.op.id); }
   O.render();
 }
 O.onMove=m=>{
@@ -2063,7 +2232,7 @@ document.addEventListener('keydown',e=>{
 const L={sel:-1,hint:null,busy:false,done:false};
 function renderLessonList(){
   const done=store.get('lessons',{}); const box=$('lList'); let nextSet=false, def=null;
-  const PK={rook:'wr',bishop:'wb',queen:'wq',knight:'wn',king:'wk',pawn:'wp',coords:'bp',castle:'wk',ep:'bp',promo:'wq',escape:'wk',mates:'bk',free:'wn',kq:'wq',kr:'wr',kpsq:'wp',kpfront:'wk',kpopp:'wk',kpdef:'bk',kprook:'wp',rlucena:'wr',rphili:'br'};
+  const PK=LES_PC;
   const secs=LESSON_GROUPS.map(([g,name])=>{
     const ls=LESSONS.filter(x=>x.g===g), n=ls.filter(x=>done[x.id]).length;
     const items=ls.map(les=>{ const full=!!done[les.id], next=!full&&!nextSet; if(next){ nextSet=true; def='l-'+g; }
@@ -2071,7 +2240,9 @@ function renderLessonList(){
     return {key:'l-'+g,t:name,n,tot:ls.length,items};
   });
   const open=pickOpen(secs.map(x=>x.key),def);
-  box.innerHTML=secs.map(x=>sectHTML(x.key,x.t,x.n,x.tot,'',x.items,x.key===open)).join('');
+  const ld=lessonDue();
+  box.innerHTML=(ld.length?`<div class="sect rev">${itemHTML({attr:'data-lrev',pc:'wk',t:`레슨 복습 ${Math.min(LREV_N,ld.length)}개`,small:ld.slice(0,3).map(id=>lesTitle(LESSONS.find(x=>x.id===id))).join(' · ')+(ld.length>3?` 외 ${ld.length-3}개`:''),meta:'잊기 전에 한 번 더',next:true,go:'복습'})}</div>`:'')+secs.map(x=>sectHTML(x.key,x.t,x.n,x.tot,'',x.items,x.key===open)).join('');
+  const lr=box.querySelector('[data-lrev]'); if(lr) lr.onclick=()=>lessonReview();
   box.querySelectorAll('[data-les]').forEach(b=>b.onclick=()=>openLesson(LESSONS.find(x=>x.id===b.dataset.les)));
   bindSects(box);
 }
@@ -2080,7 +2251,7 @@ const lstep=()=>L.les.steps[L.si];
 function loadStep(i){
   const st=L.les.steps[i]; L.si=i; clearTimeout(L.timer); if(L.cg) clearInterval(L.cg.iv);
   Object.assign(L,{s:parseFEN(st.fen),sel:-1,last:null,hint:null,busy:false,done:false,stars:null,noCheck:false,mode:'',moves:0,tone:'',answered:false,
-    cg:null,onSquare:null,flash:null,noCoords:false,textHTML:'',ghost:null});
+    cg:null,onSquare:null,flash:null,noCoords:false,textHTML:'',ghost:null,fails:0,_bad:null});
   L.side=L.s.turn; L.flip=L.side==='b'; $('lQuiz').innerHTML=''; $('lQuiz').classList.remove('four');
   if(st.k==='stars'){
     L.stars=new Set(st.stars.map(sqIdx)); L.par=st.par??(st.par=starPar(st.fen,st.stars));
@@ -2101,11 +2272,13 @@ function loadStep(i){
 }
 L.render=()=>{
   drawBoard($('lBoard'),L);
+  if(L.tone==='bad'&&L._bad!==L.msg) L.fails++; L._bad=L.tone==='bad'?L.msg:null; // 틀린 횟수(복습 결과에 써요)
+  if(L.les.rev){ const src=L.les.src[L.si]; $('lTitle').textContent=`${L.les.title} ${L.si+1}/${L.les.steps.length} · ${lesTitle(src)}`; $('lIntro').textContent=`${lesTitle(src)}: ${src.intro}`; }
   const done=store.get('lessons',{});
   $('lDots').innerHTML=''; L.les.steps.forEach((x,i)=>{ const b=document.createElement('button'); b.textContent=i+1; b.className=(i<L.si||(i===L.si&&L.done)?'solved ':'')+(i===L.si?'cur':''); b.onclick=()=>loadStep(i); $('lDots').appendChild(b); });
   if(L.textHTML) $('lText').innerHTML=L.textHTML; else $('lText').textContent=L.text; $('lMsg').textContent=L.msg; $('lMsg').className='msg '+(L.tone||'');
   const last=L.si>=L.les.steps.length-1; const li=LESSONS.indexOf(L.les);
-  $('lNext').innerHTML=(last?(li<LESSONS.length-1?'다음 레슨':'목록으로'):'다음')+IC('next');
+  $('lNext').innerHTML=(last?(L.les.rev?'끝':fromPath&&L.done?'길로 가기':li<LESSONS.length-1?'다음 레슨':'목록으로'):'다음')+IC('next');
   const k=lstep().k; $('lHint').style.display=(k==='quiz'||(k==='coord'&&(L.cg?.p.secs||!L.cg?.running)))?'none':'';
   $('lCoordOpts').hidden=k!=='coord'; $('lDots').style.display=L.les.steps.length>1?'':'none';
 };
@@ -2178,8 +2351,16 @@ function coordEnd(){
 }
 function stepDone(msg){
   L.done=true; L.busy=false; L.msg=msg; L.tone='ok'; celebrate(L.si===L.les.steps.length-1?40:14);
-  if(L.si===L.les.steps.length-1){ const d=store.get('lessons',{}); d[L.les.id]=true; store.set('lessons',d); L.msg+=' 레슨 완료!'; }
+  if(L.les.rev){ revStepRecord(L.fails<=1); if(L.si===L.les.steps.length-1) L.msg+=' · 다 했어요!'; }
+  else if(L.si===L.les.steps.length-1){ const d=store.get('lessons',{}), first=!d[L.les.id]; d[L.les.id]=true; store.set('lessons',d); L.msg+=' 레슨 완료!';
+    const r=store.get('lrec',{}); if(!r[L.les.id]){ r[L.les.id]={iv:1,n:0,due:dayStart()+DAY}; store.set('lrec',r); if(first) L.msg+=' 내일 복습으로 다시 만나요.'; }
+    pathMark('l:'+L.les.id); }
   L.render();
+}
+// 묶음 모드: 한 단계를 처음 끝냈을 때 결과를 적고, 복습이면 다음 복습 날짜를 정해요
+function revStepRecord(ok){
+  const S=L.les; if(S.res[L.si]) return; S.res[L.si]=ok?1:2;
+  if(S.sched){ const iv=lessonSched(S.src[L.si].id,ok); L.msg+=ok?` · 다음 복습 ${iv}일 뒤`:' · 내일 다시 나와요'; }
 }
 function stepFail(msg,revert){
   L.msg=msg; L.tone='bad'; L.render(); shake($('lBoard'));
@@ -2442,6 +2623,9 @@ $('lHint').onclick=()=>{
 };
 $('lReset').onclick=()=>loadStep(L.si);
 $('lNext').onclick=()=>{
+  if(L.les.rev&&L.done&&!L.les.res[L.si]) revStepRecord(false); // 답을 보고 넘어간 단계는 틀린 걸로
+  if(L.les.rev&&L.si>=L.les.steps.length-1) return L.les.onDone();
+  if(fromPath&&L.done&&L.si>=L.les.steps.length-1) return backToPath();
   if(L.si<L.les.steps.length-1) return loadStep(L.si+1);
   const li=LESSONS.indexOf(L.les); if(li<LESSONS.length-1) openLesson(LESSONS[li+1]); else $('lBack').click();
 };
@@ -2804,9 +2988,10 @@ function updateBack(){
   else if(t==='opening'&&$('oPlay').style.display!=='none') fn=()=>$('oBack').click();
   else if(t==='puzzle'&&typeof P!=='undefined'&&P.view==='play') fn=()=>showPuzzleList();
   else if(t==='play'&&typeof G!=='undefined'&&G.rev){ fn=()=>$('gRvClose').click(); lbl='닫기'; }
+  if(fn&&fromPath){ fn=backToPath; lbl='길'; }
   const b=$('backBtn'); b.hidden=!fn; $('backLbl').textContent=lbl; b.onclick=fn;
 }
-{ const _st=showTab; showTab=t=>{ _st(t); updateBack(); }; document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+{ const _st=showTab; showTab=t=>{ _st(t); if(t==='road') renderPath(); updateBack(); }; document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{ fromPath=false; showTab(b.dataset.tab); });
   const mo=new MutationObserver(updateBack); ['lPlay','oPlay','pPlay'].forEach(id=>mo.observe($(id),{attributes:true,attributeFilter:['style']})); }
 
 renderRoad(); renderOpList(); renderLessonList(); renderPuzzleList(); updateBack();
