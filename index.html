@@ -251,7 +251,6 @@
   .histrow .si b{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.histrow .si small{font-size:12px;color:var(--muted)}
   .movelist span.todo{color:#c9c3d8}
   .movelist span.cur{background:#ffe2a0}
-  .lgroup h3{font-size:16px;margin:18px 0 8px}
   .road{display:grid;position:relative;gap:14px;padding-left:0}
   .road::before{content:"";position:absolute;width:4px;border-radius:4px;background:repeating-linear-gradient(var(--line) 0 10px,transparent 10px 18px);bottom:20px;top:20px;left:27px;display:none}
   .road-hero{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:18px;margin-bottom:12px}
@@ -368,23 +367,27 @@
   .fold[open]{padding-bottom:14px}
   .fold-txt{margin:0;color:var(--muted)}
 
-  /* 퍼즐 목록 */
-  .goalgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
-  .goalcard{border:0;cursor:pointer;text-align:left;font:inherit;color:inherit;background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:16px;display:grid;grid-template-columns:64px 1fr;gap:4px 14px;align-items:center}
-  .goalcard .pcbig{grid-row:1/4;width:64px;height:64px;background:var(--olive2) var(--img) center/110% no-repeat;border-radius:var(--r-s)}
-  .goalcard b{font-family:var(--display);font-weight:400;font-size:21px}
-  .goalcard small{color:var(--muted);font-size:14px;line-height:1.4}
-  .goalcard .gp{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--olive-d);font-weight:700}
-  .goalcard .gp i{flex:1;height:6px;border-radius:3px;background:var(--line);overflow:hidden;position:relative}
-  .goalcard .gp i::after{content:"";position:absolute;inset:0;width:var(--p);background:var(--olive)}
-  .goalcard:active{transform:translateY(1px)}
   .tools{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
-  .pt-head{margin-top:28px}
-  .pt-sec{margin:18px 2px 10px;font-size:19px}.pt-sec .muted{font-family:inherit;font-size:14px;margin-left:6px}
-  .pt-grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
-  .pt-card{grid-template-columns:44px 1fr;padding:12px 14px}.pt-card .pcbig{width:44px;height:44px}.pt-card b{font-size:18px}.pt-card small{font-size:13px}
-  .pt-card.full .gp{color:var(--ok)}
-  @media (max-width:600px){ .pt-grid{grid-template-columns:1fr 1fr;gap:8px} .pt-card{grid-template-columns:1fr;gap:2px;padding:10px} .pt-card .pcbig{grid-row:auto;width:32px;height:32px} .pt-card b{font-size:16px} .pt-card small{display:none} }
+  /* 접는 목록(레슨·패턴): 묶음 제목 줄을 누르면 펼쳐져요. 상자 대신 가는 줄로만 나눠요 */
+  .sect{border-bottom:1px solid var(--line)}
+  .sect:first-child{border-top:1px solid var(--line)}
+  .sect>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;padding:15px 4px;font-family:var(--display);font-size:19px}
+  .sect>summary::-webkit-details-marker{display:none}
+  .sect>summary .cnt{margin-left:auto;font-family:inherit;font-size:14px;color:var(--muted);font-weight:700}
+  .sect>summary .cnt.full{color:var(--ok)}
+  .sect>summary::after{content:"";flex:none;width:8px;height:8px;border-right:2.5px solid var(--muted);border-bottom:2.5px solid var(--muted);transform:translateY(-2px) rotate(45deg);transition:transform .2s;margin:0 4px}
+  .sect[open]>summary::after{transform:translateY(2px) rotate(-135deg)}
+  .sect .sub{margin:-8px 4px 6px;color:var(--muted);font-size:14px}
+  .items{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));column-gap:20px;padding:0 0 12px}
+  .item{border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;display:flex;align-items:center;gap:12px;padding:8px 6px;border-radius:var(--r-s);min-width:0}
+  .item:hover{background:var(--paper2)}.item:active{background:var(--olive2)}
+  .item .ico{flex:none;width:34px;height:34px;background:var(--img) center/contain no-repeat}
+  .item .t{flex:1;display:flex;flex-direction:column;min-width:0;line-height:1.3}
+  .item b{font-size:16px;font-weight:700}
+  .item small{color:var(--muted);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .item .st{flex:none;font-size:13px;color:var(--muted);font-weight:700}
+  .item .st.full{color:var(--ok)}
+  @media (max-width:600px){ .items{grid-template-columns:1fr} }
   .pt-tip{background:var(--paper2);border-radius:var(--r-s);padding:10px 12px;text-align:left;font-size:15px;line-height:1.55;color:var(--ink)}
 
   /* 시트(목록·설정을 화면 위로) */
@@ -563,9 +566,6 @@
       <p class="lead">패턴을 하나씩 익혀요. 입문 6문제로 모양을 보고, 단계마다 10문제씩 연습해요.</p>
       <div class="pmini" id="pMini"></div>
       <div id="pPatterns"></div>
-      <h2 class="pg-ttl pt-head">문제 모음</h2>
-      <p class="lead">종류별로 쉬운 문제부터, 또는 섞어서 풀어요.</p>
-      <div class="goalgrid" id="pGoalCards"></div>
     </div>
     <div id="pPlay" style="display:none">
     <div class="play">
@@ -1844,19 +1844,31 @@ function ptIntroCard(){ // 입문 문제를 시작할 때는 패턴 설명을 �
   return `<p class="pt-tip">${PT[ptKey(P.goal)][3]}</p>`;
 }
 function ptProg(k){ const done=pzDone(), pool=LPT.filter(p=>p.cat===k); return [pool.filter(p=>done[p.id]).length,pool.length]; }
-function renderPatterns(){
-  $('pPatterns').innerHTML=PT_SECS.map(([sec,t,d])=>`<h3 class="pt-sec">${t} <span class="muted">${d}</span></h3><div class="goalgrid pt-grid">`+
-    Object.entries(PT).filter(([,v])=>v[1]===sec).map(([k,v])=>{ const [n,tot]=ptProg(k);
-      return `<button class="goalcard pt-card${n>=tot?' full':''}" data-goal="pt:${k}"><span class="pcbig" style="--img:url(pieces/${v[4]}.svg)"></span><b>${v[0]}</b><small>${v[2]}</small><span class="gp"><i style="--p:${n/tot*100}%"></i>${n}/${tot}</span></button>`; }).join('')+'</div>').join('');
-  $('pPatterns').querySelectorAll('[data-goal]').forEach(b=>b.onclick=()=>setGoal(b.dataset.goal));
+// 접는 묶음: 처음엔 아직 안 끝낸 첫 묶음만 펼쳐 두고, 그 뒤엔 아이가 펼치고 접은 대로 기억해요
+function sectHTML(key,title,cnt,full,sub,items,openDef){
+  const o=store.get('sects',{}), open=key in o?o[key]:openDef;
+  return `<details class="sect" data-sect="${key}"${open?' open':''}><summary>${title}<span class="cnt${full?' full':''}">${cnt}</span></summary>${sub?`<p class="sub">${sub}</p>`:''}<div class="items">${items}</div></details>`;
 }
+function bindSects(box){
+  box.querySelectorAll('details[data-sect]').forEach(d=>d.addEventListener('toggle',()=>{ const o=store.get('sects',{}); o[d.dataset.sect]=d.open; store.set('sects',o); }));
+}
+const itemHTML=(attr,pc,t,small,st,full)=>`<button class="item" ${attr}><span class="ico" style="--img:url(pieces/${pc}.svg)"></span><span class="t"><b>${t}</b>${small?`<small>${small}</small>`:''}</span><span class="st${full?' full':''}">${st}</span></button>`;
 function renderPuzzleList(){
-  renderPatterns();
-  $('pGoalCards').innerHTML=GOAL_CARDS.map(([g,t,d,pc])=>{
-    let gp=''; if(g!=='mix'){ const [n,tot]=goalProg(g); gp=`<span class="gp"><i style="--p:${n/tot*100}%"></i>${n}/${tot}</span>`; }
-    else { const {dueNow}=infStats(); gp=`<span class="gp">${dueNow?`복습할 문제 ${dueNow}개`:'내 점수에 맞춰 골라 줘요'}</span>`; }
-    return `<button class="goalcard" data-goal="${g}"><span class="pcbig" style="--img:url(pieces/${pc}.svg)"></span><b>${t}</b><small>${d}</small>${gp}</button>`; }).join('');
-  $('pGoalCards').querySelectorAll('[data-goal]').forEach(b=>b.onclick=()=>setGoal(b.dataset.goal));
+  let first=true;
+  const secs=PT_SECS.map(([sec,t,d])=>{
+    const ks=Object.keys(PT).filter(k=>PT[k][1]===sec); let n=0,tot=0;
+    const items=ks.map(k=>{ const v=PT[k], [a,b]=ptProg(k); n+=a; tot+=b; return itemHTML(`data-goal="pt:${k}"`,v[4],v[0],v[2],a>=b?'✓':`${a}/${b}`,a>=b); }).join('');
+    const full=n>=tot, def=first&&!full; if(def) first=false;
+    return sectHTML('pt-'+sec,t,full?'✓':n?`${Math.max(1,Math.floor(n/tot*100))}%`:`${ks.length}개`,full,d,items,def);
+  }).join('');
+  const goals=GOAL_CARDS.map(([g,t,d,pc])=>{
+    if(g==='mix'){ const {dueNow}=infStats(); return itemHTML(`data-goal="${g}"`,pc,t,dueNow?`복습할 문제 ${dueNow}개`:d,'',false); }
+    const [n,tot]=goalProg(g); return itemHTML(`data-goal="${g}"`,pc,t,d,`${n}/${tot}`,n>=tot);
+  }).join('');
+  const box=$('pPatterns');
+  box.innerHTML=secs+sectHTML('pz-goals','문제 모음',`${GOAL_CARDS.length}개`,false,'종류별로 쉬운 문제부터, 또는 섞어서 풀어요.',goals,false);
+  box.querySelectorAll('[data-goal]').forEach(b=>b.onclick=()=>setGoal(b.dataset.goal));
+  bindSects(box);
   const {rating}=infStats(); $('pMini').innerHTML=`내 퍼즐 점수 <b>${rating}</b>`;
 }
 function showPuzzlePlay(){ if(P.view==='play') return; P.view='play'; $('pList').style.display='none'; $('pPlay').style.display=''; scrollTo(0,0); }
@@ -1968,20 +1980,17 @@ document.addEventListener('keydown',e=>{
 // ---------- lessons ----------
 const L={sel:-1,hint:null,busy:false,done:false};
 function renderLessonList(){
-  const done=store.get('lessons',{}); const box=$('lList'); box.innerHTML='';
-  LESSON_GROUPS.forEach(([g,name])=>{
-    const wrap=document.createElement('div'); wrap.className='lgroup'; wrap.innerHTML=`<h3>${name}</h3>`;
-    const grid=document.createElement('div'); grid.className='oplist';
-    LESSONS.filter(x=>x.g===g).forEach(les=>{
-      const b=document.createElement('button'); b.className='opcard';
-      const pk={rook:'wr',bishop:'wb',queen:'wq',knight:'wn',king:'wk',pawn:'wp',coords:'bp',castle:'wk',ep:'bp',promo:'wq',escape:'wk',mates:'bk',free:'wn',kq:'wq',kr:'wr',kpsq:'wp',kpfront:'wk',kpopp:'wk',kpdef:'bk',kprook:'wp',rlucena:'wr',rphili:'br'}[les.id];
-      b.className='opcard row'; b.innerHTML=(pk?`<span class="big pcico" style="--img:url(pieces/${pk}.svg)"></span>`:'<span class="big"></span>')+`<span class="txt"><b>${les.title.replace(/ []$/,'')}</b><span class="muted">${done[les.id]?'<span class="tag done">완료</span>':les.steps.length+'단계'}</span></span>`;
-      b.onclick=()=>openLesson(les); grid.appendChild(b);
-    });
-    wrap.appendChild(grid); box.appendChild(wrap);
-  });
+  const done=store.get('lessons',{}); const box=$('lList'); let first=true;
+  const PK={rook:'wr',bishop:'wb',queen:'wq',knight:'wn',king:'wk',pawn:'wp',coords:'bp',castle:'wk',ep:'bp',promo:'wq',escape:'wk',mates:'bk',free:'wn',kq:'wq',kr:'wr',kpsq:'wp',kpfront:'wk',kpopp:'wk',kpdef:'bk',kprook:'wp',rlucena:'wr',rphili:'br'};
+  box.innerHTML=LESSON_GROUPS.map(([g,name])=>{
+    const ls=LESSONS.filter(x=>x.g===g), n=ls.filter(x=>done[x.id]).length, full=n===ls.length, def=first&&!full; if(def) first=false;
+    const items=ls.map(les=>itemHTML(`data-les="${les.id}"`,PK[les.id]||'wp',les.title.replace(/\s*[\u2654-\u265F]\uFE0E?$/,''),'',done[les.id]?'✓':les.steps.length+'단계',!!done[les.id])).join('');
+    return sectHTML('l-'+g,name,`${n}/${ls.length}`,full,'',items,def);
+  }).join('');
+  box.querySelectorAll('[data-les]').forEach(b=>b.onclick=()=>openLesson(LESSONS.find(x=>x.id===b.dataset.les)));
+  bindSects(box);
 }
-function openLesson(les){ scrollTo(0,0); L.les=les; $('lPick').style.display='none'; $('lPlay').style.display=''; $('lTitle').textContent=les.title.replace(/ []\uFE0E?$/,''); $('lIntro').textContent=les.intro; loadStep(0); }
+function openLesson(les){ scrollTo(0,0); L.les=les; $('lPick').style.display='none'; $('lPlay').style.display=''; $('lTitle').textContent=les.title.replace(/\s*[\u2654-\u265F]\uFE0E?$/,''); $('lIntro').textContent=les.intro; loadStep(0); }
 const lstep=()=>L.les.steps[L.si];
 function loadStep(i){
   const st=L.les.steps[i]; L.si=i; clearTimeout(L.timer); if(L.cg) clearInterval(L.cg.iv);
