@@ -569,6 +569,44 @@
   .coach img{width:88px;height:auto;flex:none}
   .coach p{position:relative;margin:0 0 18px;background:var(--card);border-radius:var(--r);padding:10px 14px;font-family:var(--display);font-size:17px;line-height:1.4;color:var(--ink);box-shadow:var(--sh)}
   .coach p::before{content:"";position:absolute;left:-9px;bottom:14px;border:9px solid transparent;border-left:0;border-right-color:var(--card)}
+  /* 판 위 머리: 차례 배너 */
+  .turn{box-shadow:0 3px 0 #1A2234}
+  .turn.w{background:var(--card);color:var(--ink);box-shadow:0 0 0 2px var(--line),0 3px 0 var(--ledge)}
+  .bhead .ttl{font-family:var(--display);font-weight:400;font-size:18px;color:var(--ink)}
+  /* 곰이 말해 주는 안내 말풍선 */
+  .msg{background:var(--card) var(--bear,url(img/ui/bear-wave.png)) 8px 50%/auto 40px no-repeat;padding-left:54px;border:2px solid var(--line);box-shadow:0 3px 0 var(--ledge);color:var(--ink);min-height:3.6em}
+  .msg.ok,.msg.bad{background-image:var(--bear);background-position:8px 50%;background-size:auto 40px;background-repeat:no-repeat}
+  .msg.ok{--bear:url(img/ui/bear-cheer.png);background-color:#EAF6DD;border-color:#BFE0A0;color:#2B5E1B;box-shadow:0 3px 0 #A9CF86}
+  .msg.bad{--bear:url(img/ui/bear-think.png);background-color:#FFF0E0;border-color:#F3C99C;color:#93420C;box-shadow:0 3px 0 #E5B07A}
+  .msg.task{background-image:none;padding-left:13px;background-color:var(--amber2);border-color:#F0D58C;box-shadow:0 3px 0 #E5C36A;min-height:0}
+  /* 색 버튼: 힌트는 노랑, 다시·무르기는 파랑, 다음은 초록 */
+  #pHint,#lHint,#oHint,#gHint{background:#FFC94D;color:var(--ink);box-shadow:inset 0 0 0 2px rgba(255,255,255,.55),0 4px 0 var(--amber-d)}
+  #pReset,#lReset,#oRestart,#gUndo{background:#2F7FC4;color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.25);box-shadow:inset 0 0 0 2px rgba(255,255,255,.45),0 4px 0 #1F5F99}
+  #pHint:active,#lHint:active,#oHint:active,#gHint:active{box-shadow:inset 0 0 0 2px rgba(255,255,255,.55),0 1px 0 var(--amber-d)}
+  #pReset:active,#lReset:active,#oRestart:active,#gUndo:active{box-shadow:inset 0 0 0 2px rgba(255,255,255,.45),0 1px 0 #1F5F99}
+  /* 단계 동그라미·단계 칸: 두툼한 토큰 */
+  .dots button{background:#fff;box-shadow:0 0 0 2px var(--line),0 3px 0 var(--ledge);border-radius:50%}
+  .dots button.solved{background:var(--olive);color:#fff;box-shadow:0 3px 0 var(--olive-d)}
+  .dots button.retry{background:#FFC94D;color:var(--ink);box-shadow:0 3px 0 var(--amber-d)}
+  .dots button.cur{box-shadow:0 0 0 3px var(--blue),0 3px 0 var(--blue-d)}
+  .stg{background:#fff;box-shadow:0 0 0 2px var(--line),0 3px 0 var(--ledge)}
+  .stg.full{background:#EAF6DD;color:var(--ok)}
+  .stg.cur{box-shadow:0 0 0 3px var(--blue),0 3px 0 var(--blue-d)}
+  .stg.rec::after{content:"";top:3px;right:3px;width:14px;height:14px;background:url(img/ui/star.png) center/contain no-repeat}
+  /* 대국: 선수 카드 */
+  .gside{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:8px 12px;min-height:54px;font-family:var(--display);font-weight:400;font-size:17px}
+  .gside .av{width:40px;height:40px;border-radius:50%}
+  .gside .av.pc-av{background:#fff var(--img) center/90% no-repeat;box-shadow:0 0 0 2px var(--line)}
+  .gside .r{font-family:system-ui;font-weight:700}
+  .gside.turnon{background:#FFF3CF;box-shadow:0 0 0 3px var(--amber),0 4px 0 var(--amber-d)}
+  /* 판 위 카드(문제 시작·정답·대국 끝): 곰이 위에 앉아요 */
+  .bover{background:rgba(47,58,83,.38)}
+  .bover-card{box-shadow:0 0 0 3px var(--line),0 6px 0 var(--ledge),0 18px 40px rgba(20,40,70,.3)}
+  .bover-card h2{color:var(--ink)}
+  .btn[hidden]{display:none}
+  .bover-card[data-bear]{position:relative;margin-top:54px;padding-top:50px}
+  .bover-card[data-bear]::before{content:"";position:absolute;left:50%;top:-62px;width:100px;height:108px;transform:translateX(-50%);background:var(--bear) center bottom/contain no-repeat}
+  @media (max-width:480px){ .bover-card[data-bear]{margin-top:40px;padding-top:36px} .bover-card[data-bear]::before{top:-46px;width:76px;height:82px} .bover-card{padding:16px 16px} .bover-card h2{font-size:24px} .bover-card[data-bear]:has(.pt-tip){margin-top:0;padding-top:16px} .bover-card[data-bear]:has(.pt-tip)::before{display:none} .bover-card .pt-tip{font-size:14px;padding:8px 10px} }
   @media (min-width:700px){
     #v-road .coach{grid-column:1;grid-row:2;flex-direction:column;align-items:center;margin-top:16px}
     #v-road .coach img{width:190px}
@@ -1375,7 +1413,7 @@ const peek=(id,k,d)=>LS.get('chess.u.'+id+'.'+k,d);
 function celebrate(n=26){
   if(typeof sfx==='function') sfx('win',250);
   if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const em=['#eea52a','#4f7a26','#c4472f','#7a4e2b','#f3d27a','#86b24c'];
+  const em=['#FFD359','#7DC354','#F29C38','#56A2DF','#FF8FA3','#7FC6A8'];
   for(let i=0;i<n;i++){ const e=document.createElement('span'); e.className='confetti'; e.style.background=em[i%em.length];
     e.style.left=Math.random()*100+'vw'; e.style.animationDelay=Math.random()*.4+'s'; e.style.width=e.style.height=(8+Math.random()*8)+'px';
     document.body.appendChild(e); setTimeout(()=>e.remove(),2200); }
@@ -2018,12 +2056,12 @@ P.render=()=>{
   const ov=$('pOver');
   if(P.over&&P.view==='play'){ ov.hidden=false;
     ov.innerHTML=P.over.kind==='revdone'
-      ?`<div class="bover-card"><h2>${P.rev.onDone?P.rev.title+' 끝!':'오늘 복습 끝!'}</h2><p>${P.rev.q.length}문제 중 ${P.over.ok}문제를 한 번에 맞혔어요.${P.rev.onDone?'':P.over.ok<P.rev.q.length?' 틀린 문제는 곧 다시 나와요.':' 다음 복습은 더 나중에 만나요.'}</p><button class="btn primary big" data-plist>${P.rev.onDone||fromPath?'계속':'목록으로'}${IC('next')}</button></div>`
+      ?`<div class="bover-card" data-bear style="--bear:url(img/ui/bear-cheer.png)"><h2>${P.rev.onDone?P.rev.title+' 끝!':'오늘 복습 끝!'}</h2><p>${P.rev.q.length}문제 중 ${P.over.ok}문제를 한 번에 맞혔어요.${P.rev.onDone?'':P.over.ok<P.rev.q.length?' 틀린 문제는 곧 다시 나와요.':' 다음 복습은 더 나중에 만나요.'}</p><button class="btn primary big" data-plist>${P.rev.onDone||fromPath?'계속':'목록으로'}${IC('next')}</button></div>`
       :P.over.kind==='start'&&P.src==='rev'
-      ?`<div class="bover-card"><h2>${P.rev.title} ${P.rev.q.length}문제</h2><p>${P.rev.sub}</p><button class="btn primary big" data-pstart>${IC('play')}시작</button></div>`
+      ?`<div class="bover-card" data-bear style="--bear:url(img/ui/bear-think.png)"><h2>${P.rev.title} ${P.rev.q.length}문제</h2><p>${P.rev.sub}</p><button class="btn primary big" data-pstart>${IC('play')}시작</button></div>`
       :P.over.kind==='start'
-      ?`<div class="bover-card"><h2>${$('pTitle').textContent}</h2><p>${(z.type==='mate'?`${z.n}수 만에 체크메이트하기`:isPt(P.goal)?ptGoal(ptKey(P.goal)):'기물 점수를 더 많이 얻는 수 찾기')} · ${P.side==='w'?'백':'흑'} 차례</p>${ptIntroCard()}<button class="btn primary big" data-pstart>${IC('play')}문제 시작</button></div>`
-      :`<div class="bover-card"><h2>${P.failed?'완료!':'정답!'}</h2><p>${P.overNote||''}</p><button class="btn primary big" data-pnext>${P.pathBack?'길로 가기':P.src==='rev'&&P.rev.i>=P.rev.q.length-1?'끝':'다음 문제'}${IC('next')}</button><button class="btn" data-phide>${IC('eye')}판 보기</button></div>`;
+      ?`<div class="bover-card" data-bear style="--bear:url(img/ui/bear-point.png)"><h2>${$('pTitle').textContent}</h2><p>${(z.type==='mate'?`${z.n}수 만에 체크메이트하기`:isPt(P.goal)?ptGoal(ptKey(P.goal)):'기물 점수를 더 많이 얻는 수 찾기')} · ${P.side==='w'?'백':'흑'} 차례</p>${ptIntroCard()}<button class="btn primary big" data-pstart>${IC('play')}문제 시작</button></div>`
+      :`<div class="bover-card" data-bear style="--bear:url(img/ui/bear-${P.failed?'think':'cheer'}.png)"><h2>${P.failed?'완료!':'정답!'}</h2><p>${P.overNote||''}</p><button class="btn primary big" data-pnext>${P.pathBack?'길로 가기':P.src==='rev'&&P.rev.i>=P.rev.q.length-1?'끝':'다음 문제'}${IC('next')}</button><button class="btn" data-phide>${IC('eye')}판 보기</button></div>`;
   } else ov.hidden=true;
   updateBack();
 };
@@ -2790,8 +2828,8 @@ G.render=()=>{
   const ov=$('gOver');
   if(!g){ const sum=human?`${esc(gFriendOf(gPrefs.friend).name)}와 둘이서`:`봇(${gBotR()}점)과`;
     const col={w:'백(먼저)',b:'흑',r:'랜덤'}[gPrefs.color];
-    ov.hidden=false; ov.innerHTML=`<div class="bover-card"><h2>대국 준비</h2><p>${sum} · 나는 ${col}<br>오른쪽에서 바꿀 수 있어요</p><button class="btn primary big" data-gstart>${IC('play')}대국 시작</button></div>`; }
-  else if(G.done&&!G.rev&&!G.hideOver){ ov.hidden=false; ov.innerHTML=`<div class="bover-card">${G.res||''}<button class="btn primary big" data-gagain>한 판 더</button>${G.lastHist?`<button class="btn" data-greview>${IC('search')}복기하기</button>`:''}<button class="btn" data-ghide>${IC('eye')}판 보기</button></div>`; }
+    ov.hidden=false; ov.innerHTML=`<div class="bover-card" data-bear style="--bear:url(img/ui/bear-wave.png)"><h2>대국 준비</h2><p>${sum} · 나는 ${col}<br>오른쪽에서 바꿀 수 있어요</p><button class="btn primary big" data-gstart>${IC('play')}대국 시작</button></div>`; }
+  else if(G.done&&!G.rev&&!G.hideOver){ ov.hidden=false; ov.innerHTML=`<div class="bover-card" data-bear style="--bear:url(img/ui/bear-cheer.png)">${G.res||''}<button class="btn primary big" data-gagain>한 판 더</button>${G.lastHist?`<button class="btn" data-greview>${IC('search')}복기하기</button>`:''}<button class="btn" data-ghide>${IC('eye')}판 보기</button></div>`; }
   else ov.hidden=true;
   updateBack();
 };
