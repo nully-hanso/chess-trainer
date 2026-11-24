@@ -27,7 +27,7 @@
      - 그림자는 부드럽게(블러), 판만 나무 두께감
      - 이모지 대신 선 아이콘 한 벌(.ic) · 글자 대비 4.5:1 이상
   */
-  :root{--bs:max(250px,min(calc(100vw - 16px),560px,calc(100svh - 290px)));--display:"Jua",ui-rounded,"SF Pro Rounded","Apple SD Gothic Neo",sans-serif;--accent2:var(--olive2);--accent-d:var(--olive-d);--accent:var(--olive);--warn2:#fbe6df;--warn:#c4472f;--ok2:#e3f2dc;--ok:#3a8f45;--wood-l:#9a6a3f;--wood-d:#563519;--wood:#7a4e2b;--amber2:#fdf0d4;--amber-d:#c9841a;--amber:#eea52a;--olive2:#e7efd8;--line:#ddd6c2;--ink:#2f2721;--card:#fffdf6;--paper2:#f1f3e8;--paper:#e7ecdc;--bg1:#e8f5ff;--bg2:#fff6e8;--blue:#4a8cff;--light:#e6c899;--dark:#a5724a;--olive:#4f7a26;--olive-d:#3d5f1c;--muted:#5e5345;--r:12px;--r-s:10px;--sh:0 1px 2px rgba(60,40,20,.10),0 4px 14px rgba(60,40,20,.08);--sh-press:0 1px 2px rgba(60,40,20,.12)}
+  :root{--bs:max(250px,min(calc(100vw - 16px),560px,calc(100svh - 290px)))}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html{margin:0}body{margin:0;font-family:ui-rounded,"SF Pro Rounded","Apple SD Gothic Neo","Pretendard","Noto Sans KR",system-ui,sans-serif;min-height:100vh;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);background:var(--paper);color:var(--ink);font-size:16px;line-height:1.6}
   button{font-family:inherit}
@@ -74,7 +74,6 @@
   .stc-it{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.85);border-radius:14px;padding:8px 12px}
   .stc-it .em{font-size:32px}.stc-it b{display:block;font-size:18px}.stc-it small{font-size:15px;color:var(--muted)}
   .st-mini{margin:6px 6px 0 0}
-  .st-pzrow{margin:6px 0 4px;font-size:14px}
   .st-new{font-style:normal;font-size:10px;color:#fff;border-radius:6px;padding:1px 4px;margin-left:2px;background:var(--amber-d)}
   .credit{text-align:center;font-size:11px;padding:14px 16px calc(14px + env(safe-area-inset-bottom));color:var(--muted)}
   .credit a{color:inherit}
@@ -118,7 +117,7 @@
   .panel .fold{box-shadow:none;border-top:1px solid var(--line);border-radius:0;padding:0;background:none}
   .muted{font-size:14px;color:var(--muted)}
   /* board */
-  .board{grid-template-rows:repeat(8,1fr);grid-template-columns:repeat(8,1fr);display:grid;height:var(--bs);width:var(--bs);position:relative;border:10px solid var(--wood);border-radius:14px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25),0 0 0 1px var(--wood-d),0 7px 0 var(--wood-d),0 16px 30px rgba(70,45,20,.28);user-select:none;-webkit-user-select:none;touch-action:manipulation;background:var(--wood)}
+  .board{grid-template-rows:repeat(8,1fr);grid-template-columns:repeat(8,1fr);display:grid;height:var(--bs);width:var(--bs);position:relative;border:10px solid var(--wood);border-radius:14px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25),0 0 0 1px var(--wood-d),0 7px 0 var(--wood-d),0 16px 30px rgba(70,45,20,.28);background:var(--wood)}
   .board[data-edge=bottom]{border-bottom-color:var(--amber)}
   .board[data-edge=top]{border-top-color:var(--amber)}
   .matbox{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;border-radius:16px;padding:6px 12px;animation:pop .25s;background:var(--card);box-shadow:var(--sh)}
@@ -211,7 +210,7 @@
   .seg{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
   .seg button{border:0;padding:8px 13px;cursor:pointer;color:var(--ink);min-height:38px;font-family:var(--display);font-weight:400;background:var(--paper2);font-size:15px;border-radius:var(--r-s)}
   .seg.small button{font-size:13px;padding:6px 11px;min-height:34px}
-  .dots{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+  .dots{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:2px 0 8px}
   .dots button{width:38px;height:38px;border:0;cursor:pointer;font-size:14px;color:var(--ink);font-family:var(--display);font-weight:400;background:var(--paper2);border-radius:var(--r-s)}
   .dots button.solved{background:var(--ok2);color:var(--ok)}
   .dots button.cur{box-shadow:inset 0 0 0 3px var(--ink)}
@@ -239,7 +238,6 @@
   .opcard.row{flex-direction:row;align-items:center;gap:12px;padding:12px}
   .opcard .big{font-size:30px;line-height:1;width:54px;height:54px;flex:none;border-radius:16px;display:grid;place-items:center;background:var(--paper2)}
   .opcard .txt{display:flex;flex-direction:column;gap:2px;min-width:0}
-  .opcard .big.pcico{background:var(--olive2) var(--img) center/112% no-repeat;font-size:0}
   .tag{display:inline-block;font-size:11px;font-weight:800;padding:2px 8px;border-radius:99px;margin-right:4px}
   .tag.w{background:#fff;box-shadow:inset 0 0 0 2px #2d2a3e}.tag.b{background:#2d2a3e;color:#fff}
   .tag.done{background:var(--ok2);color:var(--ok)}
@@ -251,35 +249,12 @@
   .histrow .si b{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.histrow .si small{font-size:12px;color:var(--muted)}
   .movelist span.todo{color:#c9c3d8}
   .movelist span.cur{background:#ffe2a0}
-  .road{display:grid;position:relative;gap:14px;padding-left:0}
-  .road::before{content:"";position:absolute;width:4px;border-radius:4px;background:repeating-linear-gradient(var(--line) 0 10px,transparent 10px 18px);bottom:20px;top:20px;left:27px;display:none}
-  .road-hero{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:18px;margin-bottom:12px}
-  .road-next{display:flex;align-items:center;gap:16px}
-  .road-next .pcbig{width:76px;height:76px;flex:none;background:var(--olive2) var(--img) center/110% no-repeat;border-radius:var(--r-s)}
-  .road-next h2{margin:0;font-size:26px}
-  .road-next p{margin:2px 0 10px;color:var(--muted)}
-  .road-prog{display:flex;align-items:center;gap:10px;margin-top:14px}
-  .road-prog .bar{flex:1;margin:0}
-  .road-prog span{font-family:var(--display);color:var(--olive-d);font-size:16px;white-space:nowrap}
   .road-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-  .step{display:flex;align-items:flex-start;position:relative;gap:14px;box-shadow:none;border-radius:0;border-top:1px solid var(--line);background:none;padding:14px 0}
-  .step input{flex:none;accent-color:var(--ok);appearance:none;-webkit-appearance:none;width:30px;height:30px;margin:0;border-radius:50%;background:var(--paper2);box-shadow:inset 0 0 0 3px var(--line);cursor:pointer;display:grid;place-items:center;position:relative;z-index:1}
-  .step .n{font-weight:800;margin-right:6px;color:var(--wood-l);font-size:15px}
-  .step p{margin:4px 0 0;color:var(--muted);font-size:14.5px}
-  .step .go{margin-top:8px}
-  .step .go a{display:inline-block;font-weight:800;border-radius:99px;cursor:pointer;text-decoration:none;background:var(--olive2);color:var(--olive-d);font-size:14px;padding:6px 14px}
   .note{border-radius:20px;padding:14px 16px;margin-bottom:14px;background:var(--card);font-size:15px;line-height:1.7;box-shadow:var(--sh)}
   .note b{color:var(--olive-d)}
-  .bar{height:14px;border-radius:99px;overflow:hidden;margin:6px 0 14px;background:var(--card);box-shadow:inset 0 2px 3px rgba(60,40,20,.12)}
-  .bar i{display:block;height:100%;width:0;border-radius:99px;transition:width .4s;background:linear-gradient(90deg,var(--olive),#86b24c)}
   .stats{font-size:13.5px;line-height:1.75;background:none;border-radius:0;padding:10px 0;margin:0;border-bottom:1px solid var(--line)}
   .stats b{color:var(--accent-d)}
   .stg:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
-  .step input:checked{background:var(--olive);box-shadow:0 2px 0 var(--olive-d)}
-  .step input:checked::after{content:"✓";color:#fff;font-size:17px;font-weight:900}
-  .step b{font-family:var(--display);font-weight:400;font-size:19px}
-  .step.done{opacity:1;background:none;box-shadow:none}
-  .step.done b{color:var(--muted)}
   .st-say b{color:var(--olive-d)}
   .sttxt.good span{background:var(--ok)}
   .sttxt.bad span{background:var(--warn)}
@@ -394,10 +369,6 @@
   .item small{color:var(--muted);font-size:13.5px;line-height:1.35}
   .item .meta{font-size:13px;font-weight:700;color:var(--muted)}
   .item.full .meta{color:var(--olive-d)}
-  .dots{display:flex;gap:6px;align-items:center;margin-top:2px}
-  .dots i{width:11px;height:11px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--line)}
-  .dots i.half{background:linear-gradient(90deg,var(--olive) 50%,transparent 50%);box-shadow:inset 0 0 0 2px var(--olive)}
-  .dots i.on{background:var(--olive);box-shadow:none}
   .item.next{background:var(--olive2)}
   @media (max-width:480px){ .prog i{width:28px} .sect>summary{font-size:18px;padding:10px 14px} }
   .item .go{flex:none;background:var(--olive);color:#fff;border-radius:99px;padding:8px 14px;font-weight:800;font-size:14px}
@@ -429,8 +400,8 @@
   .unit.pass>summary .un{background:var(--amber-d)}
   .trail{position:relative;padding:48px 0 8px}
   .trail>svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
-  .trail path{fill:none;stroke:var(--line);stroke-width:7;stroke-linecap:round;stroke-dasharray:1 15}
-  .trail path.on{stroke:var(--olive);stroke-dasharray:none;opacity:.35}
+  .trail path{stroke:var(--line);stroke-width:7;stroke-dasharray:1 15}
+  .trail path.on{stroke:var(--olive);opacity:.35}
   .pn-row{position:relative;display:flex;flex-direction:column;align-items:center;width:120px;margin-left:calc(50% - 60px + var(--x) * var(--xs,1));padding-bottom:10px}
   .pn{position:relative;width:72px;height:72px;border-radius:50%;border:0;cursor:pointer;display:grid;place-items:center;background:var(--paper2);box-shadow:0 5px 0 #cfc8b3;transition:transform .1s;color:var(--muted)}
   .pn:active{transform:translateY(3px);box-shadow:0 2px 0 #cfc8b3}
@@ -475,9 +446,9 @@
 
   /* 판 위 시작·결과 카드: 준비 중인지 두는 중인지 한눈에 */
   .bwrap{position:relative;width:var(--bs);height:var(--bs);flex:none;align-self:center}
-  .bover{position:absolute;inset:10px;z-index:8;display:grid;place-items:center;background:rgba(47,39,33,.42);border-radius:6px}
+  .bover{position:absolute;inset:10px;z-index:8;display:grid;background:rgba(47,39,33,.42);border-radius:6px}
   .bover[hidden]{display:none}
-  .bover-card{background:var(--card);border-radius:var(--r);box-shadow:0 10px 40px rgba(0,0,0,.3);padding:22px 24px;text-align:center;width:min(86%,380px)}
+  .bover-card{background:var(--card);border-radius:var(--r);box-shadow:0 10px 40px rgba(0,0,0,.3);padding:22px 24px;width:min(86%,380px)}
   .bover-card h2{margin:0 0 4px;font-size:28px}
   .bover-card p{margin:0 0 16px;color:var(--muted)}
   .bover-card .btn{width:100%;margin-top:8px}
@@ -534,21 +505,17 @@
      파란 하늘 바탕 · 크림 패널에 황갈색 테두리 · 아래로 두툼한 '장난감' 턱 · 민트/크림 판과 나무 테두리
      색은 Flow 스타일 가이드에서: 하늘 #85D1F2 · 크림 #FDF3E1 · 황갈 #C08F61 · 민트 #7FC6A8 · 판 크림 #FFF5DC · 나무 #9E653A
      · 초록 #7DC354 · 주황 #F29C38 · 파랑 #56A2DF · 별 #FFD359 · 남색 #2F3A53 (버튼 색은 흰 글자가 읽히게 조금 진하게) */
-  :root{--paper:#85D1F2;--paper2:#FFF5DC;--card:#FDF3E1;--line:#E6CFA9;--ledge:#D8B98A;--tan:#C08F61;--ink:#2F3A53;--muted:#59647D;
-    --olive:#55A834;--olive-d:#3C7F22;--olive2:#E2F3D0;--ok:#3E8E2A;--ok2:#E2F3D0;
-    --amber:#FFD359;--amber-d:#D9961A;--amber2:#FFF0C4;--orange:#F29C38;--orange-d:#C46F14;--blue:#3F8FD2;--blue-d:#2A6AA3;--blue2:#DDF0FB;
-    --light:#FFF5DC;--dark:#7FC6A8;--wood:#9E653A;--wood-d:#6B4222;--wood-l:#A86F3F;
-    --r:18px;--r-s:14px;--sh:0 0 0 2px var(--line),0 4px 0 var(--ledge);--sh-press:0 0 0 2px var(--line),0 1px 0 var(--ledge)}
+  :root{--bg2:#fff6e8;--bg1:#e8f5ff;--warn:#c4472f;--warn2:#fbe6df;--accent:var(--olive);--accent-d:var(--olive-d);--accent2:var(--olive2);--display:"Jua",ui-rounded,"SF Pro Rounded","Apple SD Gothic Neo",sans-serif;--paper:#85D1F2;--paper2:#FFF5DC;--card:#FDF3E1;--line:#E6CFA9;--ledge:#D8B98A;--tan:#C08F61;--ink:#2F3A53;--muted:#59647D;--olive:#55A834;--olive-d:#3C7F22;--olive2:#E2F3D0;--ok:#3E8E2A;--ok2:#E2F3D0;--amber:#FFD359;--amber-d:#D9961A;--amber2:#FFF0C4;--orange:#F29C38;--orange-d:#C46F14;--blue:#3F8FD2;--blue-d:#2A6AA3;--blue2:#DDF0FB;--light:#FFF5DC;--dark:#7FC6A8;--wood:#9E653A;--wood-d:#6B4222;--wood-l:#A86F3F;--r:18px;--r-s:14px;--sh:0 0 0 2px var(--line),0 4px 0 var(--ledge);--sh-press:0 0 0 2px var(--line),0 1px 0 var(--ledge)}
   body{background:radial-gradient(120% 60% at 15% -10%,#B5E5F8 0,transparent 60%),radial-gradient(90% 50% at 100% 0,#A3DCF5 0,transparent 55%),#85D1F2 fixed}
   .lead,.pmini{color:#33405B}.pg-ttl{color:var(--ink)}
-  .btn,.seg button,nav button,.sect,.today,.unit>summary,.panel,.note,.road-hero,.fold,.sheet,.opcard,.who,.snd{box-shadow:var(--sh)}
+  .btn,.seg button,nav button,.sect,.today,.unit>summary,.panel,.note,.fold,.sheet,.opcard,.who,.snd{box-shadow:var(--sh)}
   .btn:active,nav button:active,.opcard:active{transform:translateY(3px);box-shadow:var(--sh-press)}
   .btn.primary{background:var(--olive);color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.22);box-shadow:inset 0 0 0 2px rgba(255,255,255,.5),0 4px 0 var(--olive-d)}
   .btn.primary:active{box-shadow:inset 0 0 0 2px rgba(255,255,255,.5),0 1px 0 var(--olive-d)}
   nav button.on{background:var(--blue);color:#fff;box-shadow:inset 0 0 0 2px rgba(255,255,255,.5),0 4px 0 var(--blue-d)}
   .seg button.on{background:var(--blue);color:#fff;box-shadow:0 3px 0 var(--blue-d)}
   .item.next{background:var(--olive2)}
-  .board{box-shadow:inset 0 0 0 1px rgba(0,0,0,.2),0 0 0 2px var(--wood-d),0 7px 0 var(--wood-d),0 16px 30px rgba(40,70,100,.25)}
+  .board{touch-action:manipulation;-webkit-user-select:none;user-select:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.2),0 0 0 2px var(--wood-d),0 7px 0 var(--wood-d),0 16px 30px rgba(40,70,100,.25)}
   .sq.dark .coord{color:#fff}
   .msg{border:2px solid var(--line)}
   /* 동물 얼굴(이모지 대신 그림) */
@@ -561,8 +528,8 @@
   .pn.ev.cur{background:var(--amber);box-shadow:0 5px 0 var(--amber-d),0 0 0 7px var(--card),0 0 0 11px var(--amber2)}
   .pn.ev.done{background:#FFE7A0;box-shadow:0 5px 0 var(--amber-d)}
   .pn.ev.lock .pimg{opacity:.45;filter:grayscale(.6)}
-  .trail path{stroke:#FFF5DC}
-  .trail path.on{stroke:var(--olive);opacity:.45}
+  .trail path{stroke-linecap:round;fill:none;stroke:#FFF5DC}
+  .trail path.on{stroke-dasharray:none;stroke:var(--olive);opacity:.45}
   .streak .fl{width:20px;height:20px;background:url(img/ui/flame.png) center/contain no-repeat;filter:grayscale(1);opacity:.6}
   .streak.on .fl{filter:none;opacity:1}
   /* 길잡이 곰: 지금 할 일을 말해 줘요 */
@@ -601,8 +568,8 @@
   .gside .r{font-family:system-ui;font-weight:700}
   .gside.turnon{background:#FFF3CF;box-shadow:0 0 0 3px var(--amber),0 4px 0 var(--amber-d)}
   /* 판 위 카드(문제 시작·정답·대국 끝): 곰이 위에 앉아요 */
-  .bover{background:rgba(47,58,83,.38)}
-  .bover-card{box-shadow:0 0 0 3px var(--line),0 6px 0 var(--ledge),0 18px 40px rgba(20,40,70,.3)}
+  .bover{place-items:center;background:rgba(47,58,83,.38)}
+  .bover-card{text-align:center;box-shadow:0 0 0 3px var(--line),0 6px 0 var(--ledge),0 18px 40px rgba(20,40,70,.3)}
   .bover-card h2{color:var(--ink)}
   .btn[hidden]{display:none}
   /* 레슨·퍼즐 여정: 패턴은 둘레 고리로 단계 진도를 보여 줘요 */
@@ -792,7 +759,6 @@
         <h3>테마</h3><div class="seg small" id="pThemes"></div>
         <h3>난이도</h3><div class="seg small" id="pLevels"></div>
       </div>
-      <div id="pGoals" hidden></div>
     </div></div>
   </section>
 
@@ -1823,13 +1789,12 @@ function drawTrails(){
 }
 addEventListener('resize',()=>drawTrails());
 function scrollToCur(){ const c=document.querySelector('#path .pn.cur'); if(c) c.scrollIntoView({block:'center',behavior:'smooth'}); else scrollTo(0,0); }
-const renderRoad=renderPath;
 
 // ---------- puzzles ----------
 const LPZ_CATS=[['mix','섞어서'],['mate1','1수 메이트'],['mate2','2수 메이트'],['hanging','공짜 기물'],['fork','포크'],['pin','핀'],['skewer','스큐어'],['disc','디스커버드 어택']];
 const LPZ_NAME=Object.fromEntries(LPZ_CATS);
 // ----- 패턴 익히기: lichess Practice처럼 패턴별로. 문제는 lichess 퍼즐 DB(CC0)에서 패턴 태그로 골랐어요(tools/patterns-pick.py) -----
-const PT_SECS=[['mate','메이트 그림','자주 나오는 메이트 모양을 눈에 익혀요'],['tac1','기본 전술','기물을 얻는 기본 기술'],['tac2','심화 전술','한 수 더 깊이 생각하는 기술'],['end','엔드게임','기물이 적게 남았을 때 이기는 법']];
+const PT_SECS=[['mate','메이트 그림'],['tac1','기본 전술'],['tac2','심화 전술'],['end','엔드게임']];
 // 키: [이름, 묶음, 카드 한 줄, 설명, 그림]
 const PT={
   backRankMate:['백랭크 메이트','mate','맨 끝 줄에 갇힌 킹','킹이 자기 폰들에 막혀 맨 끝 줄에 갇혀 있을 때, 룩이나 퀸으로 그 줄에서 체크하면 피할 곳이 없어요. 내 킹에게도 숨 쉴 칸을 만들어 두세요.','wr'],
@@ -2100,11 +2065,6 @@ P.render=()=>{
   updateBack();
 };
 function playedSan(){ let t=P.s0; return P.played.map(m=>{ const x=san(t,m); t=make(t,m); return x; }).join(' '); }
-function solutionSan(){
-  const z=P.z; let s=parseFEN(z.fen); if(z.pre) s=make(s,findMove(s,z.pre)); const out=[];
-  for(const u of z.line){ const m=findMove(s,u); if(!m) break; out.push(san(s,m)); s=make(s,m); }
-  return out.join(' ');
-}
 // 답이 여러 개인 퍼즐: 적힌 답이 아니어도 엔진으로 따져서 똑같이 좋은 수(적힌 답과 비슷한 이득 + 확실히 유리)면 정답으로 인정
 function altGood(s,m,solU){
   const sol=findMove(s,solU||''); if(!sol) return false;
@@ -2204,31 +2164,23 @@ function ptIntroCard(){ // 입문 문제를 시작할 때는 패턴 설명을 �
   return `<p class="pt-tip">${PT[ptKey(P.goal)][3]}</p>`;
 }
 function ptProg(k){ const done=pzDone(), pool=LPT.filter(p=>p.cat===k); return [pool.filter(p=>done[p.id]).length,pool.length]; }
-// 접는 묶음: 한 번에 한 묶음만 펼쳐요. 처음엔 아직 안 끝낸 첫 묶음, 그 뒤엔 마지막으로 펼친 묶음(모두 접었으면 접힌 채로)
-function pickOpen(keys,def){ const o=store.get('sects',{}); const k=keys.find(k=>o[k]===true); if(k) return k; return keys.some(k=>k in o)?null:def; }
 function sectHTML(key,title,n,tot,sub,items,open){
   return `<details class="sect" data-sect="${key}"${open?' open':''}><summary>${title}<span class="prog${n>=tot?' full':''}"><i style="--p:${tot?n/tot*100:0}%"></i>${n}/${tot}</span></summary>${sub?`<p class="sub">${sub}</p>`:''}<div class="items">${items}</div></details>`;
 }
+// 접는 묶음: 펼친 상태를 기억해요
 function bindSects(box){
-  const ds=[...box.querySelectorAll('details[data-sect]')];
-  ds.forEach(d=>d.addEventListener('toggle',()=>{
-    const o=store.get('sects',{});
-    if(d.open) ds.forEach(x=>{ if(x!==d){ x.open=false; o[x.dataset.sect]=false; } });
-    o[d.dataset.sect]=d.open; store.set('sects',o);
+  box.querySelectorAll('details[data-sect]').forEach(d=>d.addEventListener('toggle',()=>{
+    const o=store.get('sects',{}); o[d.dataset.sect]=d.open; store.set('sects',o);
     if(d.open) d.scrollIntoView({block:'nearest',behavior:'smooth'});
   }));
 }
 // 항목 한 줄: 그림, 이름, 진행(meta), 다음 할 것이면 설명과 "시작" 버튼 모양
 const itemHTML=({attr,pc,t,small,meta,full,next,go})=>`<button class="item${full?' full':''}${next?' next':''}" ${attr}><span class="ico" style="--img:url(pieces/${pc}.svg)"></span><span class="t"><b>${t}</b>${next&&small?`<small>${small}</small>`:''}<span class="meta">${meta}</span></span>${next?`<span class="go">${go} ›</span>`:''}</button>`;
-// 패턴 하나의 단계별 진행: 점 하나가 한 단계(입문, 1, 2, 3)
-function ptDots(k){
-  const done=pzDone(); let all=0;
-  const dots=stages('pt:'+k).map(st=>{ const n=st.items.filter(x=>done[x.lp.id]).length; if(n===st.items.length) all++; return `<i class="${n===st.items.length?'on':n?'half':''}"></i>`; }).join('');
-  return {html:`<span class="dots" aria-label="${all}단계 끝">${dots}</span>`,all,tot:stages('pt:'+k).length};
-}
+// 패턴 하나의 단계별 진행: 끝낸 단계 수 / 전체 단계 수(입문, 1, 2, 3)
+function ptStages(k){ const done=pzDone(), L=stages('pt:'+k); return {all:L.filter(st=>st.items.every(x=>done[x.lp.id])).length,tot:L.length}; }
 function renderPuzzleList(){
   const due=dueList(), revOn=due.length>0;
-  const flat=PT_SECS.flatMap(([sec])=>Object.keys(PT).filter(k=>PT[k][1]===sec)).map(k=>{ const dt=ptDots(k), full=dt.all>=dt.tot;
+  const flat=PT_SECS.flatMap(([sec])=>Object.keys(PT).filter(k=>PT[k][1]===sec)).map(k=>{ const dt=ptStages(k), full=dt.all>=dt.tot;
     return {k,t:'p',name:PT[k][0],pc:PT[k][4],done:full,prog:dt.all/dt.tot,kind:full?'완료':dt.all?`${dt.all}/${dt.tot}단계`:PT[k][2],tip:ptProg(k)[0]?'이어하기':'시작!'}; });
   const cur=flat.findIndex(x=>!x.done), open=store.get('popen',{}); let k=0;
   const units=PT_SECS.map(([sec,t],u)=>{
@@ -2242,7 +2194,7 @@ function renderPuzzleList(){
   }).join('');
   let gn=0,gt=0; ['m1','m2','mat'].forEach(g=>{ const [a,b]=goalProg(g); gn+=a; gt+=b; });
   const box=$('pPatterns');
-  box.innerHTML=units+`<div class="sects goals">${sectHTML('pz-goals','문제 모음',gn,gt,'종류별로 쉬운 문제부터, 또는 섞어서 풀어요.',goals,pickOpen(['pz-goals'],null)==='pz-goals')}</div>`;
+  box.innerHTML=units+`<div class="sects goals">${sectHTML('pz-goals','문제 모음',gn,gt,'종류별로 쉬운 문제부터, 또는 섞어서 풀어요.',goals,store.get('sects',{})['pz-goals']===true)}</div>`;
   box.querySelectorAll('[data-goal]').forEach(b=>b.onclick=()=>setGoal(b.dataset.goal));
   bindUnits(box,'popen'); bindSects(box.querySelector('.goals'));
   // 옆: 복습 카드와 길잡이 곰
@@ -2383,7 +2335,7 @@ function renderLessonList(){
     (ld.length?coachHTML('think','배운 걸 잊기 전에 복습부터 해 볼까?'):c?coachHTML('point',`다음은 <b>${esc(c.name)}</b>! 길에서 눌러 봐.`):coachHTML('cheer','레슨을 다 끝냈어! 정말 대단해!'));
   const lrb=$('lSide').querySelector('[data-lrev]'); if(lrb) lrb.onclick=()=>lessonReview();
 }
-function openLesson(les){ scrollTo(0,0); L.les=les; $('lPick').style.display='none'; $('lPlay').style.display=''; $('lTitle').textContent=les.title.replace(/\s*[\u2654-\u265F]\uFE0E?$/,''); $('lIntro').textContent=les.intro; loadStep(0); }
+function openLesson(les){ scrollTo(0,0); L.les=les; $('lPick').style.display='none'; $('lPlay').style.display=''; $('lTitle').textContent=lesTitle(les); $('lIntro').textContent=les.intro; loadStep(0); }
 const lstep=()=>L.les.steps[L.si];
 function loadStep(i){
   const st=L.les.steps[i]; L.si=i; clearTimeout(L.timer); if(L.cg) clearInterval(L.cg.iv);
@@ -3131,7 +3083,7 @@ function updateBack(){
 { const _st=showTab; showTab=t=>{ _st(t); if(t==='road') renderPath(); updateBack(); requestAnimationFrame(drawTrails); }; document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{ fromPath=false; showTab(b.dataset.tab); });
   const mo=new MutationObserver(updateBack); ['lPlay','oPlay','pPlay'].forEach(id=>mo.observe($(id),{attributes:true,attributeFilter:['style']})); }
 
-renderRoad(); renderOpList(); renderLessonList(); renderPuzzleList(); updateBack();
+renderPath(); renderOpList(); renderLessonList(); renderPuzzleList(); updateBack();
 // 오프라인 지원(HTTPS 주소나 localhost에서만 동작)
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
