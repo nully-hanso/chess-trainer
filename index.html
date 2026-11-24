@@ -401,6 +401,7 @@
   .item.next{background:var(--olive2)}
   @media (max-width:480px){ .prog i{width:28px} .sect>summary{font-size:18px;padding:10px 14px} }
   .item .go{flex:none;background:var(--olive);color:#fff;border-radius:99px;padding:8px 14px;font-weight:800;font-size:14px}
+  .sect.rev{padding:8px}.sect.rev .item{width:100%}
   .pt-tip{background:var(--paper2);border-radius:var(--r-s);padding:10px 12px;text-align:left;font-size:15px;line-height:1.55;color:var(--ink)}
 
   /* 시트(목록·설정을 화면 위로) */
@@ -1563,6 +1564,7 @@ const LPT=LPT_RAW.split('\n').map(l=>{ const [cat,id,fen,moves,r,n]=l.split('|')
 const isPt=g=>g.startsWith('pt:'), ptKey=g=>g.slice(3);
 
 const LPZ=LPZ_RAW.split('\n').map(l=>{ const [cat,id,fen,moves,r]=l.split('|'); return {cat,id,fen,moves:moves.split(' '),rating:+r}; });
+const PZ_BY_ID=Object.fromEntries([...LPZ,...LPT].map(p=>[p.id,p])); // 복습은 패턴 문제와 문제 모음 문제를 모두 다시 내요
 const LEVELS=[['auto','내 점수에 맞춤'],['easy','입문 ~1000'],['mid','초급 1000~1300'],['hard','중급 1300~']];
 const DAY=864e5, RELEARN_MS=10*60e3;
 const prefs=Object.assign({icat:'mix',level:'auto',goal:'m1',stage:{},tac:'all'},store.get('pzprefs',{}));
@@ -1648,7 +1650,7 @@ function loadRec(){
 function infStats(){
   const rec=loadRec(),now=Date.now(),eod=new Date().setHours(23,59,59,999);
   let dueNow=0,dueToday=0,learning=0,longterm=0;
-  for(const k in rec){ const r=rec[k]; if(r.due<=now) dueNow++; else if(r.due<=eod) dueToday++; if(r.iv>=21) longterm++; else learning++; }
+  for(const k in rec){ if(!PZ_BY_ID[k]) continue; const r=rec[k]; if(r.due<=now) dueNow++; else if(r.due<=eod) dueToday++; if(r.iv>=21) longterm++; else learning++; }
   return {rec,dueNow,dueToday,learning,longterm,rating:store.get('prating',800),st:store.get('pzstats',{tried:0,ok:0,streak:0,best:0})};
 }
 const fmtIv=d=>d<1?'10분':d<30?`${Math.round(d)}일`:`약 ${Math.round(d/30)}개월`;
@@ -1676,11 +1678,32 @@ function record(success){
   st.tried++; if(success){ st.ok++; st.streak++; st.best=Math.max(st.best,st.streak); st.fstreak=0; } else { st.streak=0; st.fstreak=(st.fstreak||0)+1; }
   store.set('pzstats',st);
 }
+// ----- 오늘의 복습: 기억이 흐려질 때쯤(망각곡선) 패턴을 섞어서 다시 풀어요 -----
+const REV_N=10;
+const pzCatName=p=>p.pt?PT[p.cat][0]:LPZ_NAME[p.cat];
+function dueList(){ const rec=loadRec(),now=Date.now(); return Object.keys(rec).filter(id=>PZ_BY_ID[id]&&rec[id].due<=now).sort((a,b)=>rec[a].due-rec[b].due).map(id=>PZ_BY_ID[id]); }
+function nextDueTxt(){ // 가장 빨리 돌아오는 복습이 언제인지
+  const rec=loadRec(), t=Object.keys(rec).filter(id=>PZ_BY_ID[id]).map(id=>rec[id].due).sort((a,b)=>a-b)[0]; if(!t) return '';
+  const d=Math.round((new Date(t).setHours(0,0,0,0)-new Date().setHours(0,0,0,0))/DAY);
+  return d<=0?'오늘':d===1?'내일':d+'일 뒤';
+}
+function startReview(){
+  const due=dueList(); if(!due.length) return showPuzzleList();
+  // 같은 패턴이 연달아 나오지 않게 종류별로 번갈아 뽑아요(오래 기다린 것부터)
+  const by=new Map(); due.forEach(p=>{ if(!by.has(p.cat)) by.set(p.cat,[]); by.get(p.cat).push(p); });
+  const lists=[...by.values()], q=[];
+  while(q.length<REV_N&&lists.some(l=>l.length)) for(const l of lists){ if(l.length&&q.length<REV_N) q.push(l.shift()); }
+  P.rev={q,i:0,res:q.map(()=>0)};
+  showPuzzlePlay(); P.goal='rev'; P.src='rev'; P.gate=true; loadRevItem(0);
+}
+function loadRevItem(i){ P.rev.i=i; const z=toZ(P.rev.q[i],true); if(P.rev.res[i]) z.recorded=true; loadZ(z); } // 이미 푼 문제를 다시 열면 일정은 그대로
+function finishReview(){ const ok=P.rev.res.filter(v=>v===1).length; P.over={kind:'revdone',ok}; if(ok) celebrate(40); P.render(); }
+
 P.hist=[];
 function nextInf(){
   const {rec}=infStats(),now=Date.now(),cur=P.z&&P.z.lp?P.z.lp.id:null;
   const pool=LPZ.filter(p=>(P.icat==='mix'||p.cat===P.icat)&&p.id!==cur);
-  const due=pool.filter(p=>rec[p.id]&&rec[p.id].due<=now).sort((a,b)=>rec[a.id].due-rec[b.id].due);
+  const due=(P.icat==='mix'?pool.concat(LPT.filter(p=>p.id!==cur)):pool).filter(p=>rec[p.id]&&rec[p.id].due<=now).sort((a,b)=>rec[a.id].due-rec[b.id].due);
   let cand=pool.filter(p=>!rec[p.id]);
   const reviewStreak=P.hist.slice(-3).every(x=>x)&&P.hist.length>=3;
   if(due.length&&!(reviewStreak&&cand.length)){ P.hist.push(true); return loadZ(toZ(due[0],true)); }
@@ -1703,7 +1726,7 @@ function segButtons(el,items,cur,fn,cls){
 P.render=()=>{
   P.showTurn=!P.done&&!P.over; drawBoard($('pBoard'),P);
   const z=P.z, inf=P.src==='inf';
-  $('pStageBox').style.display=inf?'none':''; $('pInf').style.display=inf?'':'none';
+  $('pStageBox').style.display=inf?'none':''; $('pInf').style.display=inf?'':'none'; $('pStageBtn').style.display=P.src==='rev'?'none':'';
   { const {dueNow,rating}=infStats();
     $('pMini').innerHTML=inf?'':`내 퍼즐 점수 <b>${rating}</b>${P.delta!=null?` (${P.delta>=0?'+':''}${P.delta})`:''}`+(dueNow?` · <button class="btn small" id="pRev">복습할 문제 ${dueNow}개</button>`:'');
     if($('pRev')) $('pRev').onclick=()=>{ P.icat='mix'; setGoal('mix'); }; }
@@ -1712,11 +1735,21 @@ P.render=()=>{
     segButtons($('pLevels'),LEVELS,P.level,k=>{P.level=k; savePrefs(); nextInf();},'small');
     const {dueNow,dueToday,learning,longterm,rating,st}=infStats();
     $('pStats').innerHTML=`내 퍼즐 점수 <b>${rating}</b>${P.delta!=null?` (${P.delta>=0?'+':''}${P.delta})`:''} · 정답 <b>${st.ok}</b>/${st.tried}${st.tried?` (${Math.round(st.ok/st.tried*100)}%)`:''} · 연속 정답 <b>${st.streak}</b> (최고 ${st.best})<br>복습: 지금 <b>${dueNow}</b>개 · 오늘 안에 ${dueToday}개 · 익히는 중 ${learning} · 장기 기억 <b>${longterm}</b> (간격 3주 이상)`;
-    const theme=(P.icat==='mix'&&!P.done)?'테마는 비밀!':LPZ_NAME[z.lp.cat];
+    const theme=(P.icat==='mix'&&!P.done)?'테마는 비밀!':pzCatName(z.lp);
     $('pTitle').textContent=(z.review?'복습 · ':z.eased?'쉬운 문제 · ':'')+theme+` · 난이도 ${z.lp.rating}`;
     $('pGoal').textContent=P.icat==='mix'?'가장 좋은 수를 찾으세요. 체크메이트일 수도 있고, 교환이 끝났을 때 기물 점수가 가장 많이 남는 수일 수도 있어요. (폰1 · 나이트3 · 비숍3 · 룩5 · 퀸9)':z.type==='mate'?`${z.n}수 만에 체크메이트하세요.`:'교환이 다 끝났을 때 내 기물 점수가 가장 많이 남는 수를 찾으세요. 공짜로 잡기뿐 아니라, 싼 기물을 주고 비싼 기물을 얻는 것도 정답이에요. (폰1 · 나이트3 · 비숍3 · 룩5 · 퀸9)';
     $('pLink').innerHTML=P.done?`<a href="https://lichess.org/training/${z.lp.id}" target="_blank" rel="noopener">lichess에서 이 퍼즐 보기 </a> · 퍼즐 출처: lichess.org (CC0)`:'';
     $('pNext').innerHTML=(P.done?'다음 문제':'건너뛰기')+IC('next');
+  } else if(P.src==='rev'){
+    const R=P.rev, n=R.q.length;
+    $('pGoalTxt').textContent='잊어버릴 때쯤 다시 풀면 오래 기억해요. 맞히면 다음 복습이 더 멀어지고, 틀리면 곧 다시 나와요.';
+    $('pStageTtl').innerHTML=`오늘의 복습 · <span style="color:var(--ok)">${R.res.filter(Boolean).length}/${n}</span>`;
+    $('pDots').innerHTML=''; R.q.forEach((x,i)=>{ const b=document.createElement('button'); b.textContent=i+1; const v=R.res[i];
+      b.className=(v===1?'solved ':v===2?'retry ':'')+(i===R.i?'cur':''); b.onclick=()=>loadRevItem(i); $('pDots').appendChild(b); });
+    $('pTitle').textContent=`복습 ${R.i+1}/${n} · `+(P.done?pzCatName(z.lp):'어떤 패턴일까요?');
+    $('pGoal').textContent=z.type==='mate'?`${z.n}수 만에 체크메이트하세요.`+(z.n>1?' 상대의 응수는 자동으로 둬요.':''):'가장 좋은 수를 찾으세요. 어떤 패턴인지는 풀고 나서 알려 줘요.';
+    $('pLink').innerHTML=P.done?`<a href="https://lichess.org/training/${z.lp.id}" target="_blank" rel="noopener">lichess에서 이 퍼즐 보기 </a> · 퍼즐 출처: lichess.org (CC0)`:'';
+    $('pNext').innerHTML=(!P.done?'건너뛰기':R.i<n-1?'다음 문제':'복습 끝')+IC('next');
   } else {
     const L=stages(P.goal), st=L[P.stg], done=pzDone(), sv=store.get('solved',{}), rec=recStage(P.goal), it=st.items[P.idx];
     $('pGoalTxt').textContent=isPt(P.goal)?PT[ptKey(P.goal)][3]:GOAL_TXT[P.goal];
@@ -1752,9 +1785,13 @@ P.render=()=>{
   P.showTurn=!P.done&&!P.over;
   const ov=$('pOver');
   if(P.over&&P.view==='play'){ ov.hidden=false;
-    ov.innerHTML=P.over.kind==='start'
+    ov.innerHTML=P.over.kind==='revdone'
+      ?`<div class="bover-card"><h2>오늘 복습 끝!</h2><p>${P.rev.q.length}문제 중 ${P.over.ok}문제를 한 번에 맞혔어요.${P.over.ok<P.rev.q.length?' 틀린 문제는 곧 다시 나와요.':' 다음 복습은 더 나중에 만나요.'}</p><button class="btn primary big" data-plist>목록으로${IC('next')}</button></div>`
+      :P.over.kind==='start'&&P.src==='rev'
+      ?`<div class="bover-card"><h2>오늘의 복습 ${P.rev.q.length}문제</h2><p>전에 푼 패턴들이 섞여 나와요. 어떤 패턴인지 알아맞혀 봐요!</p><button class="btn primary big" data-pstart>${IC('play')}복습 시작</button></div>`
+      :P.over.kind==='start'
       ?`<div class="bover-card"><h2>${$('pTitle').textContent}</h2><p>${(z.type==='mate'?`${z.n}수 만에 체크메이트하기`:isPt(P.goal)?ptGoal(ptKey(P.goal)):'기물 점수를 더 많이 얻는 수 찾기')} · ${P.side==='w'?'백':'흑'} 차례</p>${ptIntroCard()}<button class="btn primary big" data-pstart>${IC('play')}문제 시작</button></div>`
-      :`<div class="bover-card"><h2>${P.failed?'완료!':'정답!'}</h2><p>${P.overNote||''}</p><button class="btn primary big" data-pnext>다음 문제${IC('next')}</button><button class="btn" data-phide>${IC('eye')}판 보기</button></div>`;
+      :`<div class="bover-card"><h2>${P.failed?'완료!':'정답!'}</h2><p>${P.overNote||''}</p><button class="btn primary big" data-pnext>${P.src==='rev'&&P.rev.i>=P.rev.q.length-1?'복습 끝':'다음 문제'}${IC('next')}</button><button class="btn" data-phide>${IC('eye')}판 보기</button></div>`;
   } else ov.hidden=true;
   updateBack();
 };
@@ -1793,7 +1830,7 @@ function puzzleMove(m){
     else if(inCheck(s2,s2.turn)) why='체크는 맞지만 상대가 피할 방법이 있어요.';
     else if(z.type==='mate') why='메이트로 이어지지 않아요. 상대에게 피할 길이 남아요.';
     else why=wrongMoveText(P.s,m);
-    if(z.lp&&!P.failed){ P.failed=true; record(false); why+=P.src==='inf'?(P.delta!=null?` (점수 ${P.delta} · 다음 문제는 더 쉬워져요 · 이 문제는 10분 뒤 다시)`:' (10분 뒤 다시 나와요)'):(P.delta!=null?` (점수 ${P.delta} · 이 문제는 나중에 복습으로 다시 나와요)`:''); }
+    if(z.lp&&!P.failed){ P.failed=true; record(false); why+=P.src!=='stage'?(P.delta!=null?` (점수 ${P.delta} · 다음 문제는 더 쉬워져요 · 이 문제는 10분 뒤 다시)`:' (10분 뒤 다시 나와요)'):(P.delta!=null?` (점수 ${P.delta} · 이 문제는 나중에 복습으로 다시 나와요)`:''); }
     P.s=s2; P.last=m; P.msg=''+why+' 다시 해보세요.'; P.tone='bad'; P.busy=true; P.render(); shake($('pBoard'));
     P.timer=setTimeout(()=>{ P.ghost={from:m.from,to:m.to,p:P.stage.s.b[m.from]}; P.s=P.stage.s; P.last=P.stage.last; P.busy=false; P.render(); },1100);
     return;
@@ -1811,6 +1848,12 @@ function puzzleMove(m){
         P.overNote=`${stName(st)} ${n}/${st.items.length}`+(full?` · ${stName(st)} 완료!`:'');
         P.msg=(P.failed?'완료! 다음엔 한 번에 풀어 봐요. ':'정답! ')+(isPt(P.goal)?`이게 바로 ${PT[ptKey(P.goal)][0]}! `:'')+`수순: ${playedSan()}`+(P.alt?' '+P.alt:mat)+` · ${stName(st)} ${n}/${st.items.length}`+(full?` ${stName(st)} 완료!`:'');
         if(full&&!P.failed) celebrate(40);
+      } else if(P.src==='rev'){
+        const R=P.rev, nm=pzCatName(z.lp); R.res[R.i]=P.failed?2:1;
+        if(!P.failed&&pzDone()[z.lp.id]) markDone(z.lp.id,1);
+        const when=P.failed?'10분 뒤':fmtIv(P.nextIv)+' 후';
+        P.overNote=`이건 ${nm}${hasJong(nm)?'이었':'였'}어요! · 다음 복습 ${when}`;
+        P.msg=(P.failed?'완료! ':'정답! ')+`${nm} · 수순: ${playedSan()}`+(P.alt?' '+P.alt:mat)+` · 다음 복습 ${when}`;
       } else
       P.msg=(P.failed?'완료! ':'정답! ')+`수순: ${playedSan()}`+(P.alt?' '+P.alt:mat)+(P.failed?' — 10분 뒤에 다시 만나요.':` · ${P.secs}초 · 다음 복습: ${fmtIv(P.nextIv)} 후`+(!P.speedNote?'':P.secs<20?' (빨리 풀어서 간격을 더 늘렸어요)':P.secs>90?' (오래 걸려서 간격을 조금 줄였어요)':''));
     } else {
@@ -1880,16 +1923,17 @@ function ptDots(k){
   return {html:`<span class="dots" aria-label="${all}단계 끝">${dots}</span>`,all,tot:stages('pt:'+k).length};
 }
 function renderPuzzleList(){
+  const due=dueList(), revOn=due.length>0;
   let nextSet=false, def=null;
   const secs=PT_SECS.map(([sec,t,d])=>{
     const ks=Object.keys(PT).filter(k=>PT[k][1]===sec); let n=0,tot=0;
     const items=ks.map(k=>{ const v=PT[k], dt=ptDots(k), full=dt.all>=dt.tot; n+=dt.all; tot+=dt.tot;
       const next=!full&&!nextSet; if(next){ nextSet=true; def='pt-'+sec; }
-      return itemHTML({attr:`data-goal="pt:${k}"`,pc:v[4],t:v[0],small:v[2],meta:dt.html,full,next,go:ptProg(k)[0]?'이어하기':'시작'}); }).join('');
+      return itemHTML({attr:`data-goal="pt:${k}"`,pc:v[4],t:v[0],small:v[2],meta:dt.html,full,next:next&&!revOn,go:ptProg(k)[0]?'이어하기':'시작'}); }).join('');
     return {key:'pt-'+sec,t,n,tot,d,items};
   });
   const goals=GOAL_CARDS.map(([g,t,d,pc])=>{
-    if(g==='mix'){ const {dueNow}=infStats(); return itemHTML({attr:`data-goal="${g}"`,pc,t,meta:dueNow?`복습할 문제 ${dueNow}개`:d}); }
+    if(g==='mix') return itemHTML({attr:`data-goal="${g}"`,pc,t,meta:d});
     const [n,tot]=goalProg(g); return itemHTML({attr:`data-goal="${g}"`,pc,t,meta:`${n}/${tot}문제`,full:n>=tot});
   }).join('');
   // 문제 모음 묶음은 1수·2수 메이트, 기물 얻기를 합쳐 세요
@@ -1897,10 +1941,15 @@ function renderPuzzleList(){
   secs.push({key:'pz-goals',t:'문제 모음',n:gn,tot:gt,d:'종류별로 쉬운 문제부터, 또는 섞어서 풀어요.',items:goals});
   const open=pickOpen(secs.map(x=>x.key),def);
   const box=$('pPatterns');
-  box.innerHTML=secs.map(x=>sectHTML(x.key,x.t,x.n,x.tot,x.d,x.items,x.key===open)).join('');
+  // 복습할 문제가 있으면 새 패턴보다 먼저: 맨 위 카드가 '다음 할 것'
+  let rev='';
+  if(revOn){ const names=[...new Set(due.map(pzCatName))];
+    rev=`<div class="sect rev">${itemHTML({attr:'data-rev',pc:'wk',t:`오늘의 복습 ${Math.min(REV_N,due.length)}문제`,small:names.slice(0,3).join(' · ')+(names.length>3?` 외 ${names.length-3}개`:''),meta:due.length>REV_N?`복습할 문제 모두 ${due.length}개`:'잊기 전에 한 번 더',next:true,go:'복습'})}</div>`; }
+  box.innerHTML=rev+secs.map(x=>sectHTML(x.key,x.t,x.n,x.tot,x.d,x.items,x.key===open)).join('');
   box.querySelectorAll('[data-goal]').forEach(b=>b.onclick=()=>setGoal(b.dataset.goal));
+  const rb=box.querySelector('[data-rev]'); if(rb) rb.onclick=startReview;
   bindSects(box);
-  const {rating}=infStats(); $('pMini').innerHTML=`내 퍼즐 점수 <b>${rating}</b>`;
+  const {rating}=infStats(), nd=revOn?'':nextDueTxt(); $('pMini').innerHTML=`내 퍼즐 점수 <b>${rating}</b>`+(nd?` · 다음 복습 <b>${nd}</b>`:'');
 }
 function showPuzzlePlay(){ if(P.view==='play') return; P.view='play'; $('pList').style.display='none'; $('pPlay').style.display=''; scrollTo(0,0); }
 function showPuzzleList(){ clearTimeout(P.timer); P.view='list'; P.over=null; $('pPlay').style.display='none'; $('pList').style.display=''; renderPuzzleList(); updateBack(); }
@@ -1911,6 +1960,7 @@ $('pOver').addEventListener('click',e=>{
   if(e.target.closest('[data-pstart]')){ const z=P.over.z; P.over=null; _loadZ(z); }
   else if(e.target.closest('[data-pnext]')){ P.over=null; $('pNext').click(); }
   else if(e.target.closest('[data-phide]')){ P.over=null; P.render(); }
+  else if(e.target.closest('[data-plist]')){ P.over=null; showPuzzleList(); }
 });
 $('pStageBtn').onclick=()=>{ $('pStageSheet').querySelector('h2').textContent=P.src==='inf'?'테마·난이도 정하기':'진도 정하기'; openModal('pStageSheet'); };
 
@@ -1919,6 +1969,7 @@ $('pGoalBtn').onclick=()=>{ P.showGoal=!P.showGoal; P.render(); };
 $('pReset').onclick=()=>loadZ(P.z);
 $('pNext').onclick=()=>{
   if(P.src==='inf') return nextInf();
+  if(P.src==='rev') return P.rev.i<P.rev.q.length-1?loadRevItem(P.rev.i+1):finishReview();
   const L=stages(P.goal), st=L[P.stg];
   if(P.idx<st.items.length-1) loadItem(P.idx+1);
   else openStage(P.stg<L.length-1?P.stg+1:0);
