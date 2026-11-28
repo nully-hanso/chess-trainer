@@ -29,7 +29,7 @@
   */
   :root{--bs:max(250px,min(calc(100vw - 16px),560px,calc(100svh - 290px)))}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html{margin:0}body{margin:0;font-family:ui-rounded,"SF Pro Rounded","Apple SD Gothic Neo","Pretendard","Noto Sans KR",system-ui,sans-serif;min-height:100vh;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);background:var(--paper);color:var(--ink);font-size:16px;line-height:1.6}
+  html{margin:0;touch-action:manipulation}body{margin:0;font-family:ui-rounded,"SF Pro Rounded","Apple SD Gothic Neo","Pretendard","Noto Sans KR",system-ui,sans-serif;min-height:100vh;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);background:var(--paper);color:var(--ink);font-size:16px;line-height:1.6}
   button{font-family:inherit}
   /* header + tabs */
   .top{max-width:1060px;margin:0 auto;padding:10px 14px 0;display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -572,6 +572,7 @@
   .bover-card{text-align:center;box-shadow:0 0 0 3px var(--line),0 6px 0 var(--ledge),0 18px 40px rgba(20,40,70,.3)}
   .bover-card h2{color:var(--ink)}
   .btn[hidden]{display:none}
+  .btn[data-wait]{opacity:.6;cursor:default}.btn[data-wait]::after{content:attr(data-wait);font-family:system-ui;font-weight:700;font-size:.82em;margin-left:2px}
   /* 레슨·퍼즐 여정: 패턴은 둘레 고리로 단계 진도를 보여 줘요 */
   .pn.ring::after{content:"";position:absolute;inset:-7px;border-radius:50%;pointer-events:none;background:conic-gradient(var(--olive) calc(var(--p)*1%),rgba(255,255,255,.85) 0);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 5px));mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 5px))}
   .jr-side .sect.rev{margin-top:10px}
@@ -2221,6 +2222,15 @@ $('pOver').addEventListener('click',e=>{
 $('pStageBtn').onclick=()=>{ $('pStageSheet').querySelector('h2').textContent=P.src==='inf'?'테마·난이도 정하기':'진도 정하기'; openModal('pStageSheet'); };
 
 $('pHint').onclick=puzzleHint;
+// 힌트는 3분 동안 스스로 생각해 본 다음에: 퍼즐·레슨 단계·오프닝 연습은 시작부터, 대국은 마지막 수부터 세요
+const HINT_WAIT=180e3;
+setInterval(()=>{
+  for(const [id,t0] of [['pHint',P.t0],['lHint',L.t0],['oHint',O.t0],['gHint',G.t0]]){
+    const b=$(id), left=t0?HINT_WAIT-(Date.now()-t0):0;
+    if(left>0){ const s=Math.ceil(left/1000); b.dataset.wait=`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; } else delete b.dataset.wait;
+  }
+},1000);
+document.addEventListener('click',e=>{ if(e.target.closest('.btn[data-wait]')){ e.stopImmediatePropagation(); e.preventDefault(); toast('힌트는 3분 동안 스스로 생각해 본 다음에 쓸 수 있어요.'); } },true);
 $('pGoalBtn').onclick=()=>{ P.showGoal=!P.showGoal; P.render(); };
 $('pReset').onclick=()=>loadZ(P.z);
 $('pNext').onclick=()=>{
@@ -2255,7 +2265,7 @@ function stateAt(k){ let s=O.start,last=null; for(let i=0;i<k;i++){ last=findMov
 function setMode(m){
   O.mode=m; document.querySelectorAll('#oModes button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
   $('oLearnBtns').style.display=m==='learn'?'':'none'; $('oDrillBtns').style.display=m==='drill'?'':'none';
-  O.ply=0; O.sel=-1; O.hint=null; O.ghost=null; O.done=false; O.busy=false; O.mistakes=0;
+  O.ply=0; O.sel=-1; O.hint=null; O.ghost=null; O.done=false; O.busy=false; O.mistakes=0; O.t0=Date.now();
   if(m==='learn'){ O.msg='다음을 눌러 한 수씩 진행하세요.'; O.tone=''; }
   else{ O.msg=`${O.side==='w'?'백':'흑'}의 정석 수를 직접 두세요. 상대 수는 자동으로 둬요.`; O.tone=''; }
   goPly(0);
@@ -2340,7 +2350,7 @@ const lstep=()=>L.les.steps[L.si];
 function loadStep(i){
   const st=L.les.steps[i]; L.si=i; clearTimeout(L.timer); if(L.cg) clearInterval(L.cg.iv);
   Object.assign(L,{s:parseFEN(st.fen),sel:-1,last:null,hint:null,busy:false,done:false,stars:null,noCheck:false,mode:'',moves:0,tone:'',answered:false,
-    cg:null,onSquare:null,flash:null,noCoords:false,textHTML:'',ghost:null,fails:0,_bad:null});
+    cg:null,onSquare:null,flash:null,noCoords:false,textHTML:'',ghost:null,fails:0,_bad:null,t0:Date.now()});
   L.side=L.s.turn; L.flip=L.side==='b'; $('lQuiz').innerHTML=''; $('lQuiz').classList.remove('four');
   if(st.k==='stars'){
     L.stars=new Set(st.stars.map(sqIdx)); L.par=st.par??(st.par=starPar(st.fen,st.stars));
@@ -2748,7 +2758,7 @@ function gStatsHTML(){
     (st.n?`${st.n}판 · <b>${st.w}</b>승 ${st.l}패 ${st.d}무`:`아직 대국 기록이 없어요. 첫 점수는 퍼즐 점수에서 시작해요.`);
 }
 function gRebuild(){ // 저장된 수순으로 현재 국면 다시 만들기
-  const g=G.g; let s=parseFEN(START_FEN),last=null; G.reps={}; G.half=0; G.hist=[]; G.busy=false; G.holdFlip=false; // 봇·힌트 계산 중에 나갔다 와도 새 판은 바로 둘 수 있게
+  const g=G.g; let s=parseFEN(START_FEN),last=null; G.reps={}; G.t0=Date.now(); G.half=0; G.hist=[]; G.busy=false; G.holdFlip=false; // 봇·힌트 계산 중에 나갔다 와도 새 판은 바로 둘 수 있게
   G.reps[posKey(s)]=1;
   for(const u of g.moves){ const m=findMove(s,u); if(!m) break; G.hist.push(san(s,m));
     G.half=(s.b[m.to]||m.ep||s.b[m.from].toLowerCase()==='p')?0:G.half+1; s=make(s,m); last=m;
@@ -2784,7 +2794,8 @@ G.render=()=>{
   $('gActs').style.display=playing?'':'none';
   $('gRevActs').style.display=$('gRevActs2').style.display=G.rev?'':'none';
 
-  $('gUndo').disabled=G.busy||!g||(g.human?g.moves.length<1:g.moves.length<(g.color==='w'?1:2));
+  $('gUndo').disabled=G.busy||!g||(g.human?g.moves.length<1:g.moves.length<(g.color==='w'?1:2))||undoLeft()<=0;
+  $('gUndo').lastChild.textContent=g?`무르기 ${Math.max(0,undoLeft())}`:'무르기';
   $('gHint').disabled=G.busy;
   document.querySelectorAll('#gMoreSheet .hum').forEach(b=>{ b.style.display=g&&g.human?'':'none'; b.disabled=G.busy; });
   $('gMore').disabled=G.busy;
@@ -2870,7 +2881,7 @@ function gFinish(win,why){ // win: 'w' | 'b' | 'd'
   gSave(); G.render();
 }
 function gApply(m){
-  const s=G.s; G.hist.push(san(s,m)); G.g.moves.push(uci(m));
+  const s=G.s; G.hist.push(san(s,m)); G.g.moves.push(uci(m)); G.t0=Date.now();
   G.half=(s.b[m.to]||m.ep||s.b[m.from].toLowerCase()==='p')?0:G.half+1;
   G.s=make(s,m); G.last=m; const k=posKey(G.s); G.reps[k]=(G.reps[k]||0)+1; gSave();
 }
@@ -2907,11 +2918,14 @@ $('gHint').onclick=()=>{
     G.msg=`빛나는 기물을 빛나는 칸으로 옮겨 보세요: ${san(G.s,m)}`+note; G.tone=''; G.render();
   });
 };
+// 무르기는 백·흑 각각 한 판에 5번까지. 봇과 둘 땐 내 색, 사람끼리는 방금 둔 쪽이 써요
+const UNDO_MAX=5, undoColor=()=>G.g.human?other(G.s.turn):G.g.color, undoLeft=()=>UNDO_MAX-((G.g.undo||{})[undoColor()]||0);
 $('gUndo').onclick=()=>{
-  if(G.done||G.busy) return;
+  if(G.done||G.busy||undoLeft()<=0) return;
+  const uc=undoColor(); G.g.undo={w:0,b:0,...G.g.undo}; G.g.undo[uc]++;
   const note=gUnrate('무르기'), n=G.g.human?1:(G.s.turn===G.g.color?2:1);
   G.g.moves.splice(-n,n); gRebuild(); G.hint=null; G.sel=-1;
-  G.msg='한 수 물렀어요. '+(G.g.human?gTurnMsg():'다시 생각해 봐요!')+note; G.tone=''; gSave(); G.render();
+  G.msg=`한 수 물렀어요(남은 무르기 ${UNDO_MAX-G.g.undo[uc]}번). `+(G.g.human?gTurnMsg():'다시 생각해 봐요!')+note; G.tone=''; gSave(); G.render();
 };
 $('gResign').onclick=()=>{
   if(G.done||G.busy) return;
